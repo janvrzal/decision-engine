@@ -1,10 +1,10 @@
 # DecisionEngine — specifikace cílové verze pro semestrální práci
 
-**Verze:** 0.4.1 — design systém  
+**Verze:** 0.4.2 — rozvržení střední šířky  
 **Datum:** 23. 11. 2026  
 **Stav:** Specifikace budoucího chování; tento dokument nepopisuje dokončenou implementaci.
 
-**Změny oproti 0.4:** Vzhled UI určuje design systém v `docs/design-system/` (kap. 4). Komponenty stojí na Bits UI s vlastním vzhledem místo shadcn-svelte (ADR-0010, kap. 7). Štítky stavu plánu mají jednotné znění vztažené k plánu: Optimální, Nejlepší nalezený, Částečný, Bez řešení (kap. 4, 5, 7, 8, 12). Plán 1D uvádí u každého řezu jeho polohu od začátku tyče (kap. 4).
+**Změny oproti 0.4.1:** Na střední šířce (768–1279 px) je Panel Dialog vysouvací panel zleva, pracovní plocha má celou šířku; panely se neřadí pod sebe (kap. 4, shodně s mapou obrazovek).
 
 ## 1. Produkt a jeho účel
 
@@ -76,7 +76,7 @@ Kvalita rozhraní je jediný povinný a výslovně hodnocený požadavek zadán�
 - **Čísla a jednotky** se zobrazují česky (`1 250 mm`, `1 234,50 Kč`), vždy s jednotkou.
 - **Odezva:** lokální akce do 100 ms; volání AI a výpočet ukazují průběh a lze je zrušit nebo opakovat.
 - **Přístupnost:** ovládání klávesnicí včetně tabulek, viditelný fokus, kontrast podle WCAG AA.
-- **Šířky:** primárně notebook a desktop (od 1280 px), použitelné od 768 px (panely pod sebou).
+- **Šířky:** primárně notebook a desktop (od 1280 px: dialog vedle pracovní plochy), použitelné od 768 px (dialog jako vysouvací panel zleva, pracovní plocha přes celou šířku).
 
 ### Úvodní obrazovka
 
