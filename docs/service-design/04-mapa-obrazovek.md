@@ -250,7 +250,7 @@ Stavy jsou definované na úrovni panelů.
 **Účel:** Ukázat výsledek výpočtu tak, aby šel ověřit a použít u pily (UC-01, 02, 08).
 
 **Obsah a data**
-- **Štítek stavu řešení:** Optimální / Nejlepší nalezené (o kolik od dolní meze) / Částečný / Bez proveditelného řešení — ikona a text, tooltip s vysvětlením — `result.status`, `result.gap_text`.
+- **Štítek stavu řešení:** Optimální / Nejlepší nalezený (o kolik od dolní meze) / Částečný / Bez řešení — ikona a text, tooltip s vysvětlením — `result.status`, `result.gap_text`.
 - **Metriky:** spotřebované tyče (podle délek), délka dílů, odpad, využitelné zbytky, výtěžnost; u skladu* rozdělení ze skladu / k nákupu — `result.metrics`.
 - **Měřítkový plán:** SVG z backendu (`result.svg`) s popisky dílů a pořadím na tyči, legendou (díl, prořez, zbytek, odpad) a stejné tyče seskupené („3× stejné řezání“). Najetí nebo fokus na díl zvýrazní všechny jeho výskyty a řádek v rozpisu. U 2D desky s číslovaným pořadím řezů. Nadpis „Nářezový plán“, nebo „Rozložení dílů“.
 - **Rozpis:** tabulka tyč → díly (textová alternativa plánu) — `result.bars[]`.

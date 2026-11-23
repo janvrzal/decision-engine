@@ -16,7 +16,7 @@ Specifikace je zdroj pravdy o chování. Změny musí být dohledatelné a vnit�
 
 - Zvyš verzi v hlavičce (`0.2` → `0.3`; drobná oprava → `0.2.1`) a datum.
 - Pod hlavičku do odstavce **Změny oproti …** stručně shrň, co se mění (nahraď předchozí shrnutí; historie je v gitu).
-- Použij stejné termíny jako zbytek dokumentu (schopnost, zakázka, revize, výsledek, nejlepší nalezené …) a stejné identifikátory jako kód.
+- Použij stejné termíny jako zbytek dokumentu (schopnost, zakázka, revize, výsledek, nejlepší nalezený …) a stejné identifikátory jako kód.
 
 ## 3. Projdi dotčená místa
 

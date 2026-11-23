@@ -50,7 +50,7 @@ Kroky scénářů uvádějí události (→ `Event`) a efekty (⇒ `Effect`) pod
 - **A2 Chybějící skladová délka.** Extrakce skladovou délku nenašla. Tabulka skladových délek nabídne výchozí 6000 mm jako nepotvrzenou hodnotu a Panel Dialog se zeptá: „Jaké délky tyčí nakupujete?“ Uživatel délku doplní v tabulce nebo odpoví zprávou (→ UC-03).
 - **A3 Cíl „nejnižší cena“ bez kompletních cen.** Výchozí cíl je „nejméně materiálu“ (nepotvrzený). Pokud uživatel zvolí „nejnižší cena“ a některá cena chybí, tlačítko „Potvrdit a vypočítat“ je neaktivní a pole bez ceny jsou zvýrazněná s nabídkou „doplnit ceny“ nebo „zvolit jiný cíl“.
 - **A4 Příliš dlouhý díl.** Díl delší než nejdelší skladová délka (po odečtení ořezu) je v kontrolní tabulce označený varováním. Výpočet lze spustit, ale výsledek má stav „částečný“ a samostatný seznam neumístěných kusů. Nepůsobí jako splněná zakázka.
-- **A5 Nejlepší nalezené řešení.** Solver neprokáže optimum v časovém limitu. Štítek „nejlepší nalezené“ s rozdílem od dolní meze („nejvýš o 1 tyč víc, než je teoretické minimum“).
+- **A5 Nejlepší nalezený plán.** Solver neprokáže optimum v časovém limitu. Štítek „Nejlepší nalezený“ s rozdílem od dolní meze („nejvýš o 1 tyč víc, než je teoretické minimum“).
 - **A6 Uživatel zruší výpočet.** → `OperationCancelled`* Žádný nový výsledek nevznikne, Panel Plán ukáže „Výpočet zrušen“ a akci „Přepočítat“. Potvrzená revize zůstává.
 - **A7 Zadání s cenou za metr.** Model cenu za tyč nepřepočítává. Cena se uloží jako nepotvrzená s poznámkou „cena za metr, ověřte cenu za tyč“. Převod spočítá kód, ne model.
 
@@ -76,7 +76,7 @@ Kroky scénářů uvádějí události (→ `Event`) a efekty (⇒ `Effect`) pod
 2. Router vrátí `cutting_2d`. ⇒ `CallExtractor` → `ProposalReceived`
 3. Krok Kontrola údajů ukáže tabulku dílů (šířka, délka, počet, **lze otočit**), formát desky s cenou za kus, materiál a tloušťku jako informaci a parametry (prořez, okrajový ořez). Prořez a okrajový ořez bez výslovné hodnoty jsou nepotvrzené a Panel Dialog se na ně doptá.
 4. Uživatel doplní hodnoty, u dílů s dekorem zakáže otáčení (u „dekor po délce“ je zakázání předvyplněné jako nepotvrzené) a potvrdí. → `ProposalEdited`*, `ProposalConfirmed` ⇒ `RunSolver`
-5. Panel Plán zobrazí desky jako měřítkový obrázek: polohy dílů, otočené díly označené, číslované pořadí gilotinových řezů a ořez okrajů. Metriky jsou počet desek, využití plochy a odpad. Štítek je zpravidla „nejlepší nalezené“, „optimální“ jen při dosažení dolní meze z plochy.
+5. Panel Plán zobrazí desky jako měřítkový obrázek: polohy dílů, otočené díly označené, číslované pořadí gilotinových řezů a ořez okrajů. Metriky jsou počet desek, využití plochy a odpad. Štítek je zpravidla „Nejlepší nalezený“, „Optimální“ jen při dosažení dolní meze z plochy.
 
 **Alternativy**
 

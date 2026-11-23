@@ -116,7 +116,7 @@ flowchart TD
 | 3 | Kontrola | Krok Kontrola údajů | je návrh platný a úplný? cíl „nejnižší cena“ má všechny ceny? | chyby po polích, seznam chyb nad tabulkou; nepotvrzené hodnoty označené | `ProposalEdited`* |
 | 4 | Potvrzení | Krok Kontrola údajů | — | — | `ProposalConfirmed` |
 | 5 | Výpočet | Krok Plán a cena, Panel Plán (načítání, „Zrušit“) | — | zrušení, chyba solveru | `SolveRequested`, `SolveFinished`, `SolveFailed`*, `OperationCancelled`* |
-| 6 | Plán a cena | Panel Plán, Panel Kalkulace | stav řešení: optimální / nejlepší nalezené / částečný / bez řešení | částečný: seznam neumístěných kusů; kalkulace: „chybí cena“ | `CostInputsChanged`* |
+| 6 | Plán a cena | Panel Plán, Panel Kalkulace | stav plánu: Optimální / Nejlepší nalezený / Částečný / Bez řešení | částečný: seznam neumístěných kusů; kalkulace: „chybí cena“ | `CostInputsChanged`* |
 | 7 | Úprava dialogem | Panel Dialog → Krok Kontrola údajů se souhrnem změn | potvrdit / upravit / zahodit | plán viditelně neaktuální, PDF neaktivní | `MessageSent`, `ProposalReceived`, `ProposalRejected` |
 | 8 | Přepočet | jako krok 4–6 | — | — | `ProposalConfirmed`, `SolveFinished` |
 | 9 | Export | Panel Plán / Hlavička zakázky | je plán aktuální? | neaktuální: „Stáhnout PDF“ neaktivní s vysvětlením | `PdfRequested`*, `PdfRendered`* |

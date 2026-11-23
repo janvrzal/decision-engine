@@ -1,6 +1,6 @@
 # ADR-0007: Webové UI ve SvelteKitu nad FastAPI
 
-**Stav:** přijato  
+**Stav:** přijato; část „Vzhled“ nahrazena ADR-0010  
 **Datum:** 2026-11-23  
 **Souvisí se:** ADR-0006, specifikace kap. 4, 9, 10; `docs/zadani.md`
 
