@@ -57,7 +57,7 @@ Pojem v UI je to, co uživatel vidí. Interní pojmy patří jen do kódu, speci
 | využitelný zbytek, zbytek | zbytek tyče od minimální délky (výchozí 300 mm) | `Parameters` (minimální délka využitelného zbytku) | remnant |
 | odpad | zbytek kratší než minimální délka a prořezy | — | ztráta, waste |
 | výtěžnost | podíl délky dílů na spotřebované délce tyčí | metrika výsledku | yield, využití |
-| cíl optimalizace | co plán minimalizuje: „Nejméně tyčí“, „Nejmenší odpad“, „Nejnižší cena“ | `Parameters` (cíl optimalizace) | objective |
+| cíl optimalizace | co plán minimalizuje: „Nejnižší cena“, „Nejméně tyčí“, „Nejméně materiálu“ | `Parameters` (cíl optimalizace: `cheapest`, `fewest_bars`, `least_material`) | objective |
 | plán | nářezový plán tyčí | `CalculationResult` | výsledek solveru, řešení |
 | Optimální | štítek plánu s prokázaným optimem | stav řešení v `CalculationResult` | |
 | Nejlepší nalezený | štítek plánu bez prokázaného optima, s rozdílem od dolní meze | stav řešení v `CalculationResult` | heuristický, suboptimální |

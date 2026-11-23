@@ -1,0 +1,1 @@
+"""Neměnné datové objekty jádra."""
