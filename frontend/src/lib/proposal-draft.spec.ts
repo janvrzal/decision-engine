@@ -1,11 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import type { ProposalView } from './api/types';
-import { draftFromProposal, draftToEvent, mergeDraft, nextRowId } from './proposal-draft';
+import { formatLength } from './format';
+import {
+	draftFromProposal,
+	draftToEvent,
+	keepEditsSince,
+	mergeDraft,
+	nextRowId
+} from './proposal-draft';
 
 const cell = <T>(value: T, unconfirmed = false) => ({ value, unconfirmed, error: null });
 
 const PROPOSAL: ProposalView = {
 	is_change: false,
+	origin: 'ai',
 	name: cell('Regál'),
 	material: cell(null),
 	parts: [{ id: 'p1', name: cell('noha'), length_mm: cell(1800), quantity: cell(4) }],
@@ -33,6 +41,7 @@ describe('koncept kontrolní tabulky', () => {
 
 		expect(result).toEqual({
 			ok: true,
+			conversions: [],
 			event: {
 				type: 'ProposalEdited',
 				name: 'Regál',
@@ -89,5 +98,47 @@ describe('koncept kontrolní tabulky', () => {
 
 		const merged = mergeDraft(PROPOSAL, draft);
 		expect(merged.parts.map((p) => p.id)).toEqual(['p1', 'p2']);
+	});
+});
+
+describe('ruční zadání', () => {
+	it('prázdná tabulka dílů dostane jeden prázdný řádek', () => {
+		const draft = mergeDraft({ ...PROPOSAL, origin: 'manual', parts: [] }, null);
+		expect(draft.parts).toEqual([{ id: 'p1', name: '', length_mm: '', quantity: '' }]);
+	});
+
+	it('délka v metrech se převede na mm a převod se oznámí', () => {
+		const draft = draftFromProposal(PROPOSAL);
+		draft.parts[0].length_mm = '1,5 m';
+		const result = draftToEvent(draft);
+		expect(result.ok && result.event.parts[0].length_mm).toBe(1500);
+		expect(result.ok && result.conversions).toEqual([`1,5 m = ${formatLength(1500)}`]);
+	});
+});
+
+describe('keepEditsSince', () => {
+	it('odpověď na starší úpravu nepřepíše buňku rozepsanou mezitím', () => {
+		const sent = draftFromProposal(PROPOSAL);
+		const current = structuredClone(sent);
+		current.parts[0].length_mm = '1,8 m';
+		current.kerf_mm = '4';
+		const next = structuredClone(sent);
+		next.name = 'Regál (ze serveru)';
+
+		const merged = keepEditsSince(next, current, sent);
+
+		expect(merged.parts[0].length_mm).toBe('1,8 m');
+		expect(merged.kerf_mm).toBe('4');
+		expect(merged.name).toBe('Regál (ze serveru)');
+	});
+
+	it('nově přidaný řádek zůstane, mezitím odebraný se nevrátí', () => {
+		const sent = draftFromProposal(PROPOSAL);
+		const current = structuredClone(sent);
+		current.parts = [{ id: 'p2', name: 'příčka', length_mm: '850', quantity: '2' }];
+
+		const merged = keepEditsSince(structuredClone(sent), current, sent);
+
+		expect(merged.parts.map((row) => row.id)).toEqual(['p2']);
 	});
 });

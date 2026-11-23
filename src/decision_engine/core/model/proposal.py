@@ -6,7 +6,7 @@ takže pravidla validace jsou na jednom místě (spec kap. 7 Stav zakázky, R1, 
 """
 
 from decimal import Decimal
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict
 
@@ -53,6 +53,27 @@ class ChangeProposal(_Frozen):
     parameters: ParametersDraft = ParametersDraft()
     unconfirmed: frozenset[FieldPath] = frozenset()
     """Hodnoty z výchozího nastavení nebo odhadnuté modelem (R6); UI je označí."""
+    origin: Literal["ai", "manual"] = "ai"
+    """Kdo návrh založil: extrakce z textu, nebo uživatel ručně (UC-13, „Upravit údaje“)."""
+
+
+def proposal_from_project(project: Project) -> ChangeProposal:
+    """Návrh pro ruční úpravu potvrzené zakázky: stejné hodnoty i id, nic nepotvrzeného."""
+    problem = project.problem
+    return ChangeProposal(
+        base_revision=project.revision,
+        name=project.name,
+        material=problem.material,
+        parts=tuple(
+            PartDraft(id=p.id, name=p.name, length_mm=p.length_mm, quantity=p.quantity)
+            for p in problem.parts
+        ),
+        stock=tuple(
+            StockLengthDraft(id=s.id, length_mm=s.length_mm, price=s.price) for s in problem.stock
+        ),
+        parameters=ParametersDraft(**project.parameters.model_dump()),
+        origin="manual",
+    )
 
 
 def confirm_proposal(

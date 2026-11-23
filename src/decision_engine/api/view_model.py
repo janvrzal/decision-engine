@@ -47,6 +47,8 @@ class ProjectView(_View):
     step: Literal["input", "review", "result"]
     steps: tuple[StepView, ...]
     has_content: bool
+    can_edit: bool
+    """Potvrzenou zakázku lze ručně upravit („Upravit údaje“): žádný návrh, nic neběží."""
 
 
 class PendingOperationView(_View):
@@ -115,6 +117,8 @@ class FieldErrorView(_View):
 class ProposalView(_View):
     is_change: bool
     """Úprava existující zakázky (jinak nová zakázka)."""
+    origin: Literal["ai", "manual"]
+    """Návrh z extrakce AI, nebo ruční zadání či úprava."""
     name: TextCell
     material: TextCell
     parts: tuple[PartRow, ...]

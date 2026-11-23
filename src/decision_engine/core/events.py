@@ -28,6 +28,19 @@ class MessageSent(_Event):
     text: str
 
 
+class ToolSelected(_Event):
+    """Uživatel zvolil nástroj ručně (karta nástroje, „Zadat ručně“; UC-13)."""
+
+    type: Literal["ToolSelected"] = "ToolSelected"
+    capability: Literal["cutting_1d"]
+
+
+class EditRequested(_Event):
+    """Uživatel chce ručně upravit potvrzenou zakázku („Upravit údaje“)."""
+
+    type: Literal["EditRequested"] = "EditRequested"
+
+
 class ProposalReceived(_Event):
     """Extrakce vrátila návrh změny (výsledek `CallExtractor`)."""
 
@@ -82,6 +95,8 @@ class AiFailed(_Event):
 
 type Event = (
     MessageSent
+    | ToolSelected
+    | EditRequested
     | ProposalReceived
     | ProposalEdited
     | ProposalConfirmed

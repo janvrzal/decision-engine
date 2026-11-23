@@ -13,16 +13,24 @@ from decision_engine.api.view_model import ViewModel
 from decision_engine.app.ports import Ports
 from decision_engine.app.session import handle
 from decision_engine.core.events import (
+    EditRequested,
     MessageSent,
     ProposalConfirmed,
     ProposalEdited,
     ProposalRejected,
     SolveRequested,
+    ToolSelected,
 )
 from decision_engine.core.state import AppState
 
 type UserEvent = Annotated[
-    MessageSent | ProposalEdited | ProposalConfirmed | ProposalRejected | SolveRequested,
+    MessageSent
+    | ToolSelected
+    | EditRequested
+    | ProposalEdited
+    | ProposalConfirmed
+    | ProposalRejected
+    | SolveRequested,
     Field(discriminator="type"),
 ]
 """Jen události, které smí poslat uživatel; výsledky efektů (návrh od AI, výsledek

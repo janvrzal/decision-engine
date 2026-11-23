@@ -74,19 +74,38 @@ export class Session {
 		return this.pending !== null;
 	}
 
-	/** Pošle událost a převezme nový view model. */
-	async send(event: UserEvent): Promise<void> {
+	/** Řetěz odeslaných událostí: posílají se po jedné, ve stejném pořadí, v jakém vznikly. */
+	private chain: Promise<void> = Promise.resolve();
+	private queued = 0;
+
+	/**
+	 * Pošle událost a převezme nový view model. Rychle za sebou potvrzené úpravy buněk
+	 * se neztratí ani nepředběhnou: čekají ve frontě a zobrazí se odpověď na poslední z nich.
+	 * Během dlouhé operace (AI, výpočet) se další události neposílají.
+	 */
+	send(event: UserEvent): Promise<void> {
+		if (!this.view || this.pending) return Promise.resolve();
+		// Dlouhou operaci je vidět hned a další události se do jejího konce nepřijímají.
+		const pending = pendingFor(event);
+		if (pending) this.pending = pending;
+		this.queued += 1;
+		this.chain = this.chain.then(() => this.post(event));
+		return this.chain;
+	}
+
+	private async post(event: UserEvent): Promise<void> {
+		this.queued -= 1;
 		const id = this.view?.session.id;
-		if (!id || this.pending) return;
+		if (!id) return;
 		this.lastEvent = event;
-		this.pending = pendingFor(event);
 		try {
 			const { data, response } = await this.client.POST('/api/sessions/{session_id}/events', {
 				params: { path: { session_id: id } },
 				body: event
 			});
 			if (data) {
-				this.view = data;
+				// Čeká-li za touto událostí další, její odpověď je novější; mezistav se nezobrazí.
+				if (this.queued === 0) this.view = data;
 				this.problem = null;
 			} else if (response.status === 404) {
 				storeId(null);
@@ -97,7 +116,7 @@ export class Session {
 		} catch {
 			this.problem = 'unreachable';
 		} finally {
-			this.pending = null;
+			if (pendingFor(event)) this.pending = null;
 		}
 	}
 

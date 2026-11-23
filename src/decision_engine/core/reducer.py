@@ -7,6 +7,7 @@ a nikdy nevyhodí výjimku. Událost, která v daném stavu nedává smysl, stav
 from decision_engine.core.effects import CallExtractor, Effect, RunSolver
 from decision_engine.core.events import (
     AiFailed,
+    EditRequested,
     Event,
     MessageSent,
     ProposalConfirmed,
@@ -15,8 +16,14 @@ from decision_engine.core.events import (
     ProposalRejected,
     SolveFinished,
     SolveRequested,
+    ToolSelected,
 )
-from decision_engine.core.model.proposal import confirm_proposal
+from decision_engine.core.extraction import empty_proposal
+from decision_engine.core.model.proposal import (
+    ChangeProposal,
+    confirm_proposal,
+    proposal_from_project,
+)
 from decision_engine.core.model.proposal_edit import edit_proposal
 from decision_engine.core.result import Err, Ok
 from decision_engine.core.state import AppState, Message, PendingOperation
@@ -29,6 +36,12 @@ def reduce(state: AppState, event: Event) -> Transition:
     match event:
         case MessageSent(text=text):
             return _message_sent(state, text)
+        case ToolSelected():
+            return _manual_proposal(state, empty_proposal(), needs_project=False)
+        case EditRequested():
+            if state.project is None:
+                return _unchanged(state)
+            return _manual_proposal(state, proposal_from_project(state.project), needs_project=True)
         case ProposalReceived():
             return _proposal_received(state, event)
         case ProposalEdited():
@@ -67,6 +80,16 @@ def _message_sent(state: AppState, text: str) -> Transition:
         update={"pending": PendingOperation(kind="extraction")}
     )
     return new_state, (CallExtractor(text=text, base=state.project),)
+
+
+def _manual_proposal(
+    state: AppState, proposal: ChangeProposal, *, needs_project: bool
+) -> Transition:
+    """Ruční návrh: nová zakázka bez AI, nebo úprava potvrzené zakázky (UC-13)."""
+    has_project = state.project is not None
+    if state.pending is not None or state.proposal is not None or has_project != needs_project:
+        return _unchanged(state)
+    return state.model_copy(update={"proposal": proposal, "proposal_errors": ()}), ()
 
 
 def _proposal_received(state: AppState, event: ProposalReceived) -> Transition:

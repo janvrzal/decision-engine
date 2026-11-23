@@ -56,6 +56,7 @@ def build_view_model(state: AppState, *, extraction_available: bool) -> ViewMode
             step=step.value,
             steps=_steps(state, step, stale),
             has_content=bool(state.project or state.proposal or state.messages),
+            can_edit=state.project is not None and state.proposal is None and state.pending is None,
         ),
         pending_operation=(
             PendingOperationView(kind=state.pending.kind, label=PENDING_LABEL[state.pending.kind])

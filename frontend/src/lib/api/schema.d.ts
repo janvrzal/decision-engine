@@ -113,6 +113,17 @@ export interface components {
 			/** Label */
 			label: string;
 		};
+		/**
+		 * EditRequested
+		 * @description Uživatel chce ručně upravit potvrzenou zakázku („Upravit údaje“).
+		 */
+		EditRequested: {
+			/**
+			 * @description discriminator enum property added by openapi-typescript
+			 * @enum {string}
+			 */
+			type: 'EditRequested';
+		};
 		/** FieldErrorView */
 		FieldErrorView: {
 			/** Field */
@@ -295,6 +306,8 @@ export interface components {
 			steps: components['schemas']['StepView'][];
 			/** Has Content */
 			has_content: boolean;
+			/** Can Edit */
+			can_edit: boolean;
 		};
 		/**
 		 * ProposalConfirmed
@@ -342,6 +355,11 @@ export interface components {
 		ProposalView: {
 			/** Is Change */
 			is_change: boolean;
+			/**
+			 * Origin
+			 * @enum {string}
+			 */
+			origin: 'ai' | 'manual';
 			name: components['schemas']['TextCell'];
 			material: components['schemas']['TextCell'];
 			/** Parts */
@@ -439,6 +457,22 @@ export interface components {
 			/** Error */
 			error: string | null;
 		};
+		/**
+		 * ToolSelected
+		 * @description Uživatel zvolil nástroj ručně (karta nástroje, „Zadat ručně“; UC-13).
+		 */
+		ToolSelected: {
+			/**
+			 * @description discriminator enum property added by openapi-typescript
+			 * @enum {string}
+			 */
+			type: 'ToolSelected';
+			/**
+			 * Capability
+			 * @constant
+			 */
+			capability: 'cutting_1d';
+		};
 		/** UnplacedView */
 		UnplacedView: {
 			/** Part Id */
@@ -454,6 +488,8 @@ export interface components {
 		};
 		UserEvent:
 			| components['schemas']['MessageSent']
+			| components['schemas']['ToolSelected']
+			| components['schemas']['EditRequested']
 			| components['schemas']['ProposalEdited']
 			| components['schemas']['ProposalConfirmed']
 			| components['schemas']['ProposalRejected']

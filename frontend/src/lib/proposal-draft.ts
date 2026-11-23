@@ -1,5 +1,12 @@
 import type { Objective, ProposalEdited, ProposalView } from './api/types.js';
-import { integerText, moneyText, parseInteger, parseMoney } from './behaviors/number-input.js';
+import {
+	integerText,
+	moneyText,
+	parseInteger,
+	parseLength,
+	parseMoney
+} from './behaviors/number-input.js';
+import { formatLength } from './format.js';
 
 /**
  * Lokální koncept kontrolní tabulky: texty v buňkách během psaní (skill ui-frontend:
@@ -68,12 +75,64 @@ export function isEmptyRow(row: PartDraftRow | StockDraftRow): boolean {
  */
 export function mergeDraft(proposal: ProposalView, previous: ProposalDraft | null): ProposalDraft {
 	const next = draftFromProposal(proposal);
-	if (!previous) return next;
+	if (!previous) return withStarterRow(next);
 	const keep = <Row extends PartDraftRow | StockDraftRow>(rows: Row[], known: { id: string }[]) =>
 		rows.filter((row) => isEmptyRow(row) && !known.some((k) => k.id === row.id));
 	next.parts.push(...keep(previous.parts, next.parts));
 	next.stock.push(...keep(previous.stock, next.stock));
-	return next;
+	return withStarterRow(next);
+}
+
+/**
+ * Ponechá v novém konceptu `next` (z odpovědi backendu) všechno, co uživatel změnil od
+ * posledního odeslání (`sent`): odpověď na starší úpravu nesmí přepsat rozepsanou buňku.
+ */
+export function keepEditsSince(
+	next: ProposalDraft,
+	current: ProposalDraft,
+	sent: ProposalDraft
+): ProposalDraft {
+	const scalar = <K extends keyof ProposalDraft>(key: K) =>
+		current[key] !== sent[key] ? current[key] : next[key];
+	const rows = <Row extends PartDraftRow | StockDraftRow>(
+		nextRows: Row[],
+		currentRows: Row[],
+		sentRows: Row[]
+	): Row[] => {
+		const byId = (list: Row[], id: string) => list.find((row) => row.id === id);
+		const merged = nextRows.flatMap((row) => {
+			const cur = byId(currentRows, row.id);
+			const old = byId(sentRows, row.id);
+			if (!cur) return old ? [] : [row]; // uživatel řádek mezitím odebral
+			if (!old) return [cur];
+			const result = { ...row };
+			for (const key of Object.keys(row) as (keyof Row)[]) {
+				if (cur[key] !== old[key]) result[key] = cur[key];
+			}
+			return [result];
+		});
+		const added = currentRows.filter((row) => !byId(nextRows, row.id) && !byId(sentRows, row.id));
+		return [...merged, ...added];
+	};
+	return {
+		name: scalar('name'),
+		material: scalar('material'),
+		parts: rows(next.parts, current.parts, sent.parts),
+		stock: rows(next.stock, current.stock, sent.stock),
+		kerf_mm: scalar('kerf_mm'),
+		trim_mm: scalar('trim_mm'),
+		min_remnant_mm: scalar('min_remnant_mm'),
+		time_limit_s: scalar('time_limit_s'),
+		objective: scalar('objective')
+	};
+}
+
+/** Tabulka dílů nikdy není bez řádku: prázdná dostane jeden prázdný řádek k vyplnění (UC-13). */
+function withStarterRow(draft: ProposalDraft): ProposalDraft {
+	if (draft.parts.length === 0) {
+		draft.parts.push({ id: nextRowId('p', draft.parts), name: '', length_mm: '', quantity: '' });
+	}
+	return draft;
 }
 
 /** Nové `id` řádku, které v konceptu ještě není (`p3`, `s2` …). */
@@ -88,7 +147,8 @@ export function nextRowId(prefix: 'p' | 's', existing: { id: string }[]): string
 export type CellKey = string;
 
 export type DraftResult =
-	{ ok: true; event: ProposalEdited } | { ok: false; errors: Record<CellKey, string> };
+	| { ok: true; event: ProposalEdited; conversions: string[] }
+	| { ok: false; errors: Record<CellKey, string> };
 
 /** Koncept → událost `ProposalEdited`, nebo chyby buněk, jejichž text není číslo. */
 export function draftToEvent(draft: ProposalDraft): DraftResult {
@@ -98,6 +158,18 @@ export function draftToEvent(draft: ProposalDraft): DraftResult {
 		if (parsed.ok) return parsed.value;
 		errors[key] = parsed.message;
 		return null;
+	};
+	const conversions: string[] = [];
+	const length = (key: CellKey, text: string): number | null => {
+		const parsed = parseLength(text);
+		if (!parsed.ok) {
+			errors[key] = parsed.message;
+			return null;
+		}
+		if (parsed.converted && parsed.value !== null) {
+			conversions.push(`${text.trim()} = ${formatLength(parsed.value)}`);
+		}
+		return parsed.value;
 	};
 	const money = (key: CellKey, text: string): string | null => {
 		const parsed = parseMoney(text);
@@ -118,7 +190,7 @@ export function draftToEvent(draft: ProposalDraft): DraftResult {
 						{
 							id: row.id,
 							name: text(row.name),
-							length_mm: int(`parts.${i}.length_mm`, row.length_mm),
+							length_mm: length(`parts.${i}.length_mm`, row.length_mm),
 							quantity: int(`parts.${i}.quantity`, row.quantity)
 						}
 					]
@@ -129,7 +201,7 @@ export function draftToEvent(draft: ProposalDraft): DraftResult {
 				: [
 						{
 							id: row.id,
-							length_mm: int(`stock.${i}.length_mm`, row.length_mm),
+							length_mm: length(`stock.${i}.length_mm`, row.length_mm),
 							price: money(`stock.${i}.price`, row.price)
 						}
 					]
@@ -142,5 +214,5 @@ export function draftToEvent(draft: ProposalDraft): DraftResult {
 			objective: draft.objective
 		}
 	};
-	return Object.keys(errors).length > 0 ? { ok: false, errors } : { ok: true, event };
+	return Object.keys(errors).length > 0 ? { ok: false, errors } : { ok: true, event, conversions };
 }

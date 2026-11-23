@@ -20,6 +20,7 @@
 		extractionAvailable,
 		onsend,
 		onretry,
+		onmanual,
 		header
 	}: {
 		messages: MessageView[];
@@ -28,6 +29,7 @@
 		extractionAvailable: boolean;
 		onsend: (text: string) => void;
 		onretry: () => void;
+		onmanual: () => void;
 		header?: Snippet;
 	} = $props();
 
@@ -91,6 +93,7 @@
 			<ChatMessageItem
 				{message}
 				onretry={index === messages.length - 1 ? onretry : undefined}
+				onmanual={index === messages.length - 1 ? onmanual : undefined}
 				retryDisabledReason={pending ? 'Probíhá zpracování.' : undefined}
 			/>
 		{/each}

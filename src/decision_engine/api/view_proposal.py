@@ -70,6 +70,7 @@ def build_proposal(proposal: ChangeProposal, session_id: str) -> ProposalView:
     all_priced = bool(proposal.stock) and all(s.price is not None for s in proposal.stock)
     return ProposalView(
         is_change=proposal.base_revision is not None,
+        origin=proposal.origin,
         name=cells.text(("name",), proposal.name),
         material=cells.text(("problem", "material"), proposal.material),
         parts=tuple(

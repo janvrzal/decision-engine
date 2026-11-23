@@ -224,6 +224,20 @@
 				"required": ["id", "label"],
 				"title": "CapabilityView"
 			},
+			"EditRequested": {
+				"properties": {
+					"type": {
+						"type": "string",
+						"const": "EditRequested",
+						"title": "Type",
+						"default": "EditRequested"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"title": "EditRequested",
+				"description": "Uživatel chce ručně upravit potvrzenou zakázku („Upravit údaje“)."
+			},
 			"FieldErrorView": {
 				"properties": {
 					"field": {
@@ -681,10 +695,14 @@
 					"has_content": {
 						"type": "boolean",
 						"title": "Has Content"
+					},
+					"can_edit": {
+						"type": "boolean",
+						"title": "Can Edit"
 					}
 				},
 				"type": "object",
-				"required": ["name", "revision", "step", "steps", "has_content"],
+				"required": ["name", "revision", "step", "steps", "has_content", "can_edit"],
 				"title": "ProjectView"
 			},
 			"ProposalConfirmed": {
@@ -775,6 +793,11 @@
 						"type": "boolean",
 						"title": "Is Change"
 					},
+					"origin": {
+						"type": "string",
+						"enum": ["ai", "manual"],
+						"title": "Origin"
+					},
 					"name": {
 						"$ref": "#/components/schemas/TextCell"
 					},
@@ -845,6 +868,7 @@
 				"type": "object",
 				"required": [
 					"is_change",
+					"origin",
 					"name",
 					"material",
 					"parts",
@@ -1062,6 +1086,26 @@
 				"required": ["value", "unconfirmed", "error"],
 				"title": "TextCell"
 			},
+			"ToolSelected": {
+				"properties": {
+					"type": {
+						"type": "string",
+						"const": "ToolSelected",
+						"title": "Type",
+						"default": "ToolSelected"
+					},
+					"capability": {
+						"type": "string",
+						"const": "cutting_1d",
+						"title": "Capability"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": ["capability"],
+				"title": "ToolSelected",
+				"description": "Uživatel zvolil nástroj ručně (karta nástroje, „Zadat ručně“; UC-13)."
+			},
 			"UnplacedView": {
 				"properties": {
 					"part_id": {
@@ -1095,6 +1139,12 @@
 						"$ref": "#/components/schemas/MessageSent"
 					},
 					{
+						"$ref": "#/components/schemas/ToolSelected"
+					},
+					{
+						"$ref": "#/components/schemas/EditRequested"
+					},
+					{
 						"$ref": "#/components/schemas/ProposalEdited"
 					},
 					{
@@ -1110,11 +1160,13 @@
 				"discriminator": {
 					"propertyName": "type",
 					"mapping": {
+						"EditRequested": "#/components/schemas/EditRequested",
 						"MessageSent": "#/components/schemas/MessageSent",
 						"ProposalConfirmed": "#/components/schemas/ProposalConfirmed",
 						"ProposalEdited": "#/components/schemas/ProposalEdited",
 						"ProposalRejected": "#/components/schemas/ProposalRejected",
-						"SolveRequested": "#/components/schemas/SolveRequested"
+						"SolveRequested": "#/components/schemas/SolveRequested",
+						"ToolSelected": "#/components/schemas/ToolSelected"
 					}
 				}
 			},

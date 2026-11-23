@@ -46,7 +46,7 @@ Kroky scénářů uvádějí události (→ `Event`) a efekty (⇒ `Effect`) pod
 
 **Alternativy**
 
-- **A1 Přímý výběr nástroje.** Uživatel na úvodní obrazovce nebo v kroku Zadání zvolí kartu „Řezání tyčí“. → `ToolSelected`* Router se přeskočí (krok 3) a extrakce běží rovnou pro `cutting_1d`.
+- **A1 Přímý výběr nástroje.** Uživatel na úvodní obrazovce nebo v kroku Zadání zvolí kartu „Řezání tyčí“. → `ToolSelected` Router i extrakce se přeskočí a pokračuje se ručním zadáním (UC-13).
 - **A2 Chybějící skladová délka.** Extrakce skladovou délku nenašla. Tabulka skladových délek nabídne výchozí 6000 mm jako nepotvrzenou hodnotu a Panel Dialog se zeptá: „Jaké délky tyčí nakupujete?“ Uživatel délku doplní v tabulce nebo odpoví zprávou (→ UC-03).
 - **A3 Cíl „nejnižší cena“ bez kompletních cen.** Výchozí cíl je „nejméně materiálu“ (nepotvrzený). Pokud uživatel zvolí „nejnižší cena“ a některá cena chybí, tlačítko „Potvrdit a vypočítat“ je neaktivní a pole bez ceny jsou zvýrazněná s nabídkou „doplnit ceny“ nebo „zvolit jiný cíl“.
 - **A4 Příliš dlouhý díl.** Díl delší než nejdelší skladová délka (po odečtení ořezu) je v kontrolní tabulce označený varováním. Výpočet lze spustit, ale výsledek má stav „částečný“ a samostatný seznam neumístěných kusů. Nepůsobí jako splněná zakázka.
@@ -72,7 +72,7 @@ Kroky scénářů uvádějí události (→ `Event`) a efekty (⇒ `Effect`) pod
 
 **Hlavní scénář**
 
-1. Uživatel napíše zadání, např. „police z lamina 18 mm: 4× 800×300, 2× 1200×300, deska 2800×2070, dekor po délce“, nebo zvolí kartu „Řezání desek“. → `MessageSent` / `ToolSelected`*
+1. Uživatel napíše zadání, např. „police z lamina 18 mm: 4× 800×300, 2× 1200×300, deska 2800×2070, dekor po délce“, nebo zvolí kartu „Řezání desek“. → `MessageSent` / `ToolSelected`
 2. Router vrátí `cutting_2d`. ⇒ `CallExtractor` → `ProposalReceived`
 3. Krok Kontrola údajů ukáže tabulku dílů (šířka, délka, počet, **lze otočit**), formát desky s cenou za kus, materiál a tloušťku jako informaci a parametry (prořez, okrajový ořez). Prořez a okrajový ořez bez výslovné hodnoty jsou nepotvrzené a Panel Dialog se na ně doptá.
 4. Uživatel doplní hodnoty, u dílů s dekorem zakáže otáčení (u „dekor po délce“ je zakázání předvyplněné jako nepotvrzené) a potvrdí. → `ProposalEdited`*, `ProposalConfirmed` ⇒ `RunSolver`
@@ -164,7 +164,7 @@ Kroky scénářů uvádějí události (→ `Event`) a efekty (⇒ `Effect`) pod
 1. Uživatel napíše „Chci vyrobit skříň.“ → `MessageSent` ⇒ `CallRouter`
 2. Router vrátí `unclear`, nebo nízkou confidence pod nastaveným prahem. → `RoutingDecided`*
 3. Panel Dialog zformuluje jednu konkrétní otázku: „Potřebujete nařezat desky na díly skříně, nebo tyče na rám?“ Pod ní jsou karty dostupných nástrojů jako rychlá volba.
-4. Uživatel odpoví zprávou (→ znovu router s kontextem) nebo vybere kartu (→ `ToolSelected`*). Dál pokračuje UC-01 nebo UC-02.
+4. Uživatel odpoví zprávou (→ znovu router s kontextem) nebo vybere kartu (→ `ToolSelected`). Dál pokračuje UC-01 nebo UC-02.
 
 **Alternativy**
 
@@ -221,7 +221,7 @@ Kroky scénářů uvádějí události (→ `Event`) a efekty (⇒ `Effect`) pod
    - *limit:* „Vyčerpaný limit služby AI, zkuste to za 2 minuty.“ → Ruční zadání / (pokud je dostupný) Použít lokální rozpoznávání
    - *neplatná odpověď:* „AI vrátila nepoužitelná data.“ → Zkusit znovu / Ruční zadání
 3. Text zprávy zůstane v poli, takže ho uživatel nemusí psát znovu.
-4. Uživatel zvolí jednu z akcí: → `RetryRequested`* / `ToolSelected`* (ruční zadání, UC-13) / `RouterSwitched`* (Layo).
+4. Uživatel zvolí jednu z akcí: → `RetryRequested`* / `ToolSelected` (ruční zadání, UC-13) / `RouterSwitched`* (Layo).
 5. Výpočet, kalkulace a export fungují bez AI.
 
 **Alternativy**
@@ -368,7 +368,7 @@ Kroky scénářů uvádějí události (→ `Event`) a efekty (⇒ `Effect`) pod
 
 **Hlavní scénář**
 
-1. Uživatel zvolí kartu nástroje („Řezání tyčí“) nebo v kroku Zadání odkaz „Zadat ručně“. → `ToolSelected`*
+1. Uživatel zvolí kartu nástroje („Řezání tyčí“) nebo v kroku Zadání odkaz „Zadat ručně“. → `ToolSelected`
 2. Pracovní plocha přejde rovnou na krok Kontrola údajů s prázdnými tabulkami. Jde o prázdný návrh (R1). Výchozí parametry jsou předvyplněné jako nepotvrzené a tabulka dílů má jeden prázdný řádek s fokusem.
 3. Uživatel vyplní díly klávesnicí: Tab mezi buňkami, Enter přidá řádek, jednotky lze psát s hodnotou („1,5 m“ se převede na 1500 mm a převod se ukáže). → `ProposalEdited`*
 4. Vyplní skladové délky a ceny, zkontroluje parametry a cíl a zvolí „Potvrdit a vypočítat“. Dál pokračuje UC-01 od kroku 9.
@@ -378,7 +378,9 @@ Kroky scénářů uvádějí události (→ `Event`) a efekty (⇒ `Effect`) pod
 - **A1 Vložení ze schránky.** Vložení více řádků z tabulkového procesoru (název, délka, počet) vytvoří řádky. Nejasné jednotky se zeptají („Jsou délky v mm, nebo cm?“).
 - **A2 Kombinace s dialogem.** I v ručním režimu lze psát do Panelu Dialog („přidej 3 sloupky po 2,2 m“). Výsledek je úprava téhož návrhu (UC-03 A4).
 
-**Chybové větve:** Validace po polích (UC-01 E1).
+- **A3 Úprava potvrzené zakázky.** Ve výsledku nebo v kroku Kontrola údajů uživatel zvolí „Upravit údaje“. → `EditRequested` Vznikne návrh se stejnými hodnotami (nic není nepotvrzené) a dál se pokračuje krokem 3; plán je do potvrzení neaktuální (R3).
+
+**Chybové větve:** Validace po polích (UC-01 E1). Prázdný ruční formulář chyby nehlásí, dokud uživatel nezačne vyplňovat; tlačítko „Potvrdit a vypočítat“ je do té doby neaktivní s důvodem.
 
 ---
 
@@ -461,7 +463,8 @@ Události ze specifikace (kap. 7) jsou bez hvězdičky. Ostatní jsou návrh toh
 |---|---|---|---|
 | `SessionStarted`* | frontend | Nová relace, režim běžný / demo | 09, 11 |
 | `MessageSent` | uživatel | Zpráva v Panelu Dialog nebo zadání v kroku Zadání | 01, 03, 05, 14 |
-| `ToolSelected`* | uživatel | Ruční volba nástroje (karta, „Zadat ručně“) | 01, 05, 13 |
+| `ToolSelected` | uživatel | Ruční volba nástroje (karta, „Zadat ručně“): prázdný návrh v kroku Kontrola údajů | 01, 05, 07, 13 |
+| `EditRequested` | uživatel | „Upravit údaje“: návrh se stejnými hodnotami jako potvrzená zakázka | 01, 07, 13 |
 | `RoutingDecided`* | app (výsledek efektu) | `RoutingDecision`: schopnost a záměr | 01, 03, 05, 14 |
 | `ProposalReceived` | app | Návrh změny od AI | 01, 02, 03 |
 | `ClarificationReceived`* | app | Doplňující otázka místo návrhu | 03, 05 |
