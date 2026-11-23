@@ -6,19 +6,26 @@
 	import StepIndicator from './StepIndicator.svelte';
 	import Button from './ui/Button.svelte';
 	import DropdownMenu, { type MenuItem } from './ui/DropdownMenu.svelte';
-	import { NOT_CONNECTED_REASON, type ProjectView } from '#lib/fixtures/empty-project.js';
+	import type { StepView } from '#lib/api/types.js';
+	import { NOT_AVAILABLE_REASON } from '#lib/examples.js';
 
 	/** Hlavička zakázky: název, ukazatel kroků a akce se zakázkou (mapa obrazovek). */
 	let {
-		project,
-		canSave,
+		name,
+		steps,
+		onselectstep,
 		onopenchat
-	}: { project: ProjectView; canSave: boolean; onopenchat: () => void } = $props();
+	}: {
+		name: string;
+		steps: StepView[];
+		onselectstep: (id: StepView['id']) => void;
+		onopenchat: () => void;
+	} = $props();
 
 	// Na střední šířce jsou méně časté akce v menu „⋯“ (komponenty.md).
 	const moreActions: MenuItem[] = [
-		{ label: 'Načíst zakázku', icon: FolderOpen, disabledReason: NOT_CONNECTED_REASON },
-		{ label: 'Nová zakázka', icon: FilePlus, disabledReason: NOT_CONNECTED_REASON }
+		{ label: 'Načíst zakázku', icon: FolderOpen, disabledReason: NOT_AVAILABLE_REASON },
+		{ label: 'Nová zakázka', icon: FilePlus, disabledReason: NOT_AVAILABLE_REASON }
 	];
 </script>
 
@@ -29,21 +36,21 @@
 			Dialog
 		</Button>
 	</div>
-	<h1 class="min-w-0 truncate text-title text-ink">{project.name}</h1>
+	<h1 class="min-w-0 truncate text-title text-ink">{name}</h1>
 	<div class="flex-1">
-		<StepIndicator steps={project.steps} />
+		<StepIndicator {steps} onselect={onselectstep} />
 	</div>
 	<div class="flex items-center gap-2">
-		<Button variant="secondary" disabledReason={canSave ? undefined : 'Zatím není co uložit.'}>
+		<Button variant="secondary" disabledReason={NOT_AVAILABLE_REASON}>
 			<Save size={16} strokeWidth={1.5} aria-hidden="true" />
 			Uložit
 		</Button>
 		<div class="hidden items-center gap-2 xl:flex">
-			<Button variant="ghost" disabledReason={NOT_CONNECTED_REASON}>
+			<Button variant="ghost" disabledReason={NOT_AVAILABLE_REASON}>
 				<FolderOpen size={16} strokeWidth={1.5} aria-hidden="true" />
 				Načíst
 			</Button>
-			<Button variant="ghost" disabledReason={NOT_CONNECTED_REASON}>
+			<Button variant="ghost" disabledReason={NOT_AVAILABLE_REASON}>
 				<FilePlus size={16} strokeWidth={1.5} aria-hidden="true" />
 				Nová zakázka
 			</Button>

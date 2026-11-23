@@ -2,7 +2,7 @@
 	import Ruler from '@lucide/svelte/icons/ruler';
 	import { mergeProps } from 'bits-ui';
 	import Tooltip from './ui/Tooltip.svelte';
-	import type { Tool } from '#lib/fixtures/empty-project.js';
+	import type { Tool } from '#lib/examples.js';
 
 	/** Karta nástroje jako tlačítko: název a jedna věta (komponenty.md). */
 	let {

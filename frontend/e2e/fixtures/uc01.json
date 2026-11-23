@@ -1,0 +1,33 @@
+{
+	"answers": [
+		{ "match": "výpadek", "error": "connection" },
+		{
+			"match": "příčky ať",
+			"response": {
+				"name": "Regál do dílny",
+				"parts": [
+					{ "ref": "p1", "name": "noha", "length_mm": 1800, "quantity": 4 },
+					{ "ref": "p2", "name": "polička", "length_mm": 1200, "quantity": 8 },
+					{ "name": "příčka", "length_mm": 850, "quantity": 4 }
+				],
+				"stock": [{ "ref": "s1", "length_mm": 6000, "price": "320" }],
+				"kerf_mm": 3,
+				"reply": "Přidal jsem 4 příčky po 850 mm."
+			}
+		},
+		{
+			"match": "regál",
+			"response": {
+				"name": "Regál do dílny",
+				"material": "jekl 40×40×2",
+				"parts": [
+					{ "name": "noha", "length_mm": 1800, "quantity": 4 },
+					{ "name": "polička", "length_mm": 1200, "quantity": 8 }
+				],
+				"stock": [{ "length_mm": 6000, "price": "320", "uncertain": ["length_mm"] }],
+				"kerf_mm": 3,
+				"reply": "Rozpoznal jsem 2 druhy dílů a tyče 6 m po 320 Kč. Zkontrolujte údaje v tabulce."
+			}
+		}
+	]
+}

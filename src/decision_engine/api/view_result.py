@@ -3,6 +3,7 @@
 from collections import Counter
 
 from decision_engine.api.view_model import (
+    BarsByLength,
     BarView,
     MetricsView,
     PieceView,
@@ -44,7 +45,10 @@ def build_result(result: CalculationResult, *, stale: bool, proposal_pending: bo
         svg=render_svg(result),
         metrics=MetricsView(
             bars_used=metrics.bars_used,
-            bars_by_length=tuple(sorted(by_length.items(), key=lambda item: -item[0])),
+            bars_by_length=tuple(
+                BarsByLength(length_mm=length, count=count)
+                for length, count in sorted(by_length.items(), key=lambda item: -item[0])
+            ),
             parts_length_mm=metrics.parts_length_mm,
             consumed_length_mm=metrics.consumed_length_mm,
             remnant_length_mm=metrics.remnant_length_mm,

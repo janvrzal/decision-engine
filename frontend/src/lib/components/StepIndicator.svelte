@@ -1,14 +1,16 @@
 <script lang="ts">
 	import Check from '@lucide/svelte/icons/check';
 	import RefreshCw from '@lucide/svelte/icons/refresh-cw';
-	import type { Step, StepId } from '#lib/fixtures/empty-project.js';
+	import type { StepView } from '#lib/api/types.js';
+
+	type StepId = StepView['id'];
 
 	/**
 	 * Ukazatel kroků Zadání → Kontrola údajů → Plán a cena (komponenty.md).
 	 * Stav nikdy jen barvou: aktivní krok má `aria-current`, hotový fajfku,
 	 * neaktuální ikonu a slovo. Pod 1280 px je název vidět jen u aktivního kroku.
 	 */
-	let { steps, onselect }: { steps: Step[]; onselect?: (id: StepId) => void } = $props();
+	let { steps, onselect }: { steps: StepView[]; onselect?: (id: StepId) => void } = $props();
 
 	const stateText = {
 		pending: 'čeká',
@@ -50,7 +52,7 @@
 	</ol>
 </nav>
 
-{#snippet content(step: Step, index: number)}
+{#snippet content(step: StepView, index: number)}
 	<span
 		class="flex size-6 shrink-0 items-center justify-center rounded-sm text-label font-semibold numeric {step.state ===
 		'active'

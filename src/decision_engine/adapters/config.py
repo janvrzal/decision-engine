@@ -16,6 +16,7 @@ from decision_engine.adapters.file_prompts import FilePromptStore
 from decision_engine.adapters.langfuse_prompts import LangfusePromptStore
 from decision_engine.adapters.langfuse_tracing import LangfuseTracer
 from decision_engine.adapters.llm_openai import OpenAICompatibleLlm
+from decision_engine.adapters.llm_replay import ReplayLlm
 from decision_engine.adapters.noop_tracing import NoopTracer
 from decision_engine.app.ports import ChatMessage, LlmClient, LlmError, Prompt, PromptStore
 from decision_engine.core.result import Err, Result
@@ -56,7 +57,11 @@ def build_ai_adapters(
 
     llm: LlmClient = UnavailableLlm()
     api_key = env.get("LLM_API_KEY", "")
-    if api_key and env.get("LLM_MODEL"):
+    replay = env.get("LLM_REPLAY_FILE", "")
+    if replay:
+        # Přehrávané odpovědi pro end-to-end testy a demo; žádné volání AI.
+        llm = ReplayLlm.from_file(Path(replay))
+    elif api_key and env.get("LLM_MODEL"):
         llm = OpenAICompatibleLlm.create(
             base_url=env.get("LLM_BASE_URL") or DEFAULT_BASE_URL,
             api_key=api_key,

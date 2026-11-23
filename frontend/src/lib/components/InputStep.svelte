@@ -4,22 +4,52 @@
 	import ToolCard from './ToolCard.svelte';
 	import Button from './ui/Button.svelte';
 	import TextArea from './ui/TextArea.svelte';
-	import { NOT_CONNECTED_REASON, type ProjectView } from '#lib/fixtures/empty-project.js';
+	import {
+		EXAMPLE_PROMPTS,
+		NOT_AVAILABLE_REASON,
+		TOOL_DESCRIPTIONS,
+		type Tool
+	} from '#lib/examples.js';
 
-	/** Krok Zadání v prázdném stavu: velké pole s ukázkou zadání a karty nástrojů. */
-	let { project }: { project: ProjectView } = $props();
+	/** Krok Zadání: velké pole s ukázkou zadání; odeslání jde do dialogu jako `MessageSent`. */
+	let {
+		capabilities,
+		extractionAvailable,
+		busy,
+		onsubmit
+	}: {
+		capabilities: { id: string; label: string }[];
+		extractionAvailable: boolean;
+		busy: boolean;
+		onsubmit: (text: string) => void;
+	} = $props();
+
+	let tools = $derived<Tool[]>(
+		capabilities.map((c) => ({ ...c, description: TOOL_DESCRIPTIONS[c.id] ?? '' }))
+	);
 
 	let draft = $state('');
 	let exampleIndex = $state(0);
-	let example = $derived(project.examplePrompts[exampleIndex % project.examplePrompts.length]);
+	let example = $derived(EXAMPLE_PROMPTS[exampleIndex % EXAMPLE_PROMPTS.length]);
 
 	function nextExample() {
 		exampleIndex += 1;
 	}
 
 	let continueReason = $derived(
-		draft.trim() === '' ? 'Nejdřív popište, co potřebujete nařezat.' : NOT_CONNECTED_REASON
+		!extractionAvailable
+			? 'AI není nastavená (LLM_API_KEY a LLM_MODEL v .env).'
+			: busy
+				? 'Zpracovávám předchozí zadání.'
+				: draft.trim() === ''
+					? 'Nejdřív popište, co potřebujete nařezat.'
+					: undefined
 	);
+
+	function submit() {
+		if (continueReason) return;
+		onsubmit(draft.trim());
+	}
 </script>
 
 <section class="flex flex-col gap-8" aria-labelledby="input-step-title">
@@ -45,7 +75,7 @@
 				<Shuffle size={16} strokeWidth={1.5} aria-hidden="true" />
 				Další ukázka
 			</Button>
-			<Button variant="primary" disabledReason={continueReason}>
+			<Button variant="primary" disabledReason={continueReason} onclick={submit}>
 				Pokračovat
 				<ArrowRight size={16} strokeWidth={1.5} aria-hidden="true" />
 			</Button>
@@ -55,11 +85,11 @@
 	<div class="flex flex-col gap-3">
 		<div class="flex flex-wrap items-baseline justify-between gap-2">
 			<h2 class="text-heading text-ink">Nebo začněte nástrojem</h2>
-			<Button variant="ghost" disabledReason={NOT_CONNECTED_REASON}>Zadat ručně</Button>
+			<Button variant="ghost" disabledReason={NOT_AVAILABLE_REASON}>Zadat ručně</Button>
 		</div>
 		<ul class="grid gap-4 md:grid-cols-2">
-			{#each project.tools as tool (tool.id)}
-				<li><ToolCard {tool} disabledReason={NOT_CONNECTED_REASON} /></li>
+			{#each tools as tool (tool.id)}
+				<li><ToolCard {tool} disabledReason={NOT_AVAILABLE_REASON} /></li>
 			{/each}
 		</ul>
 	</div>
