@@ -1,10 +1,10 @@
 # DecisionEngine — specifikace cílové verze pro semestrální práci
 
-**Verze:** 0.4 — service design  
+**Verze:** 0.4.1 — design systém  
 **Datum:** 23. 11. 2026  
 **Stav:** Specifikace budoucího chování; tento dokument nepopisuje dokončenou implementaci.
 
-**Změny oproti 0.3:** Výsledky service designu (`docs/service-design/`). Vstupy zakázky se dělí na vstupy plánu a vstupy kalkulace. Vstupy kalkulace (práce, další náklady, přirážka, DPH) se upravují přímo a plán nezneplatní (kap. 4, UC-04, kap. 7). I ruční úpravy vstupů plánu vznikají jako návrh změny. Definice neaktuálního plánu nově zahrnuje čekající návrh a ceny tyčí se v ní uplatní jen při cíli „nejnižší cena“ (kap. 7). Výsledek 1D uvádí pořadí dílů na tyči. Kapitola 5 má další scénáře UC-09 až UC-16.
+**Změny oproti 0.4:** Vzhled UI určuje design systém v `docs/design-system/` (kap. 4). Komponenty stojí na Bits UI s vlastním vzhledem místo shadcn-svelte (ADR-0010, kap. 7). Štítky stavu plánu mají jednotné znění vztažené k plánu: Optimální, Nejlepší nalezený, Částečný, Bez řešení (kap. 4, 5, 7, 8, 12). Plán 1D uvádí u každého řezu jeho polohu od začátku tyče (kap. 4).
 
 ## 1. Produkt a jeho účel
 
@@ -71,7 +71,7 @@ Tyto funkce se nebudou zobrazovat jako dostupné nástroje. Zadání vyžadujíc
 Kvalita rozhraní je jediný povinný a výslovně hodnocený požadavek zadání (`docs/zadani.md`). Platí tyto zásady:
 
 - **Jeden hlavní tok** (zadání → kontrola → plán a cena → úprava dialogem) je vždy zřejmý: uživatel vidí, ve kterém kroku je a co má udělat dál.
-- **Jednotný vzhled** z design tokenů (barvy, typografie, rozestupy, zaoblení) a jedné sady komponent; žádné jednorázové styly.
+- **Jednotný vzhled** z design tokenů (barvy, typografie, rozestupy, zaoblení) a jedné sady komponent podle design systému v [`docs/design-system/`](design-system/README.md); žádné jednorázové styly.
 - **Každý panel má navržené stavy** prázdný, načítání, chyba, neaktuální a hotovo — ne jen „šťastnou cestu“.
 - **Čísla a jednotky** se zobrazují česky (`1 250 mm`, `1 234,50 Kč`), vždy s jednotkou.
 - **Odezva:** lokální akce do 100 ms; volání AI a výpočet ukazují průběh a lze je zrušit nebo opakovat.
@@ -108,7 +108,8 @@ Uživatel vidí zvolený nástroj běžným názvem, například „Řezání ty
 - Měřítkový plán tyčí (u rozšíření i desek) s popisky a legendou; u 1D s pořadím dílů na tyči, stejně i v PDF.
 - Spotřebované tyče, délka požadovaných dílů, odpad a zbytky; při zapnutém skladu i rozdělení na „ze skladu“ a „k nákupu“.
 - Výtěžnost jako poměr materiálu v hotových dílech ke spotřebovanému vstupnímu materiálu; využitelné zbytky se uvádějí samostatně.
-- Viditelný stav: optimální, nejlepší nalezený, částečný nebo bez proveditelného řešení. U nejlepšího nalezeného řešení se uvádí i vzdálenost od dolní meze, pokud je známá.
+- Viditelný stav plánu se štítkem „Optimální“, „Nejlepší nalezený“, „Částečný“ nebo „Bez řešení“ (žádný proveditelný plán). U nejlepšího nalezeného plánu se uvádí i vzdálenost od dolní meze, pokud je známá.
+- U každého řezu v plánu 1D je jeho poloha měřená od začátku tyče (vizuální jazyk plánu: `docs/design-system/plan-rezani.md`).
 - Kalkulace s uvedenými cenovými předpoklady a chybějícími položkami.
 - Akce „Upravit“, „Přepočítat“, „Uložit zakázku“ a „Stáhnout PDF“.
 
@@ -157,7 +158,7 @@ Výchozí cíl je „nejnižší cena“, pokud jsou zadané ceny všech skladov
 
 **Omezení:** Jedna úloha obsahuje jeden materiál, jednu tloušťku a jeden formát vstupní desky. Rotace je pouze o 90° a lze ji zakázat pro konkrétní díl, například kvůli směru dekoru. Nepravidelné tvary nejsou podporovány.
 
-**Proveditelnost řezání:** Cílová implementace používá gilotinové dělení: každý řez prochází přes celý právě zpracovávaný obdélníkový kus. Výstup zahrnuje pořadí řezů. Pokud vznikne pouze geometrické rozmístění bez ověřeného postupu řezání, musí být označeno jako rozložení dílů, nikoli výrobní nářezový plán. Solver je heuristický; výsledek se označuje jako „nejlepší nalezené“, pokud nejde o triviálně dokazatelný případ (například počet desek rovný dolní mezi z plochy).
+**Proveditelnost řezání:** Cílová implementace používá gilotinové dělení: každý řez prochází přes celý právě zpracovávaný obdélníkový kus. Výstup zahrnuje pořadí řezů. Pokud vznikne pouze geometrické rozmístění bez ověřeného postupu řezání, musí být označeno jako rozložení dílů, nikoli výrobní nářezový plán. Solver je heuristický; plán se označuje jako „nejlepší nalezený“, pokud nejde o triviálně dokazatelný případ (například počet desek rovný dolní mezi z plochy).
 
 **Úspěch:** Díly nepřesahují použitelnou oblast, nepřekrývají se, respektují prořez, povolenou orientaci a deklarovaný postup řezání.
 
@@ -360,7 +361,7 @@ Solver řeší úlohu řezání tyčí (cutting stock) s více skladovými délk
 1. **Okamžitá heuristika.** First Fit Decreasing rozšířený pro více délek: díly se seřadí sestupně; při otevírání nové tyče se vybere skladová délka s nejlepším poměrem podle zvoleného cíle (cena nebo délka na spotřebovaný milimetr) pro díly, které se do ní vejdou. Výsledek slouží jako platné záložní řešení a horní mez.
 2. **Generování vzorů (Gilmore–Gomory column generation).** Vzor řezání je kombinace dílů, která se vejde do jedné tyče dané délky. LP relaxace hlavní úlohy určuje, kolikrát který vzor použít; pomocná úloha batohu (knapsack) pro každou skladovou délku hledá vzor se zápornou redukovanou cenou. Postup končí, když žádný takový vzor neexistuje. Hodnota LP relaxace dává **dolní mez**.
 3. **Celočíselné řešení.** Z nalezených vzorů se vybere celočíselná kombinace pomocí CP-SAT (OR-Tools) s časovým limitem, nastartovaná řešením z heuristiky.
-4. **Štítek.** Pokud se hodnota řešení rovná zaokrouhlené dolní mezi, je řešení prokazatelně optimální. Jinak je „nejlepší nalezené“ a UI uvede rozdíl od dolní meze.
+4. **Štítek.** Pokud se hodnota řešení rovná zaokrouhlené dolní mezi, je řešení prokazatelně optimální. Jinak je plán „nejlepší nalezený“ a UI uvede rozdíl od dolní meze.
 
 Rozšíření o sklad (UC-08) přidá horní meze na počet použitých tyčí dané skladové položky; struktura postupu se nemění. Pomocná úloha batohu i hlavní úloha musí respektovat identitu dílů a jejich počty.
 
@@ -368,7 +369,7 @@ Přímý model „kus × tyč“ v CP-SAT se nepoužívá: kvůli symetrii (zam�
 
 ### 2D solver (rozšíření)
 
-Heuristika s gilotinovým dělením volného prostoru (např. gilotinová varianta MaxRects / shelf s více strategiemi řazení), která přímo vytváří strom řezů. Výsledek se označuje jako „nejlepší nalezené“, pokud počet desek nedosáhne dolní meze danou plochou.
+Heuristika s gilotinovým dělením volného prostoru (např. gilotinová varianta MaxRects / shelf s více strategiemi řazení), která přímo vytváří strom řezů. Plán se označuje jako „nejlepší nalezený“, pokud počet desek nedosáhne dolní meze danou plochou.
 
 ### Stav zakázky
 
@@ -385,7 +386,7 @@ Sklad má vlastní revize a vlastní úložiště. Výsledek výpočtu se sklade
 | Oblast | Volba | ADR |
 |---|---|---|
 | Backend | Python 3.12, FastAPI, Pydantic | 0006, 0007 |
-| Frontend | SvelteKit (Svelte 5, TypeScript strict) jako SPA, Tailwind CSS, shadcn-svelte; typovaný klient generovaný z OpenAPI | 0007 |
+| Frontend | SvelteKit (Svelte 5, TypeScript strict) jako SPA, Tailwind CSS s tokeny design systému, Bits UI s vlastním vzhledem; typovaný klient generovaný z OpenAPI | 0007, 0010 |
 | Optimalizace | Vlastní algoritmy (FFD, generování vzorů, batoh, 2D heuristika, validátory); LP a celočíselný výběr přes OR-Tools | 0003 |
 | Generativní LLM | Groq přes OpenAI-kompatibilní adaptér, vyměnitelný | 0008 |
 | Router | Jev / Layo / LLM / ruční výběr | 0004 |
@@ -417,7 +418,7 @@ Sklad má vlastní revize a vlastní úložiště. Výsledek výpočtu se sklade
 - Cache AI odpovědí zahrnuje relevantní stav zakázky, model, implementaci routeru, název a verzi promptu a verzi extrakčního schématu.
 - Každé volání AI se trasuje do Langfuse (model, verze promptu, vstup, výstup, latence, tokeny, cena, chyba). Nedostupný Langfuse nesmí ovlivnit běh aplikace: prompty se vezmou ze záložní kopie a trasování se vypne.
 - Každý výpočet má časový limit (výchozí 10 s, nastavitelný). Po jeho dosažení se vrátí nejlepší platné řešení, pokud existuje; heuristika zaručuje, že nějaké platné řešení existuje vždy, když je úloha proveditelná bez omezení skladu.
-- Označení „optimální“ se používá pouze při prokázaném optimu pro deklarovaný model a **zvolený cíl** (UC-01) – u 1D na základě dolní meze z LP relaxace. Jinak UI uvádí „nejlepší nalezené řešení“ a rozdíl od dolní meze.
+- Označení „optimální“ se používá pouze při prokázaném optimu pro deklarovaný model a **zvolený cíl** (UC-01) – u 1D na základě dolní meze z LP relaxace. Jinak UI uvádí štítek „Nejlepší nalezený“ a rozdíl od dolní meze.
 - Zachovává se identita dílů i při shodných rozměrech.
 - Schéma zaručuje tvar dat; správnost přepisu uživatelského zadání vyžaduje kontrolu a testování.
 - Vývojářská diagnostika ukazuje čas, použitý model, router a verzi promptu, stav validace, rozhodnutí routeru a u solveru počet vzorů, dolní mez a stav CP-SAT, bez tajných údajů.
@@ -486,7 +487,7 @@ Odevzdaná verze bez rozšíření (M0–M6, M8) pokrývá všechna požadovaná
 
 1. Otevřít aplikaci a zadat zakázku na řezání jeklů přirozeným jazykem.
 2. Ukázat zvolený nástroj, rozpoznané údaje, cíl optimalizace a potvrzení vstupů.
-3. Vypočítat plán (se štítkem optimální / nejlepší nalezené) a doplnit vlastní ceny materiálu a práce.
+3. Vypočítat plán (se štítkem Optimální / Nejlepší nalezený) a doplnit vlastní ceny materiálu a práce.
 4. Napsat „Přidej dvě příčky po 850 mm“, potvrdit změnu a ukázat nový plán i cenu.
 5. Ukázat nejasné zadání a doptání místo nesouvisejícího výpočtu.
 6. Přepnout router (Jev / Layo / LLM) a ukázat srovnání z evaluace.

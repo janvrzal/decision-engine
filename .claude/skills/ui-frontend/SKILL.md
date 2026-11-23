@@ -1,6 +1,6 @@
 ---
 name: ui-frontend
-description: Konvence a postup pro práci na frontendu DecisionEngine (SvelteKit, Svelte 5, TypeScript, Tailwind, shadcn-svelte) — vzhled, stavy panelů, formátování, přístupnost, napojení na API a ověření v běžící aplikaci. Použij při jakékoli změně UI, komponenty, stylu nebo uživatelského toku.
+description: Konvence a postup pro práci na frontendu DecisionEngine (SvelteKit, Svelte 5, TypeScript, Tailwind, Bits UI, design systém v docs/design-system) — vzhled, stavy panelů, formátování, přístupnost, napojení na API a ověření v běžící aplikaci. Použij při jakékoli změně UI, komponenty, stylu nebo uživatelského toku.
 ---
 
 # Práce na frontendu
@@ -17,9 +17,10 @@ UI je jediný povinný a hodnocený požadavek zadání. Cílem je, aby aplikace
 
 - Svelte 5 s runes (`$state`, `$derived`, `$props`), TypeScript strict, žádné `any`.
 - Komponenty v `frontend/src/lib/components/`, stránky v `frontend/src/routes/`. Jedna komponenta = jeden soubor, ideálně do ~200 řádků.
-- Základní prvky z shadcn-svelte (`src/lib/components/ui/`); vlastní komponenty je skládají, nepřepisují.
-- Styly přes Tailwind a design tokeny (`src/app.css`). **Žádné pevné barvy, velikosti ani rozestupy mimo tokeny**, žádné inline `style` kromě dynamických hodnot (např. souřadnice v plánu).
-- Texty česky, krátké, v jazyce dílny („Řezání tyčí“, ne „cutting_1d“). Interní pojmy (revize, router, tokeny) jen ve vývojářském panelu.
+- Vzhled určuje design systém v `docs/design-system/`: principy a odkazy v `README.md`, tokeny v `tokens.css`, komponenty v `komponenty.md`, plán řezání v `plan-rezani.md`, texty a formáty v `obsah.md`. Živé ukázky jsou v Claude Design (odkaz v README); při rozporu platí repozitář.
+- Komponenty jen z inventáře v `komponenty.md`. Obecné prvky obalují Bits UI s vlastním vzhledem (`src/lib/components/ui/`), shadcn-svelte se nepoužívá (ADR-0010). Doménové chování (tabulka dílů, zvýraznění v plánu, posouvání dialogu) je v `src/lib/behaviors/*.svelte.ts` s testy ve Vitestu.
+- Styly přes Tailwind a tokeny z `docs/design-system/tokens.css` importované v `src/app.css`; výchozí paleta Tailwindu je vypnutá. **Žádné pevné barvy, velikosti ani rozestupy mimo tokeny**, žádné inline `style` kromě dynamických hodnot (např. souřadnice v plánu).
+- Texty česky, krátké, v jazyce dílny („Řezání tyčí“, ne „cutting_1d“), podle tónu, vzorů a glosáře v `docs/design-system/obsah.md`. Interní pojmy (revize, router, tokeny) jen ve vývojářském panelu.
 
 ## Stavy — každý panel je má všechny
 
@@ -29,14 +30,16 @@ UI je jediný povinný a hodnocený požadavek zadání. Cílem je, aby aplikace
 | načítání | průběh u konkrétního panelu, ne blokace celé stránky; u AI a solveru možnost zrušit |
 | chyba | co se stalo lidsky, co s tím (opakovat, ručně, upravit pole); konkrétní pole zvýrazněné |
 | neaktuální | výsledek viditelně označený, export plánu nedostupný, výrazná akce „Přepočítat“ |
-| hotovo | výsledek se štítkem stavu řešení (optimální / nejlepší nalezené / částečný) |
+| hotovo | výsledek se štítkem stavu plánu (Optimální / Nejlepší nalezený / Částečný / Bez řešení) |
 
 ## Formát čísel a jednotek
 
-- Délky: `1 250 mm`; u velkých hodnot volitelně i metry v závorce (`12 500 mm (12,5 m)`).
+Úplná pravidla jsou v `docs/design-system/obsah.md`; nejčastější:
+
+- Délky: `1 250 mm`; od 10 m volitelně i metry v podtextu (`12,5 m`).
 - Peníze: `1 234,50 Kč`; chybějící cena je „chybí cena“, nikdy `0 Kč`.
 - Procenta: `87,4 %` (s mezerou).
-- Hodnoty nepotvrzené nebo doplněné modelem mají viditelné označení a vysvětlení v tooltipu.
+- Hodnoty nepotvrzené nebo doplněné modelem mají viditelné označení (přerušovaný okraj `proposal` a ikona „?“) a původ v tooltipu.
 
 ## Přístupnost a rozložení
 
@@ -56,7 +59,7 @@ UI je jediný povinný a hodnocený požadavek zadání. Cílem je, aby aplikace
 ## Checklist před PR
 
 - [ ] Všechny stavy panelu existují a jsou vidět v běžící aplikaci.
-- [ ] Jen tokeny a komponenty ze sady, žádné jednorázové styly.
+- [ ] Jen tokeny a komponenty z design systému, žádné jednorázové styly; nová komponenta nebo varianta je doplněná v `docs/design-system/komponenty.md`.
 - [ ] Čísla a jednotky ve formátu `cs-CZ`, žádné interní pojmy v hlavním UI.
 - [ ] Klávesnice a fokus fungují; axe bez závažných nálezů.
 - [ ] Rozložení ověřené na 1440 px a 768 px; screenshoty v PR.

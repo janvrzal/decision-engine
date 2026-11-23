@@ -1,0 +1,153 @@
+/*
+ * DecisionEngine — design tokeny pro Tailwind CSS v4.
+ *
+ * Zdroj pravdy: docs/design-system/foundations.md (významy a pravidla použití).
+ * Frontend tento soubor importuje v src/app.css:  @import "tailwindcss"; @import "<cesta>/tokens.css";
+ *
+ * Výchozí paleta, stupnice písma, zaoblení a stíny Tailwindu se vypínají (`initial`),
+ * takže v kódu jdou použít jen tokeny níže (bg-surface, text-ink-muted, rounded-md …).
+ * Kontrast všech dvojic text/podklad je ověřený výpočtem (WCAG 2, AA) ve foundations.md.
+ */
+
+@theme {
+	/* ---------- Barvy ---------- */
+	--color-*: initial;
+
+	/* Plochy */
+	--color-page: #f6f5f2;
+	--color-surface: #ffffff;
+	--color-surface-sunken: #efede8;
+	--color-border: #ddd9d0;
+	--color-border-strong: #8c8679;
+
+	/* Text */
+	--color-ink: #1d1b18;
+	--color-ink-muted: #5c574e;
+	--color-ink-subtle: #6f695f;
+
+	/* Akcent */
+	--color-primary: #f2b220;
+	--color-primary-hover: #e3a30f;
+	--color-on-primary: #1d1b18;
+	--color-accent-text: #a14f06;
+	--color-focus-ring: #1d1b18;
+	--color-focus-halo: rgba(242, 178, 32, 0.55);
+
+	/* Stavy */
+	--color-success: #0b6b5f;
+	--color-success-bg: #e3f2ef;
+	--color-info: #1f5a8f;
+	--color-info-bg: #e6eff8;
+	--color-warning: #8a4b00;
+	--color-warning-bg: #fbf0dc;
+	--color-danger: #b42318;
+	--color-danger-bg: #fbeae8;
+	--color-stale: #5c574e;
+	--color-stale-bg: #eceae5;
+	--color-proposal: #3f4fb8;
+	--color-proposal-bg: #eef0fb;
+
+	/* Plán řezání (stejné hodnoty používá backend v render_svg, viz plan-rezani.md) */
+	--color-plan-part-1: #9fc4e8;
+	--color-plan-part-2: #a3d6c4;
+	--color-plan-part-3: #c6dc9e;
+	--color-plan-part-4: #d7bce4;
+	--color-plan-part-5: #f0bba6;
+	--color-plan-part-6: #b9c4da;
+	--color-plan-part-7: #e7c6d2;
+	--color-plan-part-8: #bfe0e8;
+	--color-plan-bar: #efede8;
+	--color-plan-remnant: #dcefe1;
+	--color-plan-waste: #f1efea;
+	--color-plan-waste-hatch: #7d776c;
+	--color-plan-kerf: #1d1b18;
+	--color-plan-cut: #a14f06;
+	--color-plan-highlight: #a14f06;
+
+	/* ---------- Typografie ---------- */
+	--font-*: initial;
+	--font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+	--font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+	--text-*: initial;
+	--text-display: 28px;
+	--text-display--line-height: 36px;
+	--text-display--letter-spacing: -0.01em;
+	--text-display--font-weight: 600;
+	--text-title: 20px;
+	--text-title--line-height: 28px;
+	--text-title--font-weight: 600;
+	--text-heading: 16px;
+	--text-heading--line-height: 24px;
+	--text-heading--font-weight: 600;
+	--text-body: 14px;
+	--text-body--line-height: 20px;
+	--text-small: 13px;
+	--text-small--line-height: 18px;
+	--text-label: 12px;
+	--text-label--line-height: 16px;
+	--text-label--letter-spacing: 0.04em;
+	--text-label--font-weight: 500;
+	--text-metric: 24px;
+	--text-metric--line-height: 32px;
+	--text-metric--font-weight: 600;
+	--text-code: 13px;
+	--text-code--line-height: 18px;
+
+	/* ---------- Rozestupy ----------
+	 * Mřížka 4 px = výchozí --spacing Tailwindu. Používají se jen kroky
+	 * 1, 2, 3, 4, 6, 8, 12 (p-4, gap-6 …); ostatní násobky ne.
+	 */
+	--spacing: 4px;
+
+	/* ---------- Zaoblení ---------- */
+	--radius-*: initial;
+	--radius-sm: 4px;
+	--radius-md: 6px;
+	--radius-lg: 8px;
+
+	/* ---------- Stíny ---------- */
+	--shadow-*: initial;
+	--shadow-raised: 0 1px 2px rgba(29, 27, 24, 0.06);
+	--shadow-overlay: 0 8px 24px rgba(29, 27, 24, 0.14), 0 1px 3px rgba(29, 27, 24, 0.08);
+
+	/* ---------- Pohyb ---------- */
+	--ease-*: initial;
+	--ease-standard: cubic-bezier(0.2, 0, 0, 1);
+}
+
+:root {
+	--duration-fast: 120ms; /* hover, fokus */
+	--duration-base: 200ms; /* otevření panelu, menu, zprávy */
+	color-scheme: light;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	:root {
+		--duration-fast: 0ms;
+		--duration-base: 0ms;
+	}
+}
+
+@layer base {
+	html {
+		font-family: var(--font-sans);
+		font-size: var(--text-body);
+		line-height: var(--text-body--line-height);
+		color: var(--color-ink);
+		background: var(--color-page);
+	}
+
+	/* Fokus: grafitová linka 1 px a jantarová záře 3 px. */
+	:focus-visible {
+		outline: none;
+		box-shadow:
+			0 0 0 1px var(--color-focus-ring),
+			0 0 0 4px var(--color-focus-halo);
+	}
+}
+
+/* Čísla v tabulkách, metrikách a textu: tabulární číslice. */
+@utility numeric {
+	font-variant-numeric: tabular-nums;
+}
