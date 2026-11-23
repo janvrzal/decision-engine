@@ -1,0 +1,35 @@
+{
+  "id": "extraction-dev-06",
+  "input": "Trubka 20×20, díly: 1 m – 6 ks, 0,5 m – 10 ks, 25 cm – 16 ks. Řezat z 3m tyčí po 199 Kč, prořez 2 mm, šetři hlavně počet tyčí.",
+  "expected": {
+    "parts": [
+      {
+        "length_mm": 1000,
+        "quantity": 6
+      },
+      {
+        "length_mm": 500,
+        "quantity": 10
+      },
+      {
+        "length_mm": 250,
+        "quantity": 16
+      }
+    ],
+    "stock": [
+      {
+        "length_mm": 3000,
+        "price": "199"
+      }
+    ],
+    "kerf_mm": 2,
+    "trim_mm": null,
+    "min_remnant_mm": null,
+    "objective": "fewest_bars"
+  },
+  "tags": [
+    "smisene_jednotky",
+    "cil"
+  ],
+  "author_note": "Výslovný cíl nejméně tyčí."
+}

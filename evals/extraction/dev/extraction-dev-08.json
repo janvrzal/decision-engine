@@ -1,0 +1,32 @@
+{
+  "id": "extraction-dev-08",
+  "input": "Pět kusů 1 850 mm a dva kusy 920 mm, tyče 6 m po 1 250 Kč, prořez 4 mm, zarovnání konce 10 mm, zbytky kratší než 30 cm neber jako použitelné.",
+  "expected": {
+    "parts": [
+      {
+        "length_mm": 1850,
+        "quantity": 5
+      },
+      {
+        "length_mm": 920,
+        "quantity": 2
+      }
+    ],
+    "stock": [
+      {
+        "length_mm": 6000,
+        "price": "1250"
+      }
+    ],
+    "kerf_mm": 4,
+    "trim_mm": 10,
+    "min_remnant_mm": 300,
+    "objective": null
+  },
+  "tags": [
+    "oddelovac_tisicu",
+    "parametry",
+    "slovni_cisla"
+  ],
+  "author_note": "Ořez a minimální zbytek výslovně."
+}

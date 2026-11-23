@@ -1,0 +1,119 @@
+{
+  "run_id": "20261123-2057-20f6",
+  "date": "2026-11-23T20:57:36+00:00",
+  "set": "dev",
+  "response_format": "json_object",
+  "schema_version": "d06dc2c69ac3",
+  "cases": [
+    {
+      "id": "extraction-dev-10",
+      "input": "Na rám stolu: 2× 1600, 2× 800, 4× 720 (vše v mm). Profil 40×40, tyč 6 m.",
+      "expected": {
+        "parts": [
+          {
+            "length_mm": 1600,
+            "quantity": 2
+          },
+          {
+            "length_mm": 800,
+            "quantity": 2
+          },
+          {
+            "length_mm": 720,
+            "quantity": 4
+          }
+        ],
+        "stock": [
+          {
+            "length_mm": 6000,
+            "price": null
+          }
+        ],
+        "kerf_mm": null,
+        "trim_mm": null,
+        "min_remnant_mm": null,
+        "objective": null
+      },
+      "tags": [
+        "jednotky_mm",
+        "zkracene",
+        "chybi_cena"
+      ],
+      "author_note": "Jednotka uvedená jednou pro všechny díly."
+    },
+    {
+      "id": "extraction-dev-12",
+      "input": "Potřebuju 7 kusů po 2 metrech a 7 kusů po 2,05 m.",
+      "expected": {
+        "parts": [
+          {
+            "length_mm": 2000,
+            "quantity": 7
+          },
+          {
+            "length_mm": 2050,
+            "quantity": 7
+          }
+        ],
+        "stock": [],
+        "kerf_mm": null,
+        "trim_mm": null,
+        "min_remnant_mm": null,
+        "objective": null
+      },
+      "tags": [
+        "jednotky_m",
+        "desetinna_carka",
+        "chybi_sklad",
+        "chybi_prorez"
+      ],
+      "author_note": "Blízké délky se nesmí slít."
+    }
+  ],
+  "results": {
+    "openai/gpt-oss-20b": [
+      {
+        "case_id": "extraction-dev-10",
+        "model": "openai/gpt-oss-20b",
+        "latency_s": 1.214640541933477,
+        "calls": [
+          {
+            "attempt": 1,
+            "latency_s": 1.0645660408772528,
+            "ok": true,
+            "schema_valid": true,
+            "text": "{\"name\":null,\"material\":\"Profil 40×40\",\"parts\":[{\"ref\":null,\"name\":null,\"length_mm\":1600,\"quantity\":2,\"uncertain\":[]},{\"ref\":null,\"name\":null,\"length_mm\":800,\"quantity\":2,\"uncertain\":[]},{\"ref\":null,\"name\":null,\"length_mm\":720,\"quantity\":4,\"uncertain\":[]}],\"stock\":[{\"ref\":null,\"length_mm\":6000,\"price\":null,\"uncertain\":[]}],\"kerf_mm\":null,\"trim_mm\":null,\"min_remnant_mm\":null,\"objective\":null,\"reply\":\"Rozpoznal jsem rám stolu s 2 kusy 1600 mm, 2 kusy 800 mm a 4 kusy 720 mm z profilu 40×40. Chybí informace o ceně a optimalizačním cíli.\"}",
+            "error": null,
+            "prompt_tokens": 1549,
+            "completion_tokens": 840,
+            "reasoning_tokens": 645,
+            "model_time_s": 0.930167837
+          }
+        ],
+        "prompt_version": 1,
+        "prompt_source": "langfuse"
+      },
+      {
+        "case_id": "extraction-dev-12",
+        "model": "openai/gpt-oss-20b",
+        "latency_s": 0.42706666700541973,
+        "calls": [
+          {
+            "attempt": 1,
+            "latency_s": 0.42533804196864367,
+            "ok": true,
+            "schema_valid": true,
+            "text": "{\"name\":null,\"material\":null,\"parts\":[{\"ref\":null,\"name\":null,\"length_mm\":2000,\"quantity\":7,\"uncertain\":[]},{\"ref\":null,\"name\":null,\"length_mm\":2050,\"quantity\":7,\"uncertain\":[]}],\"stock\":[],\"kerf_mm\":null,\"trim_mm\":null,\"min_remnant_mm\":null,\"objective\":null,\"reply\":\"Rozpoznal jsem požadavek na 7 kusů po 2 metrech a 7 kusů po 2,05 m. Chybí materiál a další parametry.\"}",
+            "error": null,
+            "prompt_tokens": 1532,
+            "completion_tokens": 327,
+            "reasoning_tokens": 190,
+            "model_time_s": 0.350679417
+          }
+        ],
+        "prompt_version": 1,
+        "prompt_source": "langfuse"
+      }
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "id": "extraction-dev-01",
+  "input": "Potřebuju 10 kusů jeklu 40×40×2 po 2 m a 5 kusů po 1,5 m. Řežu z tyčí 6 m, jedna stojí 420 Kč. Prořez 3 mm.",
+  "expected": {
+    "parts": [
+      {
+        "length_mm": 2000,
+        "quantity": 10
+      },
+      {
+        "length_mm": 1500,
+        "quantity": 5
+      }
+    ],
+    "stock": [
+      {
+        "length_mm": 6000,
+        "price": "420"
+      }
+    ],
+    "kerf_mm": 3,
+    "trim_mm": null,
+    "min_remnant_mm": null,
+    "objective": null
+  },
+  "tags": [
+    "jednotky_m",
+    "desetinna_carka",
+    "uplne"
+  ],
+  "author_note": "Základní úplné zadání."
+}

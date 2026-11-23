@@ -1,0 +1,32 @@
+{
+  "id": "extraction-dev-02",
+  "input": "Na regál potřebuju 8× 150 cm a 12× 45 cm, trubka 25×25. Tyče mám šestimetrové, kotouč bere 2 mm.",
+  "expected": {
+    "parts": [
+      {
+        "length_mm": 1500,
+        "quantity": 8
+      },
+      {
+        "length_mm": 450,
+        "quantity": 12
+      }
+    ],
+    "stock": [
+      {
+        "length_mm": 6000,
+        "price": null
+      }
+    ],
+    "kerf_mm": 2,
+    "trim_mm": null,
+    "min_remnant_mm": null,
+    "objective": null
+  },
+  "tags": [
+    "jednotky_cm",
+    "neprima_formulace",
+    "chybi_cena"
+  ],
+  "author_note": "Šestimetrové = 6000 mm (vyvozené); prořez popsaný kotoučem."
+}
