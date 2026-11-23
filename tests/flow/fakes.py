@@ -7,7 +7,8 @@ from pathlib import Path
 
 from decision_engine.adapters.file_prompts import FilePromptStore
 from decision_engine.app.ports import ChatMessage, LlmError, Ports, Prompt
-from decision_engine.core.model.calculation import CalculationResult, SolutionStatus
+from decision_engine.app.solving import RegistrySolver
+from decision_engine.core.model.calculation import CalculationResult
 from decision_engine.core.model.cutting_1d import Project
 from decision_engine.core.result import Err, Ok, Result
 
@@ -29,13 +30,16 @@ class FakeLlm:
         return Err(answer) if isinstance(answer, LlmError) else Ok(answer)
 
 
-class FakeSolver:
+class RecordingSolver:
+    """Skutečný solver z registru, který si zapamatuje, co počítal."""
+
     def __init__(self) -> None:
         self.solved: list[Project] = []
+        self._solver = RegistrySolver()
 
     def solve(self, project: Project) -> CalculationResult:
         self.solved.append(project)
-        return CalculationResult(status=SolutionStatus.OPTIMAL, source=project)
+        return self._solver.solve(project)
 
 
 @dataclass
@@ -70,8 +74,8 @@ class RecordingTracer:
         yield recorded
 
 
-def fake_ports(llm: FakeLlm) -> tuple[Ports, RecordingTracer, FakeSolver]:
+def fake_ports(llm: FakeLlm) -> tuple[Ports, RecordingTracer, RecordingSolver]:
     tracer = RecordingTracer()
-    solver = FakeSolver()
+    solver = RecordingSolver()
     ports = Ports(llm=llm, prompts=FilePromptStore(PROMPTS_DIR), tracer=tracer, solver=solver)
     return ports, tracer, solver

@@ -14,7 +14,6 @@ from decision_engine.core.events import (
     SolveFinished,
     SolveRequested,
 )
-from decision_engine.core.model.calculation import CalculationResult, SolutionStatus
 from decision_engine.core.model.cutting_1d import Objective
 from decision_engine.core.model.proposal import (
     ChangeProposal,
@@ -23,6 +22,7 @@ from decision_engine.core.model.proposal import (
     StockLengthDraft,
 )
 from decision_engine.core.reducer import reduce
+from decision_engine.core.solvers.cutting_1d.ffd import solve_ffd
 from decision_engine.core.state import initial_state
 
 
@@ -69,9 +69,7 @@ def test_libovolna_posloupnost_nevyhodi_vyjimku_a_zakazku_meni_jen_potvrzeni(
         if step is _SOLVE_RESULT:
             if last_solver is None:
                 continue
-            event = SolveFinished(
-                result=CalculationResult(status=SolutionStatus.OPTIMAL, source=last_solver.project)
-            )
+            event = SolveFinished(result=solve_ffd(last_solver.project))
         else:
             assert isinstance(
                 step,

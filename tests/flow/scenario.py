@@ -5,7 +5,6 @@ from decimal import Decimal
 
 from decision_engine.core.effects import Effect, RunSolver
 from decision_engine.core.events import Event, SolveFinished
-from decision_engine.core.model.calculation import CalculationResult, SolutionStatus
 from decision_engine.core.model.cutting_1d import Objective
 from decision_engine.core.model.proposal import (
     ChangeProposal,
@@ -14,6 +13,7 @@ from decision_engine.core.model.proposal import (
     StockLengthDraft,
 )
 from decision_engine.core.reducer import reduce
+from decision_engine.core.solvers.cutting_1d.ffd import solve_ffd
 from decision_engine.core.state import AppState, initial_state
 
 
@@ -54,8 +54,6 @@ def solved(effects: tuple[Effect, ...]) -> SolveFinished:
     """Výsledek solveru pro jediný `RunSolver` v efektech."""
     match effects:
         case (RunSolver(project=project),):
-            return SolveFinished(
-                result=CalculationResult(status=SolutionStatus.OPTIMAL, source=project)
-            )
+            return SolveFinished(result=solve_ffd(project))
         case _:
             raise AssertionError(f"čekal jsem jeden RunSolver, přišlo {effects}")

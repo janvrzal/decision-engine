@@ -23,6 +23,8 @@ DEFAULT_MIN_REMNANT_MM = 300
 """Výchozí minimální délka využitelného zbytku (spec UC-01, plan-rezani.md)."""
 DEFAULT_TRIM_MM = 0
 """Zarovnávací ořez je volitelný; bez zmínky v zadání se nepoužije."""
+DEFAULT_PROJECT_NAME = "Nová zakázka"
+"""Název, když ho extrakce nenajde (mapa obrazovek, Hlavička zakázky)."""
 
 
 class _Output(BaseModel):
@@ -102,7 +104,7 @@ def proposal_from_extraction(output: ExtractionOutput, base: Project | None) -> 
 
     return ChangeProposal(
         base_revision=base.revision if base else None,
-        name=output.name or (base.name if base else None),
+        name=output.name or (base.name if base else DEFAULT_PROJECT_NAME),
         material=output.material,
         parts=parts,
         stock=stock,
