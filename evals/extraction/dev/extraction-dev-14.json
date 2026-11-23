@@ -1,0 +1,28 @@
+{
+  "id": "extraction-dev-14",
+  "input": "Mám doma 2 tyče 6 m a potřebuju z nich 11 kusů po 1 m.",
+  "expected": {
+    "parts": [
+      {
+        "length_mm": 1000,
+        "quantity": 11
+      }
+    ],
+    "stock": [
+      {
+        "length_mm": 6000,
+        "price": null
+      }
+    ],
+    "kerf_mm": null,
+    "trim_mm": null,
+    "min_remnant_mm": null,
+    "objective": null
+  },
+  "tags": [
+    "jednotky_m",
+    "pocet_tyci_v_textu",
+    "chybi_cena"
+  ],
+  "author_note": "Počet tyčí na skladě schéma nemá; 2 není díl."
+}

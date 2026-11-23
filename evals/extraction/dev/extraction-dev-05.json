@@ -1,0 +1,27 @@
+{
+  "id": "extraction-dev-05",
+  "input": "Kolik tyčí koupit? Potřebuju 20 kusů po 0,65 m. Tyč 6 m stojí 85 Kč za metr. Prořez 3 mm.",
+  "expected": {
+    "parts": [
+      {
+        "length_mm": 650,
+        "quantity": 20
+      }
+    ],
+    "stock": [
+      {
+        "length_mm": 6000,
+        "price": null
+      }
+    ],
+    "kerf_mm": 3,
+    "trim_mm": null,
+    "min_remnant_mm": null,
+    "objective": null
+  },
+  "tags": [
+    "jednotky_m",
+    "cena_za_metr"
+  ],
+  "author_note": "Cena za metr se nepřepočítává, price = null."
+}

@@ -1,0 +1,35 @@
+{
+  "id": "extraction-dev-11",
+  "input": "Prosím 30 příček po 600 mm a 4 nohy 900 mm. Mám 6m tyče za 450 Kč a 5m za 390 Kč. Prořez pily je 3 mm.",
+  "expected": {
+    "parts": [
+      {
+        "length_mm": 600,
+        "quantity": 30
+      },
+      {
+        "length_mm": 900,
+        "quantity": 4
+      }
+    ],
+    "stock": [
+      {
+        "length_mm": 6000,
+        "price": "450"
+      },
+      {
+        "length_mm": 5000,
+        "price": "390"
+      }
+    ],
+    "kerf_mm": 3,
+    "trim_mm": null,
+    "min_remnant_mm": null,
+    "objective": null
+  },
+  "tags": [
+    "jednotky_mm",
+    "vice_skladovych"
+  ],
+  "author_note": "Dvě skladové délky s cenami."
+}

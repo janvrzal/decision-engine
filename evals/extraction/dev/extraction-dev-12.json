@@ -1,0 +1,28 @@
+{
+  "id": "extraction-dev-12",
+  "input": "Potřebuju 7 kusů po 2 metrech a 7 kusů po 2,05 m.",
+  "expected": {
+    "parts": [
+      {
+        "length_mm": 2000,
+        "quantity": 7
+      },
+      {
+        "length_mm": 2050,
+        "quantity": 7
+      }
+    ],
+    "stock": [],
+    "kerf_mm": null,
+    "trim_mm": null,
+    "min_remnant_mm": null,
+    "objective": null
+  },
+  "tags": [
+    "jednotky_m",
+    "desetinna_carka",
+    "chybi_sklad",
+    "chybi_prorez"
+  ],
+  "author_note": "Blízké délky se nesmí slít."
+}

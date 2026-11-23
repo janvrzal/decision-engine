@@ -1,0 +1,28 @@
+{
+  "id": "extraction-dev-04",
+  "input": "Udělej mi zábradlí: dvanáct sloupků po metru dvacet a tři madla po 2,4 metru. Jekl 30×30.",
+  "expected": {
+    "parts": [
+      {
+        "length_mm": 1200,
+        "quantity": 12
+      },
+      {
+        "length_mm": 2400,
+        "quantity": 3
+      }
+    ],
+    "stock": [],
+    "kerf_mm": null,
+    "trim_mm": null,
+    "min_remnant_mm": null,
+    "objective": null
+  },
+  "tags": [
+    "slovni_cisla",
+    "hovorove",
+    "chybi_sklad",
+    "chybi_prorez"
+  ],
+  "author_note": "„metr dvacet“ = 1200 mm; sklad neuveden."
+}

@@ -1,0 +1,29 @@
+{
+  "id": "extraction-dev-09",
+  "input": "Hliníkový profil: 14× 37,5 cm. Mám tyče 4 m za 389,50 Kč. Chci co nejmíň odpadu.",
+  "expected": {
+    "parts": [
+      {
+        "length_mm": 375,
+        "quantity": 14
+      }
+    ],
+    "stock": [
+      {
+        "length_mm": 4000,
+        "price": "389.50"
+      }
+    ],
+    "kerf_mm": null,
+    "trim_mm": null,
+    "min_remnant_mm": null,
+    "objective": "least_material"
+  },
+  "tags": [
+    "jednotky_cm",
+    "desetinna_carka",
+    "desetinna_cena",
+    "cil"
+  ],
+  "author_note": "Desetinné cm a cena s haléři."
+}
