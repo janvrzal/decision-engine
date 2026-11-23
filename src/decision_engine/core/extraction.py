@@ -159,3 +159,9 @@ def _ids(refs: list[str | None], existing: set[str], prefix: str) -> list[str]:
         taken.add(new_id)
         result.append(new_id)
     return result
+
+
+def empty_proposal() -> ChangeProposal:
+    """Prázdný návrh pro ruční zadání (UC-13): stejné výchozí hodnoty jako cesta přes AI."""
+    proposal = proposal_from_extraction(ExtractionOutput.model_validate({}), None)
+    return proposal.model_copy(update={"origin": "manual"})

@@ -21,6 +21,8 @@ export type ProposalEdited = Schemas['ProposalEdited'];
 
 export type UserEvent =
 	| Schemas['MessageSent']
+	| Schemas['ToolSelected']
+	| Schemas['EditRequested']
 	| Schemas['ProposalEdited']
 	| Schemas['ProposalConfirmed']
 	| Schemas['ProposalRejected']

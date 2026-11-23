@@ -11,6 +11,7 @@
 	} from '#lib/api/types.js';
 	import {
 		draftToEvent,
+		keepEditsSince,
 		mergeDraft,
 		nextRowId,
 		type CellKey,
@@ -38,33 +39,54 @@
 	let draft = $state<ProposalDraft>(untrack(() => mergeDraft(proposal, null)));
 	let localErrors = $state<Record<CellKey, string>>({});
 	let lastSent = '';
+	/** Koncept v okamžiku posledního odeslání; co se od té doby změnilo, odpověď nepřepíše. */
+	let sentDraft: ProposalDraft | null = null;
+	let section = $state<HTMLElement | null>(null);
+	let isNewManual = $derived(proposal.origin === 'manual' && !proposal.is_change);
+	// Prázdný ruční formulář nekřičí chybami hned; souhrn se ukáže po první úpravě.
+	let touched = $state(false);
+	/** Oznámení převodu jednotek („1,5 m = 1 500 mm“), viditelné i pro čtečky. */
+	let conversion = $state('');
+	let showErrors = $derived(proposal.errors.length > 0 && (!isNewManual || touched));
+
+	// Ruční zadání začíná fokusem v prvním řádku dílů (UC-13 krok 2).
+	$effect(() => {
+		if (!section || !untrack(() => isNewManual)) return;
+		section.querySelector<HTMLInputElement>('table input')?.focus();
+	});
 
 	// Nový návrh od backendu (odpověď na úpravu nebo zprávu) přepíše koncept.
 	$effect(() => {
 		const incoming = proposal;
 		untrack(() => {
-			draft = mergeDraft(incoming, $state.snapshot(draft));
+			const current = $state.snapshot(draft);
+			const next = mergeDraft(incoming, current);
+			draft = sentDraft ? keepEditsSince(next, current, sentDraft) : next;
 			localErrors = {};
 		});
 	});
 
 	function commit() {
-		const result = draftToEvent($state.snapshot(draft));
+		touched = true;
+		const snapshot = $state.snapshot(draft);
+		const result = draftToEvent(snapshot);
 		if (!result.ok) {
 			localErrors = result.errors;
 			return;
 		}
 		localErrors = {};
+		if (result.conversions.length > 0) conversion = `Převedeno: ${result.conversions.join(', ')}.`;
 		const serialized = JSON.stringify(result.event);
 		if (serialized === lastSent || busy) return;
 		lastSent = serialized;
+		sentDraft = snapshot;
 		onsend(result.event);
 	}
 
 	function cellState(cell: IntCell | MoneyCell | TextCell | undefined, key: CellKey): CellState {
 		return {
 			unconfirmed: cell?.unconfirmed ?? false,
-			error: localErrors[key] ?? cell?.error ?? null
+			error: localErrors[key] ?? (isNewManual && !touched ? null : (cell?.error ?? null))
 		};
 	}
 
@@ -79,12 +101,19 @@
 	);
 </script>
 
-<section class="flex flex-col gap-6" aria-labelledby="review-title">
+<section bind:this={section} class="flex flex-col gap-6" aria-labelledby="review-title">
 	<div class="flex flex-col gap-1">
 		<h2 id="review-title" class="text-title text-ink">Kontrola údajů</h2>
 		<p class="text-body text-ink-muted">
-			Zkontrolujte, co jsem ze zadání vyčetl. Hodnoty s otazníkem jsou výchozí nebo odhad AI —
-			potvrdíte je spolu s celým návrhem.
+			{#if proposal.origin === 'ai'}
+				Zkontrolujte, co jsem ze zadání vyčetl. Hodnoty s otazníkem jsou výchozí nebo odhad AI —
+				potvrdíte je spolu s celým návrhem.
+			{:else if proposal.is_change}
+				Upravte údaje potvrzené zakázky v tabulkách nebo změnu napište do dialogu.
+			{:else}
+				Vyplňte díly, skladové délky a parametry. Délky můžete psát i v cm nebo m (1,5 m). Hodnoty s
+				otazníkem jsou výchozí — potvrdíte je spolu s celou zakázkou.
+			{/if}
 		</p>
 	</div>
 
@@ -94,7 +123,7 @@
 		</Alert>
 	{/if}
 
-	{#if proposal.errors.length > 0}
+	{#if showErrors}
 		<Alert variant="danger" title={proposal.confirm_disabled_reason ?? 'Opravte chyby'}>
 			<ul class="list-disc pl-4">
 				{#each proposal.errors as error (`${error.field}:${error.message}`)}
@@ -103,6 +132,8 @@
 			</ul>
 		</Alert>
 	{/if}
+
+	<p role="status" class="text-small text-ink-muted" class:sr-only={!conversion}>{conversion}</p>
 
 	<div class="grid gap-4 md:grid-cols-2">
 		<label class="flex flex-col gap-1">

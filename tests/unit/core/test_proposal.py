@@ -12,6 +12,7 @@ from decision_engine.core.model.proposal import (
     PartDraft,
     StockLengthDraft,
     confirm_proposal,
+    proposal_from_project,
 )
 from decision_engine.core.result import Err, Ok
 
@@ -87,3 +88,16 @@ def test_cena_z_navrhu_zustane_decimal() -> None:
             assert project.problem.stock[0].price == Decimal("1.50")
         case Err(errors):
             pytest.fail(str(errors))
+
+
+def test_navrh_z_potvrzene_zakazky_ma_stejne_hodnoty_a_projde_potvrzenim() -> None:
+    priced = _proposal(stock=(StockLengthDraft(id="s1", length_mm=6000, price=Decimal("320.00")),))
+    match confirm_proposal(priced, "zakazka-1", 2):
+        case Ok(project):
+            proposal = proposal_from_project(project)
+            assert proposal.origin == "manual"
+            assert proposal.base_revision == 2
+            assert proposal.unconfirmed == frozenset()
+            assert confirm_proposal(proposal, "zakazka-1", 2) == Ok(project)
+        case Err(errors):
+            pytest.fail(f"návrh měl projít: {errors}")

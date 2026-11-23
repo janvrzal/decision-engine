@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Pencil from '@lucide/svelte/icons/pencil';
 	import RefreshCw from '@lucide/svelte/icons/refresh-cw';
 	import type { ResultView, UserEvent } from '#lib/api/types.js';
 	import { formatLength, formatPercent } from '#lib/format.js';
@@ -20,12 +21,15 @@
 		result,
 		solving,
 		proposalPending,
+		editReason,
 		onsend,
 		onreview
 	}: {
 		result: ResultView | null;
 		solving: boolean;
 		proposalPending: boolean;
+		/** Proč teď nejde „Upravit údaje“; `undefined` = jde. */
+		editReason: string | undefined;
 		onsend: (event: UserEvent) => void;
 		onreview: () => void;
 	} = $props();
@@ -46,6 +50,16 @@
 				<SolutionStatusBadge status={result.status} label={result.status_label} />
 			{/if}
 		</div>
+		{#if result && !solving && !proposalPending}
+			<Button
+				variant="secondary"
+				disabledReason={editReason}
+				onclick={() => onsend({ type: 'EditRequested' })}
+			>
+				<Pencil size={16} strokeWidth={1.5} aria-hidden="true" />
+				Upravit údaje
+			</Button>
+		{/if}
 	</div>
 
 	{#if solving}

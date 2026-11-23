@@ -14,6 +14,7 @@
 	import ReviewStep from './review/ReviewStep.svelte';
 	import Alert from './ui/Alert.svelte';
 	import Button from './ui/Button.svelte';
+	import EmptyState from './ui/EmptyState.svelte';
 	import IconButton from './ui/IconButton.svelte';
 	import Sheet from './ui/Sheet.svelte';
 
@@ -57,6 +58,17 @@
 		send({ type: 'MessageSent', text });
 	}
 
+	/** Ruční postup bez AI: nová zakázka tabulkou, úprava potvrzené, nebo otevřený návrh. */
+	function manualEntry(capability: string = 'cutting_1d') {
+		chatSheetOpen = false;
+		if (view.proposal) shownStep = 'review';
+		else if (view.project.can_edit) send({ type: 'EditRequested' });
+		else if (view.project.revision === null && capability === 'cutting_1d')
+			send({ type: 'ToolSelected', capability });
+	}
+
+	let editReason = $derived(view.project.can_edit ? undefined : 'Počkejte na dokončení výpočtu.');
+
 	function selectStep(id: StepView['id']) {
 		const target = view.project.steps.find((s) => s.id === id);
 		if (target && target.state !== 'unavailable' && target.state !== 'pending') shownStep = id;
@@ -71,6 +83,7 @@
 		extractionAvailable={view.session.ai.extraction_available}
 		onsend={sendMessage}
 		onretry={() => void session.retry()}
+		onmanual={() => manualEntry()}
 	>
 		{#snippet header()}
 			{#if withHeader}
@@ -130,13 +143,31 @@
 							extractionAvailable={view.session.ai.extraction_available}
 							{busy}
 							onsubmit={sendMessage}
+							onmanual={manualEntry}
 						/>
 					{:else if step === 'review' && view.proposal}
 						<ReviewStep proposal={view.proposal} {busy} onsend={send} />
+					{:else if step === 'review'}
+						<section class="rounded-lg border border-border bg-surface" aria-label="Kontrola údajů">
+							<EmptyState title="Údaje jsou potvrzené">
+								Plán je spočítaný z potvrzené verze zakázky. Údaje můžete upravit v tabulce, nebo
+								změnu napsat do dialogu.
+								{#snippet action()}
+									<Button
+										variant="primary"
+										disabledReason={editReason}
+										onclick={() => send({ type: 'EditRequested' })}
+									>
+										Upravit údaje
+									</Button>
+								{/snippet}
+							</EmptyState>
+						</section>
 					{:else}
 						<ResultStep
 							result={view.result}
 							{solving}
+							{editReason}
 							proposalPending={view.proposal !== null}
 							onsend={send}
 							onreview={() => (shownStep = 'review')}

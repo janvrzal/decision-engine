@@ -7,10 +7,13 @@
 	let {
 		message,
 		onretry,
+		onmanual,
 		retryDisabledReason
 	}: {
 		message: MessageView;
 		onretry?: () => void;
+		/** Ruční postup místo AI (UC-07): otevře kontrolní tabulku k vyplnění. */
+		onmanual?: () => void;
 		retryDisabledReason?: string;
 	} = $props();
 </script>
@@ -22,6 +25,11 @@
 			{#if onretry}
 				<Button variant="secondary" onclick={onretry} disabledReason={retryDisabledReason}>
 					Zkusit znovu
+				</Button>
+			{/if}
+			{#if onmanual}
+				<Button variant="ghost" onclick={onmanual} disabledReason={retryDisabledReason}>
+					Zadat ručně
 				</Button>
 			{/if}
 		{/snippet}

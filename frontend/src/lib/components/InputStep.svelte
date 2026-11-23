@@ -2,27 +2,28 @@
 	import ArrowRight from '@lucide/svelte/icons/arrow-right';
 	import Shuffle from '@lucide/svelte/icons/shuffle';
 	import ToolCard from './ToolCard.svelte';
+	import Alert from './ui/Alert.svelte';
 	import Button from './ui/Button.svelte';
 	import TextArea from './ui/TextArea.svelte';
-	import {
-		EXAMPLE_PROMPTS,
-		NOT_AVAILABLE_REASON,
-		TOOL_DESCRIPTIONS,
-		type Tool
-	} from '#lib/examples.js';
+	import { EXAMPLE_PROMPTS, TOOL_DESCRIPTIONS, type Tool } from '#lib/examples.js';
 
 	/** Krok Zadání: velké pole s ukázkou zadání; odeslání jde do dialogu jako `MessageSent`. */
 	let {
 		capabilities,
 		extractionAvailable,
 		busy,
-		onsubmit
+		onsubmit,
+		onmanual
 	}: {
 		capabilities: { id: string; label: string }[];
 		extractionAvailable: boolean;
 		busy: boolean;
 		onsubmit: (text: string) => void;
+		/** Ruční zadání bez AI zvoleným nástrojem (UC-13). */
+		onmanual: (capability: string) => void;
 	} = $props();
+
+	let manualReason = $derived(busy ? 'Zpracovávám předchozí zadání.' : undefined);
 
 	let tools = $derived<Tool[]>(
 		capabilities.map((c) => ({ ...c, description: TOOL_DESCRIPTIONS[c.id] ?? '' }))
@@ -62,6 +63,11 @@
 				Napište zadání vlastními slovy, jako byste ho říkali kolegovi v dílně.
 			</p>
 		</div>
+		{#if !extractionAvailable}
+			<Alert variant="info" title="AI není nastavená">
+				Zadání z textu teď nepůjde zpracovat. Zakázku vyplňte ručně tlačítkem „Zadat ručně“.
+			</Alert>
+		{/if}
 		<TextArea
 			bind:value={draft}
 			label="Zadání zakázky"
@@ -85,11 +91,19 @@
 	<div class="flex flex-col gap-3">
 		<div class="flex flex-wrap items-baseline justify-between gap-2">
 			<h2 class="text-heading text-ink">Nebo začněte nástrojem</h2>
-			<Button variant="ghost" disabledReason={NOT_AVAILABLE_REASON}>Zadat ručně</Button>
+			<Button
+				variant={extractionAvailable ? 'ghost' : 'primary'}
+				disabledReason={manualReason}
+				onclick={() => onmanual(tools[0]?.id ?? 'cutting_1d')}
+			>
+				Zadat ručně
+			</Button>
 		</div>
 		<ul class="grid gap-4 md:grid-cols-2">
 			{#each tools as tool (tool.id)}
-				<li><ToolCard {tool} disabledReason={NOT_AVAILABLE_REASON} /></li>
+				<li>
+					<ToolCard {tool} disabledReason={manualReason} onselect={() => onmanual(tool.id)} />
+				</li>
 			{/each}
 		</ul>
 	</div>

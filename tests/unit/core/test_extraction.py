@@ -7,6 +7,7 @@ from decision_engine.core.extraction import (
     DEFAULT_MIN_REMNANT_MM,
     DEFAULT_STOCK_LENGTH_MM,
     ExtractionOutput,
+    empty_proposal,
     proposal_from_extraction,
 )
 from decision_engine.core.model.cutting_1d import Objective, Project
@@ -126,3 +127,14 @@ def test_extra_pole_od_modelu_nevadi() -> None:
     output = ExtractionOutput.model_validate({"parts": [], "poznamka": "navíc"})
 
     assert output.parts == ()
+
+
+def test_prazdny_navrh_pro_rucni_zadani_ma_vychozi_hodnoty_jako_ai() -> None:
+    proposal = empty_proposal()
+
+    assert proposal.origin == "manual"
+    assert proposal.parts == ()
+    assert proposal.stock[0].length_mm == DEFAULT_STOCK_LENGTH_MM
+    assert proposal.parameters.kerf_mm is None
+    assert proposal.parameters.objective is Objective.LEAST_MATERIAL
+    assert ("problem", "stock", 0, "length_mm") in proposal.unconfirmed

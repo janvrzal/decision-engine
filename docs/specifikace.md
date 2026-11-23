@@ -1,10 +1,10 @@
 # DecisionEngine — specifikace cílové verze pro semestrální práci
 
-**Verze:** 0.4.2 — rozvržení střední šířky  
+**Verze:** 0.4.3 — ruční zadání a úprava  
 **Datum:** 23. 11. 2026  
 **Stav:** Specifikace budoucího chování; tento dokument nepopisuje dokončenou implementaci.
 
-**Změny oproti 0.4.1:** Na střední šířce (768–1279 px) je Panel Dialog vysouvací panel zleva, pracovní plocha má celou šířku; panely se neřadí pod sebe (kap. 4, shodně s mapou obrazovek).
+**Změny oproti 0.4.2:** Potvrzenou zakázku lze ručně upravit akcí „Upravit údaje“ (kap. 7, Stav zakázky); karta nástroje otevírá ruční zadání (UC-13 v service designu).
 
 ## 1. Produkt a jeho účel
 
@@ -373,7 +373,7 @@ Heuristika s gilotinovým dělením volného prostoru (např. gilotinová varian
 
 ### Stav zakázky
 
-Stav zakázky je její poslední potvrzená revize. LLM ani solver do ní nezapisují přímo: LLM vytvoří `ChangeProposal`, uživatel ho v kontrolní tabulce potvrdí nebo opraví, a teprve potom jádro z předchozí revize a potvrzené změny vytvoří novou revizi. Stejně se chovají ruční vstupy: formulář i úprava buňky v kontrolní tabulce mění jen rozpracovaný `ChangeProposal`, zakázku mění až „Potvrdit a vypočítat“.
+Stav zakázky je její poslední potvrzená revize. LLM ani solver do ní nezapisují přímo: LLM vytvoří `ChangeProposal`, uživatel ho v kontrolní tabulce potvrdí nebo opraví, a teprve potom jádro z předchozí revize a potvrzené změny vytvoří novou revizi. Stejně se chovají ruční vstupy: formulář i úprava buňky v kontrolní tabulce mění jen rozpracovaný `ChangeProposal`, zakázku mění až „Potvrdit a vypočítat“. Ruční úprava potvrzené zakázky („Upravit údaje“) začíná návrhem se stejnými hodnotami jako poslední revize.
 
 Vstupy zakázky se dělí na **vstupy plánu** (díly, skladové délky a jejich ceny, parametry, cíl optimalizace) a **vstupy kalkulace** (práce, další náklady, přirážka, DPH). Vstupy kalkulace se upravují přímo: úprava je sama potvrzením, vytvoří novou revizi a kalkulace se přepočítá bez solveru.
 
