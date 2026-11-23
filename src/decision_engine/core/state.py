@@ -1,0 +1,95 @@
+"""Stav relace `AppState` a jeho odvozené vlastnosti (ADR-0006, spec kap. 7).
+
+Stav mění jen `reduce`. Odvozené vlastnosti (neaktuální plán, krok pracovní plochy)
+se počítají z ostatních polí a nikde se neukládají (R3).
+"""
+
+from enum import StrEnum
+from typing import Literal
+
+from pydantic import BaseModel, ConfigDict
+
+from decision_engine.core.errors import FieldError
+from decision_engine.core.model.calculation import CalculationResult
+from decision_engine.core.model.cutting_1d import Objective, Project
+from decision_engine.core.model.proposal import ChangeProposal
+
+
+class _Frozen(BaseModel):
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+
+type AiErrorKind = Literal["connection", "rate_limit", "invalid_response"]
+"""Druh selhání AI; český text pro uživatele skládá view model."""
+
+
+class Message(_Frozen):
+    """Zpráva v Panelu Dialog."""
+
+    id: int
+    role: Literal["user", "assistant"]
+    kind: Literal["text", "error"]
+    text: str = ""
+    error_kind: AiErrorKind | None = None
+
+
+class PendingOperation(_Frozen):
+    """Právě běžící dlouhá operace (R5)."""
+
+    kind: Literal["extraction", "solving"]
+    revision: int | None = None
+    """U výpočtu revize zakázky, pro kterou běží."""
+
+
+class AppState(_Frozen):
+    """Celý stav jedné relace."""
+
+    session_id: str
+    project: Project | None = None
+    """Poslední potvrzená revize zakázky."""
+    proposal: ChangeProposal | None = None
+    proposal_errors: tuple[FieldError, ...] = ()
+    result: CalculationResult | None = None
+    messages: tuple[Message, ...] = ()
+    pending: PendingOperation | None = None
+    next_message_id: int = 1
+
+
+def initial_state(session_id: str) -> AppState:
+    """Prázdná relace; `session_id` dodá aplikační vrstva (jádro nečte náhodu)."""
+    return AppState(session_id=session_id)
+
+
+class Step(StrEnum):
+    """Krok pracovní plochy (service design F0)."""
+
+    INPUT = "input"
+    REVIEW = "review"
+    RESULT = "result"
+
+
+def current_step(state: AppState) -> Step:
+    """Krok podle stavu: čekající návrh → kontrola, potvrzená zakázka → plán a cena."""
+    if state.proposal is not None:
+        return Step.REVIEW
+    if state.project is not None:
+        return Step.RESULT
+    return Step.INPUT
+
+
+def is_result_stale(state: AppState) -> bool:
+    """Plán je neaktuální, když čeká návrh nebo se od výpočtu změnily vstupy plánu (R3)."""
+    if state.result is None:
+        return False
+    if state.proposal is not None:
+        return True
+    current = state.project
+    return current is None or _plan_inputs(state.result.source) != _plan_inputs(current)
+
+
+def _plan_inputs(project: Project) -> object:
+    """Vstupy plánu; ceny skladových délek jen při cíli „nejnižší cena“."""
+    stock = project.problem.stock
+    if project.parameters.objective is not Objective.CHEAPEST:
+        stock = tuple(item.model_copy(update={"price": None}) for item in stock)
+    return (project.problem.parts, stock, project.parameters)
