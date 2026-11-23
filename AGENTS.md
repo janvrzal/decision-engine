@@ -137,4 +137,5 @@ Zásady kvality jsou ve specifikaci (kap. 4) a kritéria v kap. 9. Postup a konv
 ## Otevřené otázky
 
 - Konkrétní model na Groqu se zvolí podle evaluace extrakce (ADR-0008).
-- Podpora češtiny u Jev/Layo není v dokumentaci uvedena; ověřit v M0.
+- Jev zvládá česká zadání (spike #7, ADR-0004); variantu otázek a prahy routeru určí měření na `router/test` v M3.
+- Layo není veřejně dostupné (dokumentace, API ani balíček); zda specifikaci upravit na offline provoz bez Layo (jen ruční výběr a demo data), rozhodne autor.
