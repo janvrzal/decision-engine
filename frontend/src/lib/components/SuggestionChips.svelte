@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Chip from './ui/Chip.svelte';
-	import type { ExamplePrompt } from '#lib/fixtures/empty-project.js';
+	import type { ExamplePrompt } from '#lib/examples.js';
 
 	/** Řada čipů s ukázkami zpráv nad polem pro zprávu. */
 	let {

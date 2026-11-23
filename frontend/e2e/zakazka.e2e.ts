@@ -58,7 +58,7 @@ test.describe('široká obrazovka 1440 px', () => {
 		await page.goto('/project');
 
 		await expect(page.getByRole('button', { name: 'Uložit' })).toHaveAccessibleDescription(
-			'Zatím není co uložit.'
+			'Tato akce zatím není k dispozici.'
 		);
 	});
 
