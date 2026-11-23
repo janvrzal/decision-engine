@@ -62,11 +62,13 @@ Backend (`uv`: `brew install uv`):
 ```bash
 uv sync
 uv run pytest                    # bez živých AI volání
-uv run pytest -m ai              # placená API, jen na vyžádání
+uv run --env-file .env pytest -m ai   # placená API, jen na vyžádání
 uv run ruff check --fix && uv run ruff format
 uv run pyright                   # strict
 uv run lint-imports              # hranice vrstev
 uv run decision-engine           # spustí aplikaci (API + sestavený frontend)
+uv run --env-file .env python scripts/trace_turn.py  # jedno kolo extrakce s AI a trasováním
+uv run --env-file .env python scripts/prompts.py export  # záložní kopie promptů z Langfuse
 ```
 
 Frontend (`pnpm`: `brew install pnpm`), ve složce `frontend/`:
@@ -136,4 +138,3 @@ Zásady kvality jsou ve specifikaci (kap. 4) a kritéria v kap. 9. Postup a konv
 
 - Konkrétní model na Groqu se zvolí podle evaluace extrakce (ADR-0008).
 - Podpora češtiny u Jev/Layo není v dokumentaci uvedena; ověřit v M0.
-- Langfuse Cloud, nebo lokálně v Dockeru (ADR-0009).

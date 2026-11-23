@@ -13,7 +13,8 @@ Potřebujeme vědět, která verze promptu a který model vytvořily daný výst
 - **Prompty** se spravují v Langfuse (prompt management) s verzemi a štítky `production` a `staging`. Aplikace načítá prompt podle názvu a štítku a zaznamená číslo verze.
 - **Záložní kopie** promptů je v repozitáři (`prompts/*.json`), exportovaná skriptem při každé změně štítku `production`. Aplikace ji použije, když Langfuse není dostupný; změny promptů jsou tak vidět i v PR.
 - **Trasování:** každé volání AI (router, extrakce, dialog) je trace/generation v Langfuse: model, verze promptu, vstup, výstup, latence, tokeny, cena, chyba. Session v Langfuse = relace aplikace.
-- **Běh:** Langfuse Cloud (bezplatný tarif) nebo lokálně v Dockeru; volba přes proměnné prostředí. Bez nastavených klíčů je trasování vypnuté a aplikace funguje dál.
+- **Běh:** Langfuse Cloud, region EU (`https://cloud.langfuse.com`), bezplatný tarif Hobby (rozhodnuto u #5; Docker zůstává možný jen změnou `LANGFUSE_BASE_URL`). Bez nastavených klíčů je trasování vypnuté a aplikace funguje dál.
+- **Tvar trace** (podle [best practices Langfuse](https://langfuse.com/docs/observability/best-practices)): jedno kolo dialogu = jeden trace s kořenem `process-message` (typ `chain`, vstup = zpráva uživatele, výstup = odpověď asistenta, metadata = návrh, revize, krok, údaje o extrakci); volání modelu jsou vnořené `generation` `extract-proposal` z integrace `langfuse.openai` s propojenou verzí promptu a metadaty `attempt`. Úvaha modelu (`reasoning` od Groq) se ukládá do metadat kořene, protože ji integrace nezachytí. Atributy: `session_id` = relace, `environment` z `LANGFUSE_TRACING_ENVIRONMENT`, `release` = verze aplikace.
 - **Cache AI odpovědí** zůstává vlastní (lokální, klíč: vstup + model + název a verze promptu + verze schématu).
 - **Evaluační sady** zůstávají v gitu (`evals/`); běhy evaluace se do Langfuse zapisují jako experimenty s odkazem na verzi promptu.
 
