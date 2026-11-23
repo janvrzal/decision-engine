@@ -12,7 +12,8 @@ import pytest
         "decision_engine.core",
         "decision_engine.capabilities",
         "decision_engine.adapters",
-        "decision_engine.ui",
+        "decision_engine.api",
+        "decision_engine.app",
     ],
 )
 def test_vrstva_je_importovatelna(modul: str) -> None:

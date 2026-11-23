@@ -39,13 +39,20 @@ Rozložení kategorií má odpovídat realitě, ne být uměle vyvážené; uve�
 
 - Evaluace volá placená API → spouští se jen na pokyn uživatele.
 - Router: stejná sada na všech dostupných implementacích (Jev, Layo, LLM).
-- Odpovědi se cachují podle (vstup, model, verze promptu/schématu), aby opakované spuštění nestálo peníze; přeměření po změně promptu musí cache obejít.
+- Odpovědi se cachují podle (vstup, model, název a verze promptu, verze schématu), aby opakované spuštění nestálo peníze; přeměření po změně promptu musí cache obejít.
+- Běh evaluace se zapisuje do Langfuse jako experiment s odkazem na verzi promptu; sady zůstávají v gitu.
+
+## Prompty
+
+- Prompty se upravují v Langfuse; nová verze dostane štítek `staging`, po ověření na dev sadě `production`.
+- Po změně štítku `production` exportuj záložní kopii do `prompts/` a commitni ji (`docs`/`feat(prompts): …`), aby změna byla vidět v PR.
+- Prompt se nikdy nepíše natvrdo do kódu.
 
 ## Report (`evals/reports/RRRR-MM-DD-<sada>.md`)
 
 Musí obsahovat:
 
-- datum, model a přesnou verzi (např. `jev-1.14.0`), implementaci routeru, verzi promptu/schématu,
+- datum, model a přesnou verzi (např. `jev-1.14.0`), implementaci routeru, název a verzi promptu z Langfuse, verzi schématu,
 - velikost sady a rozložení kategorií,
 - celkovou přesnost a matici záměn / chyby podle kategorií,
 - u routeru kalibraci: přesnost v pásmech confidence a zvolený práh doptání,

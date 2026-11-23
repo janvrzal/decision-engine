@@ -4,6 +4,8 @@ Webová aplikace pro malé dílny: ze zadání v češtině k nářezovému plá
 
 Semestrální práce. Stav: příprava repozitáře, implementace zatím nezačala.
 
+Backend: Python 3.12 + FastAPI. Frontend: SvelteKit (Svelte 5, TypeScript). Lokální běh.
+
 - Specifikace: [docs/specifikace.md](docs/specifikace.md)
 - Rozhodnutí: [docs/adr/](docs/adr/)
 - Pravidla pro vývoj a AI agenty: [AGENTS.md](AGENTS.md)

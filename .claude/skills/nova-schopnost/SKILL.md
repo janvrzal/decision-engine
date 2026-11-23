@@ -30,9 +30,11 @@ Před psaním kódu předlož uživateli krátký návrh:
 3. `core/solvers/<schopnost>/…` — solver; testy podle skillu `overeni-solveru`.
 4. Převod výsledku na `MaterialConsumption`.
 5. `capabilities/<schopnost>.py` — záznam v registru.
-6. Extrakční schéma a prompt v `adapters/` + případy do `evals/extraction/dev/` a `evals/extraction/test/` (skill `ai-evaluace`).
-7. Formulář a prezentace výsledku v `ui/`.
-8. Přidat identifikátor do množiny možností routeru **až ve chvíli, kdy je schopnost hotová** — router nesmí nabízet neimplementované.
+6. Vykreslení výsledku do SVG v `core/` (stejné SVG pro UI i PDF).
+7. Události a větve reduceru, pokud schopnost přidává nové akce; testy v `tests/flow/`.
+8. Extrakční schéma (Pydantic) a prompt v Langfuse + záložní kopie v `prompts/`; případy do `evals/extraction/dev/` a `evals/extraction/test/` (skill `ai-evaluace`).
+9. View model v `api/`, `pnpm generate:api`, formulář a prezentace výsledku ve `frontend/` (skill `ui-frontend`).
+10. Přidat identifikátor do množiny možností routeru **až ve chvíli, kdy je schopnost hotová** — router nesmí nabízet neimplementované.
 
 ## 4. Zkontroluj
 

@@ -1,12 +1,10 @@
 # DecisionEngine — specifikace cílové verze pro semestrální práci
 
-**Verze:** 0.2.1 — rozsah po první diskuzi, kap. 10 sladěna se zněním zadání  
+**Verze:** 0.3 — architektura a technologie  
 **Datum:** 23. 11. 2026  
 **Stav:** Specifikace budoucího chování; tento dokument nepopisuje dokončenou implementaci.
 
-**Změny oproti 0.1:** 2D řezání je volitelné rozšíření, nikoli povinná funkce. Nově je jako rozšíření zařazen sklad materiálu včetně zbytků. Fotky jako vstup jsou mimo semestr. Projekt vzniká v novém repozitáři. Kalkulace je oddělená od záměru `cost_estimate`. Uživatel volí cíl optimalizace. 1D solver používá generování vzorů (column generation). Router je vyměnitelný: Jev, Layo, LLM nebo ruční výběr.
-
-**Oprava 0.2.1:** Kapitola 10 odkazuje na znění zadání v `docs/zadani.md` (téma 2) a uvádí i povinný požadavek na uživatelské rozhraní.
+**Změny oproti 0.2:** UI je webová aplikace FastAPI + SvelteKit místo Streamlitu (ADR-0007). Přibyla aplikační vrstva a stav relace řízený reducerem (ADR-0006). Generativní model běží přes Groq za vyměnitelným adaptérem (ADR-0008), prompty a trasování AI spravuje Langfuse (ADR-0009). Kapitola 4 má zásady kvality rozhraní, kapitola 9 kritéria kvality UI. Pořadí realizace (kap. 11) je postavené na svislých řezech a průběžném ladění UI; rozšíření jsou podmíněná dokončením vyladěného hlavního toku. Aplikace se spouští jen lokálně. Kapitola 10 odkazuje na znění zadání v `docs/zadani.md`.
 
 ## 1. Produkt a jeho účel
 
@@ -44,11 +42,11 @@ Jádro tvoří 1D plánování, kalkulace, dialog a router. Na tomto jádru stoj
 | Výsledek | Vizualizace, rozpis dílů, materiálové metriky a stav řešení |
 | Uložení | Export a import zakázky v JSON včetně potvrzených vstupů a nastavení |
 | Export | PDF plánu a orientační kalkulace |
-| Dostupnost | Spustitelná webová aplikace, ukázkové zakázky a demo režim bez API |
+| Dostupnost | Lokálně spustitelná webová aplikace (jeden příkaz), ukázkové zakázky a demo režim bez API |
 
 ### Volitelná rozšíření (cílová, podmíněná)
 
-Rozšíření se začnou stavět až po dokončení povinných funkcí. Pokud čas nestačí na obě, má přednost to, které bude mít v danou chvíli lepší poměr přínosu a rizika. Nedokončené rozšíření se v aplikaci nezobrazí jako dostupný nástroj.
+Rozšíření se začnou stavět až po dokončení povinných funkcí a vyladění hlavního toku v UI (kap. 9, řádky „UI“). Pokud čas nestačí na obě, má přednost to, které bude mít v danou chvíli lepší poměr přínosu a rizika. Nedokončené rozšíření se v aplikaci nezobrazí jako dostupný nástroj.
 
 | Rozšíření | Cílové chování |
 |---|---|
@@ -70,6 +68,16 @@ Tyto funkce se nebudou zobrazovat jako dostupné nástroje. Zadání vyžadujíc
 
 ## 4. Podoba uživatelského rozhraní
 
+Kvalita rozhraní je jediný povinný a výslovně hodnocený požadavek zadání (`docs/zadani.md`). Platí tyto zásady:
+
+- **Jeden hlavní tok** (zadání → kontrola → plán a cena → úprava dialogem) je vždy zřejmý: uživatel vidí, ve kterém kroku je a co má udělat dál.
+- **Jednotný vzhled** z design tokenů (barvy, typografie, rozestupy, zaoblení) a jedné sady komponent; žádné jednorázové styly.
+- **Každý panel má navržené stavy** prázdný, načítání, chyba, neaktuální a hotovo — ne jen „šťastnou cestu“.
+- **Čísla a jednotky** se zobrazují česky (`1 250 mm`, `1 234,50 Kč`), vždy s jednotkou.
+- **Odezva:** lokální akce do 100 ms; volání AI a výpočet ukazují průběh a lze je zrušit nebo opakovat.
+- **Přístupnost:** ovládání klávesnicí včetně tabulek, viditelný fokus, kontrast podle WCAG AA.
+- **Šířky:** primárně notebook a desktop (od 1280 px), použitelné od 768 px (panely pod sebou).
+
 ### Úvodní obrazovka
 
 - Název DecisionEngine a stručný popis: „Ze zadání k nářezovému plánu a ceně zakázky.“
@@ -84,7 +92,7 @@ Jedna zakázka má tři kroky: **Zadání → Kontrola údajů → Plán a cena*
 
 Dialog zůstává dostupný i nad výsledkem. Obsahuje zprávy a stručná potvrzení změn. Rozměry, počty a ceny mají své vlastní editovatelné tabulky; důležité údaje nezůstávají pouze ve zprávách.
 
-Uživatel vidí zvolený nástroj běžným názvem, například „Řezání tyčí“. Názvy modelů, použitý router, tokeny a interní diagnostika jsou dostupné v odděleném vývojářském panelu. Tam lze také přepnout implementaci routeru (kap. 6).
+Uživatel vidí zvolený nástroj běžným názvem, například „Řezání tyčí“. Názvy modelů, použitý router, verze promptů, tokeny a interní diagnostika jsou dostupné v odděleném vývojářském panelu; podrobné trasování je v Langfuse. Tam lze také přepnout implementaci routeru (kap. 6).
 
 ### Kontrola údajů
 
@@ -287,17 +295,40 @@ flowchart TD
     V --> J[Uložení a načtení zakázky]
 ```
 
+Diagram ukazuje tok dat. Řízení toku (kdo kdy co volá) popisuje část „Aplikační vrstva a stav relace“.
+
 ### Vrstvy: funkcionální jádro, imperativní obal
 
 | Vrstva | Obsah | Pravidla |
 |---|---|---|
-| Jádro | Datové objekty, validace, solvery, kalkulace, použití potvrzené změny na zakázku a na sklad | Čisté funkce bez I/O, času a náhody; neměnná data (Pydantic `frozen=True`, kolekce jako `tuple`); chyby se vracejí jako hodnoty, nevyhazují se |
-| Adaptéry | Routery (Jev, Layo, LLM), generativní model, čtení a zápis JSON, úložiště skladu, PDF | Jediné místo se závislostí na konkrétním poskytovateli; ven vracejí jen validované objekty jádra nebo chybu |
-| UI | Streamlit | Drží stav relace, volá jádro a adaptéry a nic samo nepočítá |
+| Jádro (`core/`) | Datové objekty, validace, solvery, kalkulace, použití potvrzené změny na zakázku a na sklad, stav relace, události a reducer, vykreslení plánu do SVG | Čisté funkce bez I/O, času a náhody; neměnná data (Pydantic `frozen=True`, kolekce jako `tuple`); chyby se vracejí jako hodnoty, nevyhazují se |
+| Registr (`capabilities/`) | Schopnosti skládané z jádra | Jen jádro |
+| Aplikace (`app/`) | Případy užití, smyčka událostí a efektů, porty (`Protocol`) pro adaptéry | Žádná závislost na konkrétním poskytovateli ani na HTTP |
+| Adaptéry (`adapters/`) | Routery (Jev, Layo, LLM), generativní model (Groq), Langfuse, čtení a zápis JSON, úložiště skladu, PDF | Jediné místo se závislostí na konkrétním poskytovateli; ven vracejí jen validované objekty jádra nebo chybu |
+| API (`api/`) | FastAPI: endpointy, serializace, sestavení závislostí, servírování frontendu | Žádná logika; převádí HTTP na události a stav na view model |
+| Frontend (`frontend/`) | SvelteKit (Svelte 5, TypeScript): zobrazení stavu, formuláře, plán | Nic nepočítá a nerozhoduje o přechodech stavu; posílá události a zobrazuje stav |
 
 **Chyby jako hodnoty a Pydantic:** Pydantic při neplatných datech vyhazuje `ValidationError`. Jádro proto vytváří objekty přes tenký obal (např. `parse(model, data) -> Ok[T] | Err[list[FieldError]]`), který výjimku zachytí a převede na seznam chyb po jednotlivých polích. Výjimky tak nepřekročí hranici jádra a chyby polí lze přímo zobrazit v kontrolní tabulce. Stejně se obalují výjimky solverů (například OR-Tools).
 
 Díky tomuto rozdělení jde jádro testovat jednotkovými testy bez sítě a bez API klíče. Stejné jádro používá i ruční formulář a demo režim, takže výpadek AI (UC-07) se týká jen adaptérů.
+
+**Styl kódu podle vrstvy:** jádro funkcionálně (neměnná data a samostatné funkce, žádné třídy s chováním), aplikační vrstva imperativně (smyčka efektů, ošetření chyb), adaptéry jako třídy implementující `Protocol` bez dědičnosti (drží konfiguraci a spojení).
+
+### Aplikační vrstva a stav relace
+
+Stav relace je jeden neměnný objekt `AppState` (potvrzená zakázka, čekající návrh změny, výsledek, zprávy, chyby). Vše, co se může stát, je typovaná událost (`MessageSent`, `ProposalReceived`, `ProposalConfirmed`, `ProposalRejected`, `SolveRequested`, `SolveFinished`, `AiFailed` …). Čistá funkce jádra
+
+```python
+reduce(state: AppState, event: Event) -> tuple[AppState, tuple[Effect, ...]]
+```
+
+vrátí nový stav a seznam efektů — popisů vedlejších účinků (`CallRouter`, `CallExtractor`, `RunSolver`, `RenderPdf` …). Reducer nic nevykonává. Efekty vykoná `app/` přes porty a výsledek vrátí jako novou událost:
+
+```
+událost → reduce (čisté) → nový stav + efekty → app/ vykoná efekty → nová událost → …
+```
+
+Pravidla specifikace jsou tím vynucená strukturou: zakázku mění jen událost potvrzení; „neaktuální výsledek“ je odvozená vlastnost (`result.revision != project.revision`), kterou nikdo nenastavuje. Frontend posílá události přes `POST /api/sessions/{id}/events` a dostává zpět view model stavu. Stav relací drží backend v paměti (lokální běh, jeden uživatel); trvalé jsou jen uložené zakázky a sklad. Podrobnosti v ADR-0006.
 
 ### Schopnosti a služby
 
@@ -330,7 +361,17 @@ Sklad má vlastní revize a vlastní úložiště. Výsledek výpočtu se sklade
 
 ### Technické rozhodnutí
 
-Python 3.12 a Streamlit. Optimalizace přes OR-Tools (LP pro relaxaci, CP-SAT pro celočíselnou část). Sklad se ukládá lokálně (SQLite nebo JSON soubor), bez serverové databáze. Přechod na jiný frontend není součástí semestrální verze. Má smysl až při potřebě účtů, týmové práce nebo složitější interakce s plánem.
+| Oblast | Volba | ADR |
+|---|---|---|
+| Backend | Python 3.12, FastAPI, Pydantic | 0006, 0007 |
+| Frontend | SvelteKit (Svelte 5, TypeScript strict) jako SPA, Tailwind CSS, shadcn-svelte; typovaný klient generovaný z OpenAPI | 0007 |
+| Optimalizace | Vlastní algoritmy (FFD, generování vzorů, batoh, 2D heuristika, validátory); LP a celočíselný výběr přes OR-Tools | 0003 |
+| Generativní LLM | Groq přes OpenAI-kompatibilní adaptér, vyměnitelný | 0008 |
+| Router | Jev / Layo / LLM / ruční výběr | 0004 |
+| Prompty a trasování | Langfuse (Cloud nebo Docker), záložní kopie promptů v repozitáři | 0009 |
+| PDF | HTML šablona + SVG plánu převedené na PDF na backendu (WeasyPrint) | — |
+| Úložiště | Zakázky jako JSON soubory, sklad v SQLite | — |
+| Provoz | Jen lokálně, spuštění jedním příkazem | 0007 |
 
 ### Hlavní datové objekty
 
@@ -352,12 +393,13 @@ Python 3.12 a Streamlit. Optimalizace přes OR-Tools (LP pro relaxaci, CP-SAT pr
 - API klíče jsou v serverovém prostředí; neukládají se do zakázek, exportů ani diagnostických záznamů.
 - UI rozlišuje chybu připojení, vyčerpaný limit a neplatná data a nabízí odpovídající další krok.
 - Opakování dočasně neúspěšných volání je omezené; aplikace neběží v nekonečné smyčce. (SDK TypeSafe ve výchozím stavu opakuje odpověď `429` podle `retry-after`; počet opakování se omezí.)
-- Cache AI odpovědí zahrnuje relevantní stav zakázky, model, implementaci routeru a verzi extrakčního schématu/promptu.
+- Cache AI odpovědí zahrnuje relevantní stav zakázky, model, implementaci routeru, název a verzi promptu a verzi extrakčního schématu.
+- Každé volání AI se trasuje do Langfuse (model, verze promptu, vstup, výstup, latence, tokeny, cena, chyba). Nedostupný Langfuse nesmí ovlivnit běh aplikace: prompty se vezmou ze záložní kopie a trasování se vypne.
 - Každý výpočet má časový limit (výchozí 10 s, nastavitelný). Po jeho dosažení se vrátí nejlepší platné řešení, pokud existuje; heuristika zaručuje, že nějaké platné řešení existuje vždy, když je úloha proveditelná bez omezení skladu.
 - Označení „optimální“ se používá pouze při prokázaném optimu pro deklarovaný model a **zvolený cíl** (UC-01) – u 1D na základě dolní meze z LP relaxace. Jinak UI uvádí „nejlepší nalezené řešení“ a rozdíl od dolní meze.
 - Zachovává se identita dílů i při shodných rozměrech.
 - Schéma zaručuje tvar dat; správnost přepisu uživatelského zadání vyžaduje kontrolu a testování.
-- Vývojářská diagnostika ukazuje čas, použitý model a router, stav validace, rozhodnutí routeru a u solveru počet vzorů, dolní mez a stav CP-SAT, bez tajných údajů.
+- Vývojářská diagnostika ukazuje čas, použitý model, router a verzi promptu, stav validace, rozhodnutí routeru a u solveru počet vzorů, dolní mez a stav CP-SAT, bez tajných údajů.
 
 Pro demo sady do přibližně 100 kusů u 1D a 30 kusů u 2D je cílem výpočet do 10 sekund na dokumentovaném referenčním stroji. Jde o cíl k ověření; latence externí AI se měří zvlášť.
 
@@ -375,11 +417,15 @@ Pro demo sady do přibližně 100 kusů u 1D a 30 kusů u 2D je cílem výpočet
 | Import/export | Uložená a znovu načtená zakázka zachová vstupy včetně cíle optimalizace; neplatný soubor zobrazí srozumitelnou chybu |
 | PDF | Text, diakritika, legendy a popisky jsou čitelné; delší zakázka se nerozbije při stránkování |
 | Výpadek AI | Ruční zadání, výpočet a export fungují bez dostupného vzdáleného routeru i generativního modelu |
-| Použitelnost | Alespoň tři lidé mimo vývoj projektu vyzkouší vytvoření a změnu zakázky; blokující problémy budou opraveny a poznatky stručně popsány |
+| UI – hlavní tok | End-to-end test (Playwright) projde zadání → kontrola → plán a cena → úprava dialogem → přepočet → export; žádný krok nevyžaduje znalost interních pojmů |
+| UI – stavy | Každý panel má navržený a otestovaný stav prázdný, načítání, chyba a neaktuální; chyba AI nabízí opakování nebo ruční postup |
+| UI – vzhled | Barvy, typografie a rozestupy pocházejí z design tokenů; čísla a jednotky ve formátu `cs-CZ`; rozložení funguje od 768 px |
+| UI – přístupnost | Hlavní tok jde ovládat klávesnicí; automatická kontrola přístupnosti (axe) bez závažných nálezů |
+| Použitelnost | Alespoň tři lidé mimo vývoj projektu vyzkouší vytvoření a změnu zakázky bez nápovědy; zaznamená se, kde zaváhali; blokující problémy budou opraveny a poznatky stručně popsány |
 | 2D solver *(pokud je rozšíření součástí odevzdání)* | Kontroly ověří hranice, nepřekrývání, prořez, rotace, počty a platnost deklarované posloupnosti řezů |
 | Sklad *(pokud je rozšíření součástí odevzdání)* | Testy ověří, že plán nepřekročí skladové počty, sklad se bez potvrzení nezmění, odečtení a zápis zbytků odpovídají plánu a nedostatečný sklad bez nákupu vede k částečnému plánu |
 
-Sady pro ladění promptů a měření výsledků musí být oddělené. U AI části report uvádí model, verzi, implementaci routeru, datum a podmínky měření; metriky nejsou obecnou zárukou přesnosti.
+Sady pro ladění promptů a měření výsledků musí být oddělené. U AI části report uvádí model, verzi, implementaci routeru, název a verzi promptu z Langfuse, datum a podmínky měření; metriky nejsou obecnou zárukou přesnosti.
 
 ## 10. Splnění zadání předmětu
 
@@ -387,9 +433,9 @@ Projekt řeší téma 2 „Vytvoření středně složité aplikace“; plné zn
 
 | Kritérium | Povinnost | Doložení v cílové aplikaci |
 |---|---|---|
-| Vlastní UI, pěkné a dobře použitelné | povinné | Streamlit podle kap. 4: tři kroky zakázky, editovatelné tabulky, měřítkový plán, srozumitelné stavy a chyby |
+| Vlastní UI, pěkné a dobře použitelné | povinné | Webové UI (SvelteKit) podle zásad v kap. 4 a kritérií UI v kap. 9: tři kroky zakázky, editovatelné tabulky, měřítkový plán, navržené stavy a chyby |
 | Strukturovaný výstup / function calling | 2 ze 4 | LLM extrakce do schématu a následná validace; router navíc vrací typovanou volbu |
-| Vícekolový dialog nebo více LLM rolí | 2 ze 4 | Kontextové změny aktuální zakázky; dialog je hlavní důkaz tohoto kritéria |
+| Vícekolový dialog nebo více LLM rolí | 2 ze 4 | Kontextové změny aktuální zakázky; dialog je hlavní důkaz tohoto kritéria; doplňkově různé role (router, extrakce, doptávání) |
 | Propojení LLM s výpočtem nebo datovým zdrojem | 2 ze 4 | Výpočet nářezového plánu a kalkulace nad potvrzenými daty a vlastními cenami; u rozšíření i práce se skladem jako datovým zdrojem |
 | Multimodalita na vstupu | 2 ze 4 | Není součástí semestrální verze |
 
@@ -399,15 +445,21 @@ Projekt vzniká v novém repozitáři během semestru; celá historie repozitá�
 
 ## 11. Doporučené pořadí realizace
 
-1. **Postavit 1D jádro:** datové objekty, validace s chybami jako hodnotami, heuristika a generování vzorů, metriky, revize a aktuálnost výsledku, import/export, ruční formulář.
-2. **Ověřit router:** hned na začátku vyzkoušet Jev v Playgroundu a Layo lokálně na několika českých zadáních (podpora češtiny není v dokumentaci uvedena); podle výsledku zvolit výchozí implementaci.
-3. **Přidat dialog a router:** extrakce, směrování, změny zakázky, doptávání a náhradní ruční postup.
-4. **Doplnit kalkulaci:** služba nad `MaterialConsumption`, explicitní ceny, práce a návaznost na spotřebu materiálu.
-5. **Dokončit povinný produkt:** PDF, demo, evaluace routeru a extrakce. Tímto bodem je odevzdatelná verze hotová.
-6. **Rozšíření:** sklad (UC-08) a/nebo 2D (UC-02), podle zbývajícího času. Sklad je menší a navazuje na hotový 1D solver; 2D je větší a samostatnější.
-7. **Uzavřít:** uživatelské zkoušky, report a dokumentace spuštění.
+Práce postupuje **svislými řezy**: každý milník propojí všechny vrstvy od UI po jádro a je předvedený v běžící aplikaci. UI se ladí průběžně od prvního milníku, ne až na konci.
 
-Odevzdaná verze bez rozšíření pokrývá všechna požadovaná AI kritéria. Nedokončené rozšíření se nesmí prezentovat jako hotové.
+| Milník | Obsah | Hotovo, když |
+|---|---|---|
+| M0 Základy | `uv.lock`, zelené CI, kostra FastAPI a SvelteKit, design tokeny, napojení Langfuse a Groq, ověření Jev/Layo na několika českých zadáních | Aplikace se spustí jedním příkazem a ukáže prázdnou obrazovku zakázky |
+| M1 Chodicí kostra | Text → extrakce 1D (Groq) → tabulka → potvrzení → jednoduché FFD → SVG plán v UI; reducer a `app/` od začátku | Zadání z UC-01 projde celou cestou v UI |
+| M2 Zakázka a stav | Validace s chybami po polích, revize, neaktuální výsledek, ruční formulář, import/export JSON | UC-01, UC-06 a „Stav“ z kap. 9 |
+| M3 Dialog a router | Návrhy změn, doptávání, router (Jev/Layo/LLM/ruční), evaluace routeru a extrakce | UC-03, UC-05, UC-07 a kritéria AI z kap. 9 |
+| M4 Solver do hloubky | Generování vzorů, tři cíle, dolní mez, štítky, validátor a property testy | Kritérium „1D solver“ |
+| M5 Kalkulace a PDF | Služba kalkulace, ceny a práce, PDF plánu a kalkulace | UC-04, kritéria „Kalkulace“ a „PDF“ |
+| M6 Vyladění UI | Revize všech stavů, přístupnost, end-to-end test, uživatelské zkoušky, demo režim | Všechny řádky „UI“ a „Použitelnost“ z kap. 9 |
+| M7 Rozšíření | Sklad (UC-08) a/nebo 2D (UC-02) | Příslušná podmíněná kritéria z kap. 9; začíná až po M6 |
+| M8 Uzavření | Měření na testovacích sadách, report, dokumentace spuštění, příprava obhajoby | Kap. 12 lze předvést bez zásahu do kódu |
+
+Odevzdaná verze bez rozšíření (M0–M6, M8) pokrývá všechna požadovaná kritéria. Nedokončené rozšíření se nesmí prezentovat jako hotové.
 
 ## 12. Scénář obhajoby
 
@@ -432,13 +484,15 @@ K obhajobě bude připravený i offline demo režim (lokální Layo nebo připra
 
 Každá schopnost dostane vlastní smlouvu vstupů, omezení, výpočet a ověření. Router nabízí pouze skutečně implementované schopnosti.
 
-## 14. Referenční zdroje pro integraci routeru
+## 14. Referenční zdroje pro integraci AI
 
 - [TypeSafe — úvod a typy rozhodnutí](https://docs.typesafe.ai/introduction)
 - [Choice — výběr z pevné množiny možností](https://docs.typesafe.ai/primitives/choice)
 - [System One — schopnosti a omezení](https://docs.typesafe.ai/concepts/system-one)
 - [Modely, ceny a jazyková podpora](https://docs.typesafe.ai/models)
 - [Python SDK](https://docs.typesafe.ai/sdk/python)
+- [Groq — dokumentace API](https://console.groq.com/docs)
+- [Langfuse — prompt management a tracing](https://langfuse.com/docs)
 
 Stav ověřený 23. 11. 2026 z dokumentace TypeSafe:
 

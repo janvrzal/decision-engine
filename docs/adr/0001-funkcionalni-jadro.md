@@ -1,6 +1,6 @@
 # ADR-0001: Funkcionální jádro, imperativní obal a chyby jako hodnoty
 
-**Stav:** přijato  
+**Stav:** přijato; rozdělení vrstev rozšířeno v ADR-0006  
 **Datum:** 2026-11-23  
 **Souvisí se:** specifikace kap. 7
 

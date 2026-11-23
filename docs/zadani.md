@@ -21,7 +21,7 @@ Projekt DecisionEngine řeší **téma 2: Vytvoření středně složité aplika
 
 | Požadavek | Povinnost | Jak ho DecisionEngine splňuje | Kde ve specifikaci |
 |---|---|---|---|
-| Vlastní UI, pěkné a dobře použitelné | **povinné, hodnocené** | Streamlit; tři kroky zakázky, editovatelné tabulky, měřítkový plán, srozumitelné stavy a chyby | kap. 4 |
+| Vlastní UI, pěkné a dobře použitelné | **povinné, hodnocené** | Webové UI (FastAPI + SvelteKit, ADR-0007); tři kroky zakázky, editovatelné tabulky, měřítkový plán, navržené stavy a chyby | kap. 4, 9 |
 | Strukturovaný výstup / function calling | 1 z 2+ | LLM extrakce do validovaného schématu; router vrací typovanou volbu | kap. 6, 7 |
 | Vícekolový dialog s pamětí / více LLM rolí | 1 z 2+ | Navazující změny zakázky nad potvrzenou revizí; router + extrakce + doptávání jako různé role | UC-03, kap. 6 |
 | Propojení LLM s datovým zdrojem | 1 z 2+ | Výpočet nářezového plánu a kalkulace; u rozšíření sklad jako vlastní data | UC-01, UC-04, UC-08 |
