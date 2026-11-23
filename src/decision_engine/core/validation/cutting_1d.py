@@ -5,7 +5,7 @@ zakázkou. Výjimky Pydanticu nikdy neprojdou ven: vrací se `Err` se všemi chy
 """
 
 from collections import Counter
-from collections.abc import Iterable
+from collections.abc import Iterable, Sized
 
 from pydantic import ValidationError
 from pydantic_core import ErrorDetails
@@ -24,7 +24,8 @@ def parse_project(data: object) -> ProjectResult:
     try:
         project = Project.model_validate(data)
     except ValidationError as error:
-        return Err(tuple(_field_error(detail) for detail in error.errors()))
+        details = (detail for detail in error.errors() if not _is_spurious(detail))
+        return Err(tuple(_field_error(detail) for detail in details))
     return validate_project(project)
 
 
@@ -106,6 +107,15 @@ _SIMPLE: dict[str, tuple[str, str]] = {
 }
 
 _NOT_INTEGER = frozenset({"int_parsing", "int_from_float", "int_type"})
+
+
+def _is_spurious(detail: ErrorDetails) -> bool:
+    """Pydantic hlásí „seznam je krátký“ i u neprázdného seznamu s neplatnou položkou.
+
+    Taková chyba je zavádějící: skutečná chyba je u položky a ta se hlásí zvlášť.
+    """
+    value = detail["input"]
+    return detail["type"] == "too_short" and isinstance(value, Sized) and len(value) > 0
 
 
 def _field_error(detail: ErrorDetails) -> FieldError:

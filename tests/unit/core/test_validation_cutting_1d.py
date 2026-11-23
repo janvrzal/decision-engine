@@ -102,6 +102,14 @@ def test_vice_chyb_najednou(project_data: dict[str, Any]) -> None:
     assert len(_errors(project_data)) == 2
 
 
+def test_jediny_neplatny_dil_nehlasi_prazdny_seznam(project_data: dict[str, Any]) -> None:
+    project_data["problem"]["parts"] = [{"id": "p1", "name": "noha", "quantity": 1}]
+
+    errors = _errors(project_data)
+
+    assert [error.path for error in errors] == [("problem", "parts", 0, "length_mm")]
+
+
 def test_vstup_ktery_neni_slovnik_vrati_chybu() -> None:
     errors = _errors(["není", "slovník"])
 
