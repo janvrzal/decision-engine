@@ -9,7 +9,7 @@ Podklady pro návrh a implementaci UI. Vycházejí ze specifikace v0.3 (`docs/sp
 | [03-user-flows.md](03-user-flows.md) | F0–F10: stavy zakázky, hlavní a další toky | schváleno |
 | [04-mapa-obrazovek.md](04-mapa-obrazovek.md) | Obrazovky, panely, dialogy, stavy, navigace, kostra view modelu | schváleno |
 
-**Wireframy a diagramy:** [FigJam board „DecisionEngine – service design a wireframy“](https://www.figma.com/board/8KDBbDBBHIaWt0VXLR50Kq). Obsahuje 41 low-fi rámců v sekcích A–G (úvod, zadání a Dialog, Kontrola údajů, Plán a cena, dialogy, sklad, vývojářský panel), každý s poznámkou s odkazem na UC, a diagramy F0–F2. Wireframy ukazují rozložení a stavy, ne vizuální styl. Ten určuje design systém.
+**Wireframy a diagramy:** [FigJam board „DecisionEngine – service design a wireframy“](https://www.figma.com/board/8KDBbDBBHIaWt0VXLR50Kq). Obsahuje 90 low-fi rámců s poznámkami s odkazy na UC a diagramy F0–F10 (šestiúhelník = chybový stav). Sekce A–G ukazují hlavní cestu po obrazovkách. Sekce H–K jsou matice stavů po panelech: prázdné, načítání, chybové, neaktuální a okrajové stavy (unhappy paths). Patří sem Panel Dialog (H), odchylky v Kontrole údajů (I), Panel Plán, Panel Kalkulace a Souhrnná lišta (J) a dialogy, Sklad, Vývojářský panel a Hlavička (K). Wireframy ukazují rozložení a stavy, ne vizuální styl. Ten určuje design systém.
 
 ## Slovník obrazovek a panelů
 

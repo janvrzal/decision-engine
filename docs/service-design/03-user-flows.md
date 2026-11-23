@@ -3,7 +3,7 @@
 **Stav:** schváleno  
 **Vychází z:** [02-use-cases.md](02-use-cases.md) (pravidla R1–R6, katalog událostí), specifikace v0.3 kap. 4 a 7, ADR-0006
 
-Každý tok má diagram a tabulku kroků. Tabulka uvádí obrazovku nebo panel (podle [slovníku](README.md#slovník-obrazovek-a-panelů)), rozhodovací body, prázdné a chybové stavy a události reduceru. Hvězdička (*) označuje událost navrženou v katalogu use cases.
+Každý tok má diagram a tabulku kroků. Diagramy F0–F10 jsou i na FigJam boardu (odkaz v README) a stavy jednotlivých panelů zachycují sekce H–K tamtéž. Tabulka uvádí obrazovku nebo panel (podle [slovníku](README.md#slovník-obrazovek-a-panelů)), rozhodovací body, prázdné a chybové stavy a události reduceru. Hvězdička (*) označuje událost navrženou v katalogu use cases.
 
 **Legenda diagramů**
 
@@ -219,6 +219,7 @@ flowchart TD
     IMD -->|"soubor vybrán"| V{"Soubor platný?"}
     V -->|"ne"| VE{{"Chyba v dialogu: co je špatně"}}
     VE --> IMD
+    V -->|"částečně (neplatné hodnoty)"| KE["Krok Kontrola údajů s chybami (UC-06 E2)"]
     V -->|"ano"| R
     R -->|"ne"| KI["Krok Kontrola údajů s načtenými daty (ProjectImported*)"]
     R -->|"ano"| DD["Dialog Zahodit rozpracovanou zakázku"]
@@ -230,6 +231,8 @@ flowchart TD
     R2 -->|"ne"| H
     R2 -->|"ano"| DD2["Dialog Zahodit rozpracovanou zakázku"]
     DD2 -->|"Zahodit / Uložit a pokračovat (NewProjectRequested*)"| H
+    RST["Restart backendu"] -.-> EXP{{"Relace vypršela: načtěte uloženou zakázku"}}
+    EXP --> IMD
 ```
 
 | Vstup | Výsledný krok | Plán spočítán? | Poznámka |
@@ -265,6 +268,9 @@ flowchart TD
     PA -->|"ano"| PR(["RenderPdf: Připravuji PDF..."])
     PR -->|"PdfRendered*"| DL["Stažení souboru"]
     PR -->|"PdfFailed*"| PF{{"Chyba u tlačítka, Zkusit znovu"}}
+    PF -->|"RetryRequested*"| PR
+    NP["Bez plánu"] --> MM["Materiál zadaný ručně (UC-04 A2)"]
+    MM --> C
 ```
 
 - Doplnění ceny tyče v Panelu Kalkulace je pohodlná zkratka, ale cena tyče je vstup plánu (R2). Vznikne proto návrh změny. Při cíli „nejnižší cena“ to znamená návrat do Kontroly údajů (R4), jinak stačí potvrdit cenu přímo v panelu („Potvrdit cenu“), vznikne nová verze a přepočítá se jen kalkulace. Plán zůstává aktuální, protože cena tyče při jiném cíli plán neovlivňuje. (Rozhodnuto při service designu: podle cíle, ne vždy přes Kontrolu údajů.)
@@ -350,10 +356,14 @@ flowchart TD
     S --> R{"Výsledek"}
     R -->|"úplný"| P["Panel Plán: ze skladu / k nákupu + nákupní seznam"]
     R -->|"nákup zakázán, sklad nestačí"| PP["Částečný: neumístěné kusy, Povolit nákup a přepočítat"]
+    R -->|"nic nelze umístit"| INF{{"Bez proveditelného řešení: Povolit nákup"}}
+    INF -->|"ProposalEdited* + potvrzení"| S
     PP -->|"ProposalEdited* + potvrzení"| S
     P -->|"Odepsat ze skladu"| W["Dialog Zápis do skladu: odepsané položky, nové zbytky"]
     W -->|"StockChangeConfirmed*"| OK["Sklad: nová verze, záznam v historii"]
     W -->|"StockChangeRejected*"| P
+    W -->|"chyba úložiště"| WE{{"Nic se nezapsalo, Zkusit znovu"}}
+    WE --> W
     OK --> AG{"Tatáž verze plánu znovu?"}
     AG -->|"ano"| BL["Akce neaktivní: už odepsáno"]
     P -->|"sklad se změnil jinde"| ST["Plán neaktuální: sklad se změnil"]
@@ -365,7 +375,9 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    H["Hlavička nebo karta Sklad"] --> S["Obrazovka Sklad: tabulka položek"]
+    H["Hlavička nebo karta Sklad"] --> LD(["Načítání: skeleton tabulky"])
+    LD --> S["Obrazovka Sklad: tabulka položek"]
+    CM["Zpráva v Panelu Dialog (UC-16 A1)"] -->|"návrh změny skladu"| D
     S --> EM{"Sklad prázdný?"}
     EM -->|"ano"| E0["Prázdný stav: co sem patří + Přidat položku"]
     EM -->|"ne"| T["Tabulka s filtrem, jen zbytky"]
@@ -377,5 +389,7 @@ flowchart TD
     W -->|"StockChangeConfirmed*"| T
     W -->|"chyba úložiště"| WE{{"Hláška, změny zůstanou, Zkusit znovu"}}
     D -->|"odchod ze Skladu"| DD["Dialog Zahodit změny skladu"]
-    T -->|"záložka Historie"| HI["Seznam změn: kdy, zdroj, položky"]
+    T -->|"záložka Historie"| HX{"Existují změny?"}
+    HX -->|"ano"| HI["Seznam změn: kdy, zdroj, položky"]
+    HX -->|"ne"| HE["Prázdný stav: Zatím žádné změny"]
 ```

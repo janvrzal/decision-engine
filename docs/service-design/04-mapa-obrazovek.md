@@ -262,7 +262,7 @@ Stavy jsou definované na úrovni panelů.
 
 | Stav | Co uživatel vidí |
 |---|---|
-| prázdný | potvrzená zakázka bez plánu (např. po zrušení): „Plán zatím není spočítaný“ + Vypočítat |
+| prázdný | potvrzená zakázka bez plánu (např. po zrušení prvního výpočtu): „Plán zatím není spočítaný“ + Vypočítat. Existoval-li předchozí plán, zrušení nebo chyba přepočtu nevede sem, ale do stavu neaktuální („od výpočtu se změnily díly“). |
 | načítání | „Počítám plán…“ s časovým údajem vůči limitu (pruh 0–10 s), Zrušit; předchozí plán ztlumený v pozadí, pokud existuje |
 | chyba | „Výpočet se nezdařil. Zkuste to znovu; pokud chyba trvá, upravte zadání.“ + Zkusit znovu; detail jen ve Vývojářském panelu |
 | neaktuální | plán ztlumený s pruhem „Neaktuální: od výpočtu se změnily díly“ (důvod z `result.stale_reason`: návrh čeká / vstupy změněny / sklad změněn) + Přepočítat nebo Zkontrolovat změny; PDF neaktivní |
