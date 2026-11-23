@@ -1,0 +1,65 @@
+{
+  "run_id": "20261123-2058-386c",
+  "date": "2026-11-23T20:58:20+00:00",
+  "set": "dev",
+  "response_format": "json_object",
+  "schema_version": "d06dc2c69ac3",
+  "cases": [
+    {
+      "id": "extraction-dev-13",
+      "input": "Svařuju bránu 3,5 m širokou: 2× 3,5 m vodorovně, 9× 1,4 m svisle. Jekl 40×40×2, tyče 6 m po 520 Kč, prořez 3 mm.",
+      "expected": {
+        "parts": [
+          {
+            "length_mm": 3500,
+            "quantity": 2
+          },
+          {
+            "length_mm": 1400,
+            "quantity": 9
+          }
+        ],
+        "stock": [
+          {
+            "length_mm": 6000,
+            "price": "520"
+          }
+        ],
+        "kerf_mm": 3,
+        "trim_mm": null,
+        "min_remnant_mm": null,
+        "objective": null
+      },
+      "tags": [
+        "jednotky_m",
+        "kontextove_cislo"
+      ],
+      "author_note": "Šířka brány není další díl."
+    }
+  ],
+  "results": {
+    "qwen/qwen3.8-27b": [
+      {
+        "case_id": "extraction-dev-13",
+        "model": "qwen/qwen3.8-27b",
+        "latency_s": 1.2007000830490142,
+        "calls": [
+          {
+            "attempt": 1,
+            "latency_s": 0.9321218749973923,
+            "ok": true,
+            "schema_valid": true,
+            "text": "{\n  \"name\": \"Brána 3,5 m\",\n  \"material\": \"jekl 40×40×2\",\n  \"parts\": [\n    {\n      \"ref\": null,\n      \"name\": \"vodorovně\",\n      \"length_mm\": 3500,\n      \"quantity\": 2,\n      \"uncertain\": []\n    },\n    {\n      \"ref\": null,\n      \"name\": \"svisle\",\n      \"length_mm\": 1400,\n      \"quantity\": 9,\n      \"uncertain\": []\n    }\n  ],\n  \"stock\": [\n    {\n      \"ref\": null,\n      \"length_mm\": 6000,\n      \"price\": 520,\n      \"uncertain\": []\n    }\n  ],\n  \"kerf_mm\": 3,\n  \"trim_mm\": null,\n  \"min_remnant_mm\": null,\n  \"objective\": null,\n  \"reply\": \"Rozpoznal jsem 2 kusy po 3500 mm a 9 kusů po 1400 mm z jeklu 40×40×2. Chybí cíl optimalizace (např. nejnižší cena nebo nejméně tyčí).\"\n}",
+            "error": null,
+            "prompt_tokens": 1511,
+            "completion_tokens": 303,
+            "reasoning_tokens": 0,
+            "model_time_s": 0.742585921
+          }
+        ],
+        "prompt_version": 1,
+        "prompt_source": "langfuse"
+      }
+    ]
+  }
+}

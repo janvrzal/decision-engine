@@ -1,0 +1,36 @@
+{
+  "id": "extraction-dev-03",
+  "input": "4 ks 2350 mm, 6 ks 780 mm, materiál L 50×50×5, skladem 6000 a 3000 mm, ceny 610 a 320 Kč za kus.",
+  "expected": {
+    "parts": [
+      {
+        "length_mm": 2350,
+        "quantity": 4
+      },
+      {
+        "length_mm": 780,
+        "quantity": 6
+      }
+    ],
+    "stock": [
+      {
+        "length_mm": 6000,
+        "price": "610"
+      },
+      {
+        "length_mm": 3000,
+        "price": "320"
+      }
+    ],
+    "kerf_mm": null,
+    "trim_mm": null,
+    "min_remnant_mm": null,
+    "objective": null
+  },
+  "tags": [
+    "jednotky_mm",
+    "vice_skladovych",
+    "chybi_prorez"
+  ],
+  "author_note": "Ceny přiřazené pořadím ke dvěma délkám."
+}

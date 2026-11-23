@@ -1,0 +1,17 @@
+{
+  "id": "extraction-dev-17",
+  "input": "Kolik mě to bude stát? Potřebuju to stejný jako minule.",
+  "expected": {
+    "parts": [],
+    "stock": [],
+    "kerf_mm": null,
+    "trim_mm": null,
+    "min_remnant_mm": null,
+    "objective": null
+  },
+  "tags": [
+    "nejasne",
+    "bez_udaju"
+  ],
+  "author_note": "Žádné údaje; nic se nesmí vymyslet."
+}

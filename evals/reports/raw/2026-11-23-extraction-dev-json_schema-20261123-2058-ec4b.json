@@ -1,0 +1,487 @@
+{
+  "run_id": "20261123-2058-ec4b",
+  "date": "2026-11-23T20:58:43+00:00",
+  "set": "dev",
+  "response_format": "json_schema",
+  "schema_version": "d06dc2c69ac3",
+  "cases": [
+    {
+      "id": "extraction-dev-01",
+      "input": "Potřebuju 10 kusů jeklu 40×40×2 po 2 m a 5 kusů po 1,5 m. Řežu z tyčí 6 m, jedna stojí 420 Kč. Prořez 3 mm.",
+      "expected": {
+        "parts": [
+          {
+            "length_mm": 2000,
+            "quantity": 10
+          },
+          {
+            "length_mm": 1500,
+            "quantity": 5
+          }
+        ],
+        "stock": [
+          {
+            "length_mm": 6000,
+            "price": "420"
+          }
+        ],
+        "kerf_mm": 3,
+        "trim_mm": null,
+        "min_remnant_mm": null,
+        "objective": null
+      },
+      "tags": [
+        "jednotky_m",
+        "desetinna_carka",
+        "uplne"
+      ],
+      "author_note": "Základní úplné zadání."
+    },
+    {
+      "id": "extraction-dev-02",
+      "input": "Na regál potřebuju 8× 150 cm a 12× 45 cm, trubka 25×25. Tyče mám šestimetrové, kotouč bere 2 mm.",
+      "expected": {
+        "parts": [
+          {
+            "length_mm": 1500,
+            "quantity": 8
+          },
+          {
+            "length_mm": 450,
+            "quantity": 12
+          }
+        ],
+        "stock": [
+          {
+            "length_mm": 6000,
+            "price": null
+          }
+        ],
+        "kerf_mm": 2,
+        "trim_mm": null,
+        "min_remnant_mm": null,
+        "objective": null
+      },
+      "tags": [
+        "jednotky_cm",
+        "neprima_formulace",
+        "chybi_cena"
+      ],
+      "author_note": "Šestimetrové = 6000 mm (vyvozené); prořez popsaný kotoučem."
+    },
+    {
+      "id": "extraction-dev-03",
+      "input": "4 ks 2350 mm, 6 ks 780 mm, materiál L 50×50×5, skladem 6000 a 3000 mm, ceny 610 a 320 Kč za kus.",
+      "expected": {
+        "parts": [
+          {
+            "length_mm": 2350,
+            "quantity": 4
+          },
+          {
+            "length_mm": 780,
+            "quantity": 6
+          }
+        ],
+        "stock": [
+          {
+            "length_mm": 6000,
+            "price": "610"
+          },
+          {
+            "length_mm": 3000,
+            "price": "320"
+          }
+        ],
+        "kerf_mm": null,
+        "trim_mm": null,
+        "min_remnant_mm": null,
+        "objective": null
+      },
+      "tags": [
+        "jednotky_mm",
+        "vice_skladovych",
+        "chybi_prorez"
+      ],
+      "author_note": "Ceny přiřazené pořadím ke dvěma délkám."
+    },
+    {
+      "id": "extraction-dev-04",
+      "input": "Udělej mi zábradlí: dvanáct sloupků po metru dvacet a tři madla po 2,4 metru. Jekl 30×30.",
+      "expected": {
+        "parts": [
+          {
+            "length_mm": 1200,
+            "quantity": 12
+          },
+          {
+            "length_mm": 2400,
+            "quantity": 3
+          }
+        ],
+        "stock": [],
+        "kerf_mm": null,
+        "trim_mm": null,
+        "min_remnant_mm": null,
+        "objective": null
+      },
+      "tags": [
+        "slovni_cisla",
+        "hovorove",
+        "chybi_sklad",
+        "chybi_prorez"
+      ],
+      "author_note": "„metr dvacet“ = 1200 mm; sklad neuveden."
+    },
+    {
+      "id": "extraction-dev-05",
+      "input": "Kolik tyčí koupit? Potřebuju 20 kusů po 0,65 m. Tyč 6 m stojí 85 Kč za metr. Prořez 3 mm.",
+      "expected": {
+        "parts": [
+          {
+            "length_mm": 650,
+            "quantity": 20
+          }
+        ],
+        "stock": [
+          {
+            "length_mm": 6000,
+            "price": null
+          }
+        ],
+        "kerf_mm": 3,
+        "trim_mm": null,
+        "min_remnant_mm": null,
+        "objective": null
+      },
+      "tags": [
+        "jednotky_m",
+        "cena_za_metr"
+      ],
+      "author_note": "Cena za metr se nepřepočítává, price = null."
+    }
+  ],
+  "results": {
+    "openai/gpt-oss-120b": [
+      {
+        "case_id": "extraction-dev-01",
+        "model": "openai/gpt-oss-120b",
+        "latency_s": 1.7753069170285016,
+        "calls": [
+          {
+            "attempt": 1,
+            "latency_s": 1.6218334580771625,
+            "ok": true,
+            "schema_valid": true,
+            "text": "{\"name\":null,\"material\":\"jekl 40×40×2\",\"parts\":[{\"ref\":null,\"name\":null,\"length_mm\":2000,\"quantity\":10,\"uncertain\":[]},{\"ref\":null,\"name\":null,\"length_mm\":1500,\"quantity\":5,\"uncertain\":[]}],\"stock\":[{\"ref\":null,\"length_mm\":6000,\"price\":420,\"uncertain\":[]}],\"kerf_mm\":3,\"trim_mm\":null,\"min_remnant_mm\":null,\"objective\":null,\"reply\":\"Rozpoznal jsem materiál jekl 40×40×2, 10 kusů o délce 2000 mm a 5 kusů o délce 1500 mm, řezám z 6000 mm tyčí s cenou 420 Kč a prořez 3 mm. Chybí název zakázky, cíl optimalizace, ořez a minimální zbytek.\"}",
+            "error": null,
+            "prompt_tokens": 2406,
+            "completion_tokens": 628,
+            "reasoning_tokens": 408,
+            "model_time_s": 1.439059741
+          }
+        ],
+        "prompt_version": 1,
+        "prompt_source": "langfuse"
+      },
+      {
+        "case_id": "extraction-dev-02",
+        "model": "openai/gpt-oss-120b",
+        "latency_s": 2.188197207869962,
+        "calls": [
+          {
+            "attempt": 1,
+            "latency_s": 2.185803208965808,
+            "ok": true,
+            "schema_valid": true,
+            "text": "{\"name\":null,\"material\":null,\"parts\":[{\"ref\":null,\"name\":null,\"length_mm\":1500,\"quantity\":8,\"uncertain\":[]},{\"ref\":null,\"name\":null,\"length_mm\":450,\"quantity\":12,\"uncertain\":[]}],\"stock\":[{\"ref\":null,\"length_mm\":6000,\"price\":null,\"uncertain\":[]}],\"kerf_mm\":2,\"trim_mm\":null,\"min_remnant_mm\":null,\"objective\":null,\"reply\":\"Rozpoznal jsem 8 kusů 1500 mm a 12 kusů 450 mm, máte 6 m tyče a kerf 2 mm. Chybí mi informace o materiálu, ceně tyčí a délce trubky.\"}",
+            "error": null,
+            "prompt_tokens": 2392,
+            "completion_tokens": 929,
+            "reasoning_tokens": 754,
+            "model_time_s": 2.034019213
+          }
+        ],
+        "prompt_version": 1,
+        "prompt_source": "langfuse"
+      },
+      {
+        "case_id": "extraction-dev-03",
+        "model": "openai/gpt-oss-120b",
+        "latency_s": 2.011229250114411,
+        "calls": [
+          {
+            "attempt": 1,
+            "latency_s": 2.0084519998636097,
+            "ok": true,
+            "schema_valid": true,
+            "text": "{\"name\":null,\"material\":\"L 50×50×5\",\"parts\":[{\"ref\":null,\"name\":null,\"length_mm\":2350,\"quantity\":4,\"uncertain\":[]},{\"ref\":null,\"name\":null,\"length_mm\":780,\"quantity\":6,\"uncertain\":[]}],\"stock\":[{\"ref\":null,\"length_mm\":6000,\"price\":610,\"uncertain\":[]},{\"ref\":null,\"length_mm\":3000,\"price\":320,\"uncertain\":[]}],\"kerf_mm\":null,\"trim_mm\":null,\"min_remnant_mm\":null,\"objective\":null,\"reply\":\"Rozpoznal jsem dva typy dílů (4 ks 2350 mm a 6 ks 780 mm) a dva skladové rozměry (6000 mm a 3000 mm) s uvedenými cenami. Chybí názvy dílů, reference a specifikace cíle optimalizace.\"}",
+            "error": null,
+            "prompt_tokens": 2394,
+            "completion_tokens": 684,
+            "reasoning_tokens": 468,
+            "model_time_s": 1.640599967
+          }
+        ],
+        "prompt_version": 1,
+        "prompt_source": "langfuse"
+      },
+      {
+        "case_id": "extraction-dev-04",
+        "model": "openai/gpt-oss-120b",
+        "latency_s": 1.6456375420093536,
+        "calls": [
+          {
+            "attempt": 1,
+            "latency_s": 1.6399575001560152,
+            "ok": true,
+            "schema_valid": true,
+            "text": "{\"name\":null,\"material\":\"jekl 30×30\",\"parts\":[{\"ref\":null,\"name\":\"sloupek\",\"length_mm\":1000,\"quantity\":12,\"uncertain\":[]},{\"ref\":null,\"name\":\"madlo\",\"length_mm\":2400,\"quantity\":23,\"uncertain\":[]}],\"stock\":[],\"kerf_mm\":null,\"trim_mm\":null,\"min_remnant_mm\":null,\"objective\":null,\"reply\":\"Rozpoznal jsem 12 sloupků o délce 1000 mm a 23 madel o délce 2400 mm, materiál je jekl 30×30. Chybí informace o skladových délkách, ceně a optimalizačním cíli.\"}",
+            "error": null,
+            "prompt_tokens": 2389,
+            "completion_tokens": 676,
+            "reasoning_tokens": 507,
+            "model_time_s": 1.499911295
+          }
+        ],
+        "prompt_version": 1,
+        "prompt_source": "langfuse"
+      },
+      {
+        "case_id": "extraction-dev-05",
+        "model": "openai/gpt-oss-120b",
+        "latency_s": 2.085018124897033,
+        "calls": [
+          {
+            "attempt": 1,
+            "latency_s": 2.076231916900724,
+            "ok": true,
+            "schema_valid": true,
+            "text": "{\"name\":null,\"material\":null,\"parts\":[{\"ref\":null,\"name\":null,\"length_mm\":650,\"quantity\":20,\"uncertain\":[]}],\"stock\":[{\"ref\":null,\"length_mm\":6000,\"price\":null,\"uncertain\":[]}],\"kerf_mm\":3,\"trim_mm\":null,\"min_remnant_mm\":null,\"objective\":null,\"reply\":\"Rozpoznal jsem požadavek na 20 kusů o délce 650 mm a dostupnou tyč 6000 mm s prořezem 3 mm. Cena je uvedena za metr, takže cenu za celou tyč nemohu doplnit.\"}",
+            "error": null,
+            "prompt_tokens": 2390,
+            "completion_tokens": 600,
+            "reasoning_tokens": 445,
+            "model_time_s": 1.277412818
+          }
+        ],
+        "prompt_version": 1,
+        "prompt_source": "langfuse"
+      }
+    ],
+    "openai/gpt-oss-20b": [
+      {
+        "case_id": "extraction-dev-01",
+        "model": "openai/gpt-oss-20b",
+        "latency_s": 1.1089175841771066,
+        "calls": [
+          {
+            "attempt": 1,
+            "latency_s": 1.1053630418609828,
+            "ok": true,
+            "schema_valid": true,
+            "text": "{\"name\":null,\"material\":\"jekl 40×40×2\",\"kerf_mm\":3,\"trim_mm\":null,\"min_remnant_mm\":null,\"objective\":null,\"parts\":[{\"ref\":null,\"name\":null,\"length_mm\":2000,\"quantity\":10,\"uncertain\":[]},{\"ref\":null,\"name\":null,\"length_mm\":1500,\"quantity\":5,\"uncertain\":[]}],\"stock\":[{\"ref\":null,\"length_mm\":6000,\"price\":420,\"uncertain\":[]}],\"reply\":\"Rozpoznal jsem 10 kusů 2 m a 5 kusů 1,5 m z 6 m tyčí s prořezem 3 mm. Chybí informace o minimálním zbytku a cíli optimalizace.\"}",
+            "error": null,
+            "prompt_tokens": 2406,
+            "completion_tokens": 677,
+            "reasoning_tokens": 494,
+            "model_time_s": 0.933214761
+          }
+        ],
+        "prompt_version": 1,
+        "prompt_source": "langfuse"
+      },
+      {
+        "case_id": "extraction-dev-02",
+        "model": "openai/gpt-oss-20b",
+        "latency_s": 1.9716040829662234,
+        "calls": [
+          {
+            "attempt": 1,
+            "latency_s": 1.9654987079557031,
+            "ok": true,
+            "schema_valid": true,
+            "text": "{\"name\":null,\"material\":null,\"parts\":[{\"ref\":null,\"name\":\"150 cm\",\"length_mm\":1500,\"quantity\":8,\"uncertain\":[\"length_mm\",\"quantity\"]},{\"ref\":null,\"name\":\"45 cm\",\"length_mm\":450,\"quantity\":12,\"uncertain\":[\"length_mm\",\"quantity\"]},{\"ref\":null,\"name\":\"trubka 25×25\",\"length_mm\":null,\"quantity\":1,\"uncertain\":[] }],\"stock\":[{\"ref\":null,\"length_mm\":6000,\"price\":null,\"uncertain\":[] }],\"kerf_mm\":2,\"trim_mm\":null,\"min_remnant_mm\":null,\"objective\":null,\"reply\":\"Rozpoznal jsem požadavek na 8 kusů 150 cm, 12 kusů 45 cm a jednu trubku 25×25. Chybí informace o materiálu a délce trubky.\"}",
+            "error": null,
+            "prompt_tokens": 2392,
+            "completion_tokens": 1476,
+            "reasoning_tokens": 1270,
+            "model_time_s": 1.6683997910000001
+          }
+        ],
+        "prompt_version": 1,
+        "prompt_source": "langfuse"
+      },
+      {
+        "case_id": "extraction-dev-03",
+        "model": "openai/gpt-oss-20b",
+        "latency_s": 1.2758057920727879,
+        "calls": [
+          {
+            "attempt": 1,
+            "latency_s": 1.26466279104352,
+            "ok": true,
+            "schema_valid": true,
+            "text": "{\"name\":null,\"material\":\"L 50×50×5\",\"parts\":[{\"ref\":null,\"name\":null,\"length_mm\":2350,\"quantity\":4,\"uncertain\":[]},{\"ref\":null,\"name\":null,\"length_mm\":780,\"quantity\":6,\"uncertain\":[]}],\"stock\":[{\"ref\":null,\"length_mm\":6000,\"price\":610,\"uncertain\":[]},{\"ref\":null,\"length_mm\":3000,\"price\":320,\"uncertain\":[]}],\"kerf_mm\":null,\"trim_mm\":null,\"min_remnant_mm\":null,\"objective\":null,\"reply\":\"Rozpoznal jsem materiál L 50×50×5 a dvě typy dílů: 4 kusy 2350 mm a 6 kusů 780 mm. Chybí informace o cíli optimalizace, kerf, trim a minimálním zbytku.\"}",
+            "error": null,
+            "prompt_tokens": 2394,
+            "completion_tokens": 697,
+            "reasoning_tokens": 493,
+            "model_time_s": 0.892635988
+          }
+        ],
+        "prompt_version": 1,
+        "prompt_source": "langfuse"
+      },
+      {
+        "case_id": "extraction-dev-04",
+        "model": "openai/gpt-oss-20b",
+        "latency_s": 1.3583821670617908,
+        "calls": [
+          {
+            "attempt": 1,
+            "latency_s": 1.350890750065446,
+            "ok": true,
+            "schema_valid": true,
+            "text": "{\"name\":\"Zábradlí\",\"material\":\"Jekl 30×30\",\"parts\":[{\"ref\":null,\"name\":\"sloupek\",\"length_mm\":1200,\"quantity\":12,\"uncertain\":[]},{\"ref\":null,\"name\":\"madlo\",\"length_mm\":2400,\"quantity\":3,\"uncertain\":[]}],\"stock\":[],\"kerf_mm\":null,\"trim_mm\":null,\"min_remnant_mm\":null,\"objective\":null,\"reply\":\"Rozpoznal jsem 12 sloupků po 1200 mm a 3 madla po 2400 mm z materiálu Jekl 30×30. Nejsou uvedeny skladové délky.\"}",
+            "error": null,
+            "prompt_tokens": 2389,
+            "completion_tokens": 844,
+            "reasoning_tokens": 687,
+            "model_time_s": 1.098504538
+          }
+        ],
+        "prompt_version": 1,
+        "prompt_source": "langfuse"
+      },
+      {
+        "case_id": "extraction-dev-05",
+        "model": "openai/gpt-oss-20b",
+        "latency_s": 1.1673311251215637,
+        "calls": [
+          {
+            "attempt": 1,
+            "latency_s": 1.1617312498856336,
+            "ok": true,
+            "schema_valid": true,
+            "text": "{\"name\":null,\"material\":null,\"parts\":[{\"ref\":null,\"name\":null,\"length_mm\":650,\"quantity\":20,\"uncertain\":[]},{\"ref\":null,\"name\":null,\"length_mm\":650,\"quantity\":20,\"uncertain\":[]}],\"stock\":[{\"ref\":null,\"length_mm\":6000,\"price\":null,\"uncertain\":[]}],\"kerf_mm\":3,\"trim_mm\":null,\"min_remnant_mm\":null,\"objective\":null,\"reply\":\"Rozpoznal jsem 20 kusů po 650 mm a skladové tyče 6000 mm s prořezem 3 mm. Chybí cena za tyč a materiál.\"}",
+            "error": null,
+            "prompt_tokens": 2390,
+            "completion_tokens": 659,
+            "reasoning_tokens": 499,
+            "model_time_s": 0.829918425
+          }
+        ],
+        "prompt_version": 1,
+        "prompt_source": "langfuse"
+      }
+    ],
+    "qwen/qwen3.8-27b": [
+      {
+        "case_id": "extraction-dev-01",
+        "model": "qwen/qwen3.8-27b",
+        "latency_s": 0.7931399170774966,
+        "calls": [
+          {
+            "attempt": 1,
+            "latency_s": 0.791140333050862,
+            "ok": true,
+            "schema_valid": true,
+            "text": "{\"\": null, \"material:\": \"jekl 40×40×2\", \"parts:\": [{\"name:\": \"jekl 40×40×2\", \"length_mm:\": 2000, \"quantity:\": 10, \"uncertain:\": []}, {\"name:\": \"jekl 40×40×2\", \"length_mm:\": 1500, \"quantity:\": 5, \"uncertain:\": []}], \"stock:\": [{\"length_mm:\": 6000, \"price:\": 420, \"uncertain:\": []}], \"kerf_mm:\": 3, \"reply:\": \"Rozpoznal jsem 15 dílů jeklu 40×40×2 a jednu skladovou délku 6 m. Chybí cíl optimalizace (např. nejnižší cena nebo nejméně tyčí).\"}",
+            "error": null,
+            "prompt_tokens": 1501,
+            "completion_tokens": 212,
+            "reasoning_tokens": 0,
+            "model_time_s": 0.580403711
+          }
+        ],
+        "prompt_version": 1,
+        "prompt_source": "langfuse"
+      },
+      {
+        "case_id": "extraction-dev-02",
+        "model": "qwen/qwen3.8-27b",
+        "latency_s": 4.79275320796296,
+        "calls": [
+          {
+            "attempt": 1,
+            "latency_s": 4.786515207961202,
+            "ok": false,
+            "schema_valid": false,
+            "text": null,
+            "error": "invalid_response: Error code: 400 - Failed to generate JSON. Please adjust your prompt. See 'failed_generation' for more details.",
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "reasoning_tokens": 0,
+            "model_time_s": null
+          }
+        ],
+        "prompt_version": 1,
+        "prompt_source": "langfuse"
+      },
+      {
+        "case_id": "extraction-dev-03",
+        "model": "qwen/qwen3.8-27b",
+        "latency_s": 4.772090625017881,
+        "calls": [
+          {
+            "attempt": 1,
+            "latency_s": 4.768164667068049,
+            "ok": false,
+            "schema_valid": false,
+            "text": null,
+            "error": "invalid_response: Error code: 400 - Failed to generate JSON. Please adjust your prompt. See 'failed_generation' for more details.",
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "reasoning_tokens": 0,
+            "model_time_s": null
+          }
+        ],
+        "prompt_version": 1,
+        "prompt_source": "langfuse"
+      },
+      {
+        "case_id": "extraction-dev-04",
+        "model": "qwen/qwen3.8-27b",
+        "latency_s": 0.24388654110953212,
+        "calls": [
+          {
+            "attempt": 1,
+            "latency_s": 0.23973674979060888,
+            "ok": true,
+            "schema_valid": true,
+            "text": "{\"\": \"\"}",
+            "error": null,
+            "prompt_tokens": 1483,
+            "completion_tokens": 6,
+            "reasoning_tokens": 0,
+            "model_time_s": 0.125716648
+          }
+        ],
+        "prompt_version": 1,
+        "prompt_source": "langfuse"
+      },
+      {
+        "case_id": "extraction-dev-05",
+        "model": "qwen/qwen3.8-27b",
+        "latency_s": 1.4973782079759985,
+        "calls": [
+          {
+            "attempt": 1,
+            "latency_s": 1.4934265830088407,
+            "ok": true,
+            "schema_valid": true,
+            "text": "{\".name\": null, \"material: null, \": {\".parts\": [{\"name\": null, \"length_mm\": 650, \"quantity\": 20, \"uncertain\": []}], \"stock\": [{\"length_mm\": 6000, \"price\": null, \"uncertain\": [\"price\"]}], \"kerf_mm\": 3, \"trim_mm\": null, \"min_remnant_mm\": null, \"objective\": null, \"reply\": \"Rozpoznal jsem 20 dílů po 650 mm a tyč 6 m. Cenu za metr (85 Kč/m) jsem nezapísal do pole cena za tyč, protože aplikace očekává cenu za celou tyč.\"}}",
+            "error": null,
+            "prompt_tokens": 1484,
+            "completion_tokens": 161,
+            "reasoning_tokens": 0,
+            "model_time_s": 1.052939023
+          }
+        ],
+        "prompt_version": 1,
+        "prompt_source": "langfuse"
+      }
+    ]
+  }
+}

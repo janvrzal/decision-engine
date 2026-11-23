@@ -136,5 +136,4 @@ Zásady kvality jsou ve specifikaci (kap. 4) a kritéria v kap. 9. Postup a konv
 
 ## Otevřené otázky
 
-- Konkrétní model na Groqu se zvolí podle evaluace extrakce (ADR-0008).
 - Podpora češtiny u Jev/Layo není v dokumentaci uvedena; ověřit v M0.
