@@ -1,0 +1,12 @@
+{
+  "name": "repair-invalid-json",
+  "type": "text",
+  "version": 1,
+  "labels": [
+    "staging",
+    "latest",
+    "production"
+  ],
+  "config": {},
+  "prompt": "Tvoje předchozí odpověď neodpovídá JSON schématu. Chyby:\n{{errors}}\n\nPošli znovu celý opravený JSON objekt podle schématu, bez dalšího textu."
+}

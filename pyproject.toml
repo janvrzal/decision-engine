@@ -9,8 +9,8 @@ dependencies = [
     "ortools>=9.11",
     "fastapi>=0.115",
     "uvicorn[standard]>=0.32",
-    "openai>=1.55",
-    "langfuse>=2.55",
+    "openai>=2",
+    "langfuse>=5.2",
 ]
 
 [project.scripts]
@@ -40,7 +40,7 @@ packages = ["src/decision_engine"]
 [tool.ruff]
 line-length = 100
 target-version = "py312"
-src = ["src", "tests"]
+src = ["src", "tests", "scripts"]
 
 [tool.ruff.lint]
 select = [
@@ -71,11 +71,12 @@ allowed-confusables = ["–", "„", "“", "×", "’", "‚", "‘"]
 "src/decision_engine/api/**" = ["TID251"]
 "tests/**" = ["TID251"]
 "evals/**" = ["TID251"]
+"scripts/**" = ["TID251"]
 
 # --- Pyright ----------------------------------------------------------------
 
 [tool.pyright]
-include = ["src", "tests"]
+include = ["src", "tests", "scripts"]
 pythonVersion = "3.12"
 typeCheckingMode = "strict"
 venvPath = "."
