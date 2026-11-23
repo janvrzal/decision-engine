@@ -128,10 +128,15 @@ class ProposalView(_View):
     confirm_disabled_reason: str | None
 
 
+class BarsByLength(_View):
+    length_mm: int
+    count: int
+
+
 class MetricsView(_View):
     bars_used: int
-    bars_by_length: tuple[tuple[int, int], ...]
-    """Dvojice (délka tyče v mm, počet tyčí)."""
+    bars_by_length: tuple[BarsByLength, ...]
+    """Počet spotřebovaných tyčí podle délky, od nejdelší."""
     parts_length_mm: int
     consumed_length_mm: int
     remnant_length_mm: int

@@ -2,9 +2,9 @@ import { describe, expect, it, vi } from 'vitest';
 import { page } from 'vitest/browser';
 import { render } from 'vitest-browser-svelte';
 import StepIndicator from './StepIndicator.svelte';
-import type { Step } from '#lib/fixtures/empty-project.js';
+import type { StepView } from '#lib/api/types.js';
 
-const steps: Step[] = [
+const steps: StepView[] = [
 	{ id: 'input', label: 'Zadání', state: 'done' },
 	{ id: 'review', label: 'Kontrola údajů', state: 'active' },
 	{ id: 'result', label: 'Plán a cena', state: 'stale' }

@@ -194,6 +194,21 @@
 				"required": ["numbers", "length_mm", "pieces", "cuts_mm", "tail", "tail_length_mm"],
 				"title": "BarView"
 			},
+			"BarsByLength": {
+				"properties": {
+					"length_mm": {
+						"type": "integer",
+						"title": "Length Mm"
+					},
+					"count": {
+						"type": "integer",
+						"title": "Count"
+					}
+				},
+				"type": "object",
+				"required": ["length_mm", "count"],
+				"title": "BarsByLength"
+			},
 			"CapabilityView": {
 				"properties": {
 					"id": {
@@ -339,17 +354,7 @@
 					},
 					"bars_by_length": {
 						"items": {
-							"prefixItems": [
-								{
-									"type": "integer"
-								},
-								{
-									"type": "integer"
-								}
-							],
-							"type": "array",
-							"maxItems": 2,
-							"minItems": 2
+							"$ref": "#/components/schemas/BarsByLength"
 						},
 						"type": "array",
 						"title": "Bars By Length"

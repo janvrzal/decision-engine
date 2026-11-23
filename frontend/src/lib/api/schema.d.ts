@@ -99,6 +99,13 @@ export interface components {
 			/** Tail Length Mm */
 			tail_length_mm: number;
 		};
+		/** BarsByLength */
+		BarsByLength: {
+			/** Length Mm */
+			length_mm: number;
+			/** Count */
+			count: number;
+		};
 		/** CapabilityView */
 		CapabilityView: {
 			/** Id */
@@ -175,7 +182,7 @@ export interface components {
 			/** Bars Used */
 			bars_used: number;
 			/** Bars By Length */
-			bars_by_length: [number, number][];
+			bars_by_length: components['schemas']['BarsByLength'][];
 			/** Parts Length Mm */
 			parts_length_mm: number;
 			/** Consumed Length Mm */
