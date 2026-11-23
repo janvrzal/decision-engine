@@ -44,7 +44,7 @@ Projdi `git diff main...HEAD` a ověř:
 - [ ] žádný ladicí kód (`print`, zakomentované bloky, `breakpoint()`),
 - [ ] jádro neporušuje pravidla z `AGENTS.md` (I/O, čas, náhoda, mutovatelná data, výjimky ven, `float` pro délky/peníze),
 - [ ] uživatelské texty česky a srozumitelně,
-- [ ] změna UI ověřená v běžící aplikaci podle checklistu ve skillu `ui-frontend`, screenshoty připravené do PR,
+- [ ] změna UI ověřená v běžící aplikaci podle checklistu ve skillu `ui-frontend` (do PR stačí popis, screenshoty se nepřikládají),
 - [ ] frontend nic nepočítá a typy API jsou vygenerované, ne psané ručně,
 - [ ] specifikace a ADR odpovídají (skilly `zmena-specifikace`, `adr`),
 - [ ] testovací AI sady nebyly použity k ladění (skill `ai-evaluace`).
@@ -66,7 +66,7 @@ Typy: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`, `perf`, `eval`. Scope:
 Šablona je v `.github/pull_request_template.md`. Popis obsahuje:
 
 - **Co a proč** — 2–4 věty, odkaz na kapitolu/UC specifikace,
-- **Jak ověřeno** — jaké testy přibyly, ruční ověření v UI (screenshoty), evaluace (s odkazem na report),
+- **Jak ověřeno** — jaké testy přibyly, ruční ověření v UI (na jakých šířkách a co se prošlo), evaluace (s odkazem na report),
 - **Dopady** — změny formátu zakázky, specifikace, ADR, známá omezení.
 
 Po otevření PR počkej na CI; neslučuj s červeným CI.

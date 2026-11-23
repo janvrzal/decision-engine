@@ -53,7 +53,7 @@ UI je jediný povinný a hodnocený požadavek zadání. Cílem je, aby aplikace
 1. Ujasni, který krok hlavního toku a které stavy se mění (kap. 4 a 5 specifikace).
 2. Pokud se mění view model nebo události, nejdřív backend (reducer + testy v `tests/flow/`), pak `pnpm generate:api`.
 3. Implementuj komponentu se všemi stavy z tabulky výše.
-4. Spusť aplikaci (`uv run decision-engine` + `pnpm dev`) a **projdi změnu v prohlížeči** na šířce 1440 px i 768 px; pořiď screenshot do PR.
+4. Spusť aplikaci (`uv run decision-engine` + `pnpm dev`) a **projdi změnu v prohlížeči** na šířce 1440 px i 768 px; v PR ověření popiš (screenshoty se nepřikládají).
 5. `pnpm check && pnpm lint && pnpm test`; u změny hlavního toku i `pnpm test:e2e`.
 
 ## Checklist před PR
@@ -62,5 +62,5 @@ UI je jediný povinný a hodnocený požadavek zadání. Cílem je, aby aplikace
 - [ ] Jen tokeny a komponenty z design systému, žádné jednorázové styly; nová komponenta nebo varianta je doplněná v `docs/design-system/komponenty.md`.
 - [ ] Čísla a jednotky ve formátu `cs-CZ`, žádné interní pojmy v hlavním UI.
 - [ ] Klávesnice a fokus fungují; axe bez závažných nálezů.
-- [ ] Rozložení ověřené na 1440 px a 768 px; screenshoty v PR.
+- [ ] Rozložení ověřené na 1440 px a 768 px a popsané v PR.
 - [ ] Frontend nic nepočítá; typy API vygenerované.
