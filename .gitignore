@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+build/
+dist/
+*.egg-info/
+
+# Nástroje
+.pytest_cache/
+.ruff_cache/
+.hypothesis/
+.coverage
+htmlcov/
+
+# Tajné údaje a lokální data
+.env
+.env.*
+!.env.example
+data/
+*.sqlite
+*.db
+
+# Cache AI odpovědí
+.cache/
+
+# Lokální nastavení
+.claude/settings.local.json
+.DS_Store
+.idea/
+.vscode/
