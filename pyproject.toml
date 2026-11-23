@@ -7,7 +7,10 @@ requires-python = ">=3.12,<3.13"
 dependencies = [
     "pydantic>=2.9",
     "ortools>=9.11",
-    "streamlit>=1.40",
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "openai>=1.55",
+    "langfuse>=2.55",
 ]
 
 [dependency-groups]
@@ -56,12 +59,12 @@ allowed-confusables = ["–", "„", "“", "×", "’", "‚", "‘"]
 "datetime.datetime.now".msg = "Jádro nesmí číst čas; předej ho jako argument (ADR-0001)."
 "datetime.date.today".msg = "Jádro nesmí číst čas; předej ho jako argument (ADR-0001)."
 "time.time".msg = "Jádro nesmí číst čas; předej ho jako argument (ADR-0001)."
-"os.environ".msg = "Konfigurace se čte jen v adaptérech/UI (ADR-0001)."
-"os.getenv".msg = "Konfigurace se čte jen v adaptérech/UI (ADR-0001)."
+"os.environ".msg = "Konfigurace se čte jen v adaptérech a API (ADR-0001)."
+"os.getenv".msg = "Konfigurace se čte jen v adaptérech a API (ADR-0001)."
 
 [tool.ruff.lint.per-file-ignores]
 "src/decision_engine/adapters/**" = ["TID251"]
-"src/decision_engine/ui/**" = ["TID251"]
+"src/decision_engine/api/**" = ["TID251"]
 "tests/**" = ["TID251"]
 "evals/**" = ["TID251"]
 
@@ -74,34 +77,43 @@ typeCheckingMode = "strict"
 venvPath = "."
 venv = ".venv"
 
-# --- Hranice vrstev (ADR-0001) ---------------------------------------------
+# --- Hranice vrstev (ADR-0001, ADR-0006) ------------------------------
 
 [tool.importlinter]
 root_package = "decision_engine"
 include_external_packages = true
 
 [[tool.importlinter.contracts]]
-name = "Jádro nezávisí na ostatních vrstvách"
+name = "Jádro nezávisí na ostatních vrstvách ani na I/O knihovnách"
 type = "forbidden"
 source_modules = ["decision_engine.core"]
 forbidden_modules = [
     "decision_engine.capabilities",
+    "decision_engine.app",
     "decision_engine.adapters",
-    "decision_engine.ui",
-    "streamlit",
+    "decision_engine.api",
+    "fastapi",
+    "openai",
+    "langfuse",
 ]
 
 [[tool.importlinter.contracts]]
-name = "Registr schopností nezávisí na adaptérech ani UI"
+name = "Registr schopností závisí jen na jádře"
 type = "forbidden"
 source_modules = ["decision_engine.capabilities"]
-forbidden_modules = ["decision_engine.adapters", "decision_engine.ui", "streamlit"]
+forbidden_modules = ["decision_engine.app", "decision_engine.adapters", "decision_engine.api"]
 
 [[tool.importlinter.contracts]]
-name = "Adaptéry nezávisí na UI"
+name = "Aplikační vrstva nezná adaptéry, HTTP ani poskytovatele AI"
+type = "forbidden"
+source_modules = ["decision_engine.app"]
+forbidden_modules = ["decision_engine.adapters", "decision_engine.api", "fastapi", "openai", "langfuse"]
+
+[[tool.importlinter.contracts]]
+name = "Adaptéry nezávisí na API"
 type = "forbidden"
 source_modules = ["decision_engine.adapters"]
-forbidden_modules = ["decision_engine.ui", "streamlit"]
+forbidden_modules = ["decision_engine.api", "fastapi"]
 
 # --- Pytest -----------------------------------------------------------------
 
@@ -112,6 +124,7 @@ markers = [
     "ai: volá placené AI API; spouští se jen na vyžádání (-m ai)",
     "slow: výkonnostní a dlouhé testy (-m slow)",
     "integration: testy adaptérů s reálným I/O mimo síť",
+    "flow: testy toku přes reducer a app/ s falešnými adaptéry",
 ]
 
 [tool.coverage.run]
