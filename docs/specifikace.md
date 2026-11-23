@@ -1,10 +1,10 @@
 # DecisionEngine — specifikace cílové verze pro semestrální práci
 
-**Verze:** 0.3 — architektura a technologie  
+**Verze:** 0.4 — service design  
 **Datum:** 23. 11. 2026  
 **Stav:** Specifikace budoucího chování; tento dokument nepopisuje dokončenou implementaci.
 
-**Změny oproti 0.2:** UI je webová aplikace FastAPI + SvelteKit místo Streamlitu (ADR-0007). Přibyla aplikační vrstva a stav relace řízený reducerem (ADR-0006). Generativní model běží přes Groq za vyměnitelným adaptérem (ADR-0008), prompty a trasování AI spravuje Langfuse (ADR-0009). Kapitola 4 má zásady kvality rozhraní, kapitola 9 kritéria kvality UI. Pořadí realizace (kap. 11) je postavené na svislých řezech a průběžném ladění UI; rozšíření jsou podmíněná dokončením vyladěného hlavního toku. Aplikace se spouští jen lokálně. Kapitola 10 odkazuje na znění zadání v `docs/zadani.md`.
+**Změny oproti 0.3:** Výsledky service designu (`docs/service-design/`). Vstupy zakázky se dělí na vstupy plánu a vstupy kalkulace. Vstupy kalkulace (práce, další náklady, přirážka, DPH) se upravují přímo a plán nezneplatní (kap. 4, UC-04, kap. 7). I ruční úpravy vstupů plánu vznikají jako návrh změny. Definice neaktuálního plánu nově zahrnuje čekající návrh a ceny tyčí se v ní uplatní jen při cíli „nejnižší cena“ (kap. 7). Výsledek 1D uvádí pořadí dílů na tyči. Kapitola 5 má další scénáře UC-09 až UC-16.
 
 ## 1. Produkt a jeho účel
 
@@ -105,14 +105,14 @@ Uživatel vidí zvolený nástroj běžným názvem, například „Řezání ty
 
 ### Výsledek
 
-- Měřítkový plán tyčí (u rozšíření i desek) s popisky a legendou.
+- Měřítkový plán tyčí (u rozšíření i desek) s popisky a legendou; u 1D s pořadím dílů na tyči, stejně i v PDF.
 - Spotřebované tyče, délka požadovaných dílů, odpad a zbytky; při zapnutém skladu i rozdělení na „ze skladu“ a „k nákupu“.
 - Výtěžnost jako poměr materiálu v hotových dílech ke spotřebovanému vstupnímu materiálu; využitelné zbytky se uvádějí samostatně.
 - Viditelný stav: optimální, nejlepší nalezený, částečný nebo bez proveditelného řešení. U nejlepšího nalezeného řešení se uvádí i vzdálenost od dolní meze, pokud je známá.
 - Kalkulace s uvedenými cenovými předpoklady a chybějícími položkami.
 - Akce „Upravit“, „Přepočítat“, „Uložit zakázku“ a „Stáhnout PDF“.
 
-Úprava vstupů označí původní výsledek jako neaktuální. Export plánu je dostupný až pro výsledek odpovídající potvrzené verzi vstupů.
+Změna vstupů plánu nebo čekající návrh změny označí původní plán jako neaktuální (kap. 7, Stav zakázky). Změna vstupů kalkulace přepočítá jen kalkulaci. Export plánu je dostupný až pro plán odpovídající potvrzené verzi vstupů.
 
 ## 5. Uživatelské scénáře
 
@@ -184,6 +184,8 @@ Výchozí cíl je „nejnižší cena“, pokud jsou zadané ceny všech skladov
 4. Volitelně přičte uživatelem zadanou přirážku k nákladům a sazbu DPH.
 5. Zobrazí rozpad a zahrne jej do exportu.
 
+Práci, další náklady, přirážku a DPH (vstupy kalkulace) uživatel upravuje přímo v kalkulaci. Úprava vytvoří novou revizi a kalkulace se přepočítá bez nového výpočtu plánu. Ceny skladových délek patří ke vstupům plánu, protože ovlivňují cíl „nejnižší cena“.
+
 Přirážka znamená procento z nákladů, nikoli marži z prodejní ceny. Sazby ani ceny aplikace sama nevymýšlí. Chybějící cena znamená neúplnou kalkulaci, nikoli nulový náklad. Peněžní výpočty používají desetinnou aritmetiku (`Decimal`) a jednotné zaokrouhlování. Výstup je orientační kalkulace, ne faktura.
 
 Při zapnutém skladu se materiál ze skladu oceňuje evidovanou cenou skladové položky. Uživatel může zvolit, že se skladový materiál do kalkulace nezapočítá (například již zaplacené zbytky); tato volba se uvádí mezi cenovými předpoklady.
@@ -230,6 +232,21 @@ Při zapnutém skladu se materiál ze skladu oceňuje evidovanou cenou skladové
 **Odchylky:** Pokud uživatel zakáže nákup a sklad nestačí, úloha je bez proveditelného úplného řešení; aplikace ukáže částečný plán s neumístěnými kusy a nabídne povolení nákupu. Shoda materiálu mezi zakázkou a skladem se kontroluje podle identifikátoru materiálu/profilu, nikoli podle volného textu.
 
 **Úspěch:** Výpočet nikdy nepoužije více kusů, než je na skladě. Sklad se nezmění bez výslovného potvrzení. Každá změna skladu je dohledatelná (kdy, z jaké zakázky, jaké položky).
+
+### Další scénáře
+
+Podrobně jsou rozepsané v [`docs/service-design/02-use-cases.md`](service-design/02-use-cases.md) spolu se zpřesněním UC-01 až UC-08.
+
+| UC | Scénář | Podstata |
+|---|---|---|
+| UC-09 | První spuštění a úvodní obrazovka | Na první pohled je zřejmé, co aplikace dělá a čím začít; bez klíče AI fungují ruční cesta, příklady a demo |
+| UC-10 | Otevření připraveného příkladu | Připravená zakázka jedním klikem, bez AI a offline |
+| UC-11 | Demo režim | Celý hlavní tok nad připravenými odpověďmi AI se skutečnými výpočty, trvale označený |
+| UC-12 | Vývojářský panel | Diagnostika bez tajných údajů a přepnutí implementace routeru za běhu |
+| UC-13 | Ruční zadání formulářem | Zakázka bez AI se stejným výsledkem jako cesta přes AI |
+| UC-14 | Dotaz k výsledku | Vysvětlení plánu jen z dodaných metrik, bez změny zakázky |
+| UC-15 | Nová zakázka | Prázdný kontext a ochrana neuložené práce |
+| UC-16 | Správa skladu *(rozšíření)* | Evidence položek a zbytků s historií změn |
 
 ## 6. Role AI a řízení toku
 
@@ -328,7 +345,7 @@ vrátí nový stav a seznam efektů — popisů vedlejších účinků (`CallRou
 událost → reduce (čisté) → nový stav + efekty → app/ vykoná efekty → nová událost → …
 ```
 
-Pravidla specifikace jsou tím vynucená strukturou: zakázku mění jen událost potvrzení; „neaktuální výsledek“ je odvozená vlastnost (`result.revision != project.revision`), kterou nikdo nenastavuje. Frontend posílá události přes `POST /api/sessions/{id}/events` a dostává zpět view model stavu. Stav relací drží backend v paměti (lokální běh, jeden uživatel); trvalé jsou jen uložené zakázky a sklad. Podrobnosti v ADR-0006.
+Pravidla specifikace jsou tím vynucená strukturou: vstupy plánu mění jen událost potvrzení návrhu a vstupy kalkulace jen vlastní událost úpravy kalkulace; „neaktuální plán“ je odvozená vlastnost (definice v části Stav zakázky), kterou nikdo nenastavuje. Frontend posílá události přes `POST /api/sessions/{id}/events` a dostává zpět view model stavu. Stav relací drží backend v paměti (lokální běh, jeden uživatel); trvalé jsou jen uložené zakázky a sklad. Podrobnosti v ADR-0006.
 
 ### Schopnosti a služby
 
@@ -355,7 +372,11 @@ Heuristika s gilotinovým dělením volného prostoru (např. gilotinová varian
 
 ### Stav zakázky
 
-Stav zakázky je její poslední potvrzená revize. LLM ani solver do ní nezapisují přímo: LLM vytvoří `ChangeProposal`, uživatel ho v kontrolní tabulce potvrdí nebo opraví, a teprve potom jádro z předchozí revize a potvrzené změny vytvoří novou revizi. Výsledek výpočtu nese číslo revize, ze které vznikl, takže je vidět, kdy už neodpovídá aktuálním vstupům.
+Stav zakázky je její poslední potvrzená revize. LLM ani solver do ní nezapisují přímo: LLM vytvoří `ChangeProposal`, uživatel ho v kontrolní tabulce potvrdí nebo opraví, a teprve potom jádro z předchozí revize a potvrzené změny vytvoří novou revizi. Stejně se chovají ruční vstupy: formulář i úprava buňky v kontrolní tabulce mění jen rozpracovaný `ChangeProposal`, zakázku mění až „Potvrdit a vypočítat“.
+
+Vstupy zakázky se dělí na **vstupy plánu** (díly, skladové délky a jejich ceny, parametry, cíl optimalizace) a **vstupy kalkulace** (práce, další náklady, přirážka, DPH). Vstupy kalkulace se upravují přímo: úprava je sama potvrzením, vytvoří novou revizi a kalkulace se přepočítá bez solveru.
+
+Výsledek výpočtu nese číslo revize, ze které vznikl. Plán je **neaktuální**, pokud se od této revize změnily vstupy plánu (ceny skladových délek se počítají jen při cíli „nejnižší cena“, jinak plán neovlivňují), pokud čeká nepotvrzený návrh změny, nebo pokud se změnila revize skladu. Jde o odvozenou vlastnost, nikdo ji nenastavuje.
 
 Sklad má vlastní revize a vlastní úložiště. Výsledek výpočtu se skladem nese i revizi skladu; změna skladu označí výsledek jako neaktuální.
 
