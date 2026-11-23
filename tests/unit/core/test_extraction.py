@@ -116,6 +116,12 @@ def test_navrh_bez_nazvu_prevezme_nazev_zakazky(project_data: dict[str, Any]) ->
     assert proposal.name == base.name
 
 
+def test_nova_zakazka_bez_nazvu_dostane_vychozi_nazev() -> None:
+    proposal = proposal_from_extraction(_output(name=None), base=None)
+
+    assert proposal.name == "Nová zakázka"
+
+
 def test_extra_pole_od_modelu_nevadi() -> None:
     output = ExtractionOutput.model_validate({"parts": [], "poznamka": "navíc"})
 
