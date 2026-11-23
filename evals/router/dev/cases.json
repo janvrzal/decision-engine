@@ -1,0 +1,662 @@
+[
+  {
+    "id": "router-dev-001",
+    "input": {
+      "message": "Potřebuju nařezat 12 kusů jeklu 40×40 na 1250 mm a 6 kusů na 800 mm, mám tyče po 6 m.",
+      "order": null
+    },
+    "expected": {
+      "capability": "cutting_1d",
+      "intent": "new_order"
+    },
+    "tags": [
+      "jasne"
+    ],
+    "author_note": ""
+  },
+  {
+    "id": "router-dev-002",
+    "input": {
+      "message": "Z latí 3 m chci nařezat 20× 45 cm a 8× 120 cm, prořez pily 3 mm.",
+      "order": null
+    },
+    "expected": {
+      "capability": "cutting_1d",
+      "intent": "new_order"
+    },
+    "tags": [
+      "jednotky_cm"
+    ],
+    "author_note": ""
+  },
+  {
+    "id": "router-dev-003",
+    "input": {
+      "message": "potrebuju narezat trubky 25mm: 4ks 2,1m, 10ks 650mm, tyce maj 6m",
+      "order": null
+    },
+    "expected": {
+      "capability": "cutting_1d",
+      "intent": "new_order"
+    },
+    "tags": [
+      "bez_diakritiky",
+      "slang"
+    ],
+    "author_note": ""
+  },
+  {
+    "id": "router-dev-004",
+    "input": {
+      "message": "Kolik tyčí po šesti metrech budu potřebovat na 30 kusů po 1,9 m?",
+      "order": null
+    },
+    "expected": {
+      "capability": "cutting_1d",
+      "intent": "new_order"
+    },
+    "tags": [
+      "otazka"
+    ],
+    "author_note": "Počet tyčí je výsledek nářezového plánu, ne kalkulace ceny."
+  },
+  {
+    "id": "router-dev-005",
+    "input": {
+      "message": "Mám na skladě 3 tyče L profilu 4 m. Vejde se z nich 9 dílů po 1 200 mm?",
+      "order": null
+    },
+    "expected": {
+      "capability": "cutting_1d",
+      "intent": "new_order"
+    },
+    "tags": [
+      "otazka"
+    ],
+    "author_note": ""
+  },
+  {
+    "id": "router-dev-006",
+    "input": {
+      "message": "Na zábradlí potřebuju 14 sloupků 1100 mm a 2 madla 3,5 m z trubky 40×20, nakupuju šestimetrovky.",
+      "order": null
+    },
+    "expected": {
+      "capability": "cutting_1d",
+      "intent": "new_order"
+    },
+    "tags": [
+      "slang"
+    ],
+    "author_note": ""
+  },
+  {
+    "id": "router-dev-007",
+    "input": {
+      "message": "Prosím o nářezový plán: hranoly 60×80, délky 2400 ×4, 1800 ×6, 950 ×10. Dodavatel má 4 m a 5 m.",
+      "order": null
+    },
+    "expected": {
+      "capability": "cutting_1d",
+      "intent": "new_order"
+    },
+    "tags": [
+      "vice_delek"
+    ],
+    "author_note": ""
+  },
+  {
+    "id": "router-dev-008",
+    "input": {
+      "message": "Rozřež mi pásovinu 30×5 na 25 kousků po 18 cm, ať je co nejmíň odpadu.",
+      "order": null
+    },
+    "expected": {
+      "capability": "cutting_1d",
+      "intent": "new_order"
+    },
+    "tags": [
+      "jednotky_cm"
+    ],
+    "author_note": ""
+  },
+  {
+    "id": "router-dev-009",
+    "input": {
+      "message": "Dělám regál: 4 nohy 1,8 m a 12 příček 80 cm, z jeklu 30×30, ten se prodává po 6 m.",
+      "order": null
+    },
+    "expected": {
+      "capability": "cutting_1d",
+      "intent": "new_order"
+    },
+    "tags": [
+      "kontext_vyrobku"
+    ],
+    "author_note": "Výrobek je zmíněn, ale díly jsou dané."
+  },
+  {
+    "id": "router-dev-010",
+    "input": {
+      "message": "Optimalizuj nařezání: 7× 2 350, 3× 1 720, 11× 460 (mm), materiál 6 000 mm, prořez 2 mm.",
+      "order": null
+    },
+    "expected": {
+      "capability": "cutting_1d",
+      "intent": "new_order"
+    },
+    "tags": [
+      "jasne"
+    ],
+    "author_note": ""
+  },
+  {
+    "id": "router-dev-011",
+    "input": {
+      "message": "Kolik mě bude stát materiál na 10 jeklů po 2 m, když šestimetrová tyč stojí 420 Kč?",
+      "order": null
+    },
+    "expected": {
+      "capability": "cost_estimate",
+      "intent": "new_order"
+    },
+    "tags": [
+      "hranicni"
+    ],
+    "author_note": "Chce cenu; aplikace nejdřív vytvoří plán (spec kap. 6)."
+  },
+  {
+    "id": "router-dev-012",
+    "input": {
+      "message": "Potřebuju nacenit zakázku pro zákazníka.",
+      "order": null
+    },
+    "expected": {
+      "capability": "cost_estimate",
+      "intent": "new_order"
+    },
+    "tags": [
+      "hranicni"
+    ],
+    "author_note": "Záměr je cena, údaje chybí; aplikace nabídne vytvoření plánu."
+  },
+  {
+    "id": "router-dev-013",
+    "input": {
+      "message": "Udělej mi kalkulaci, sazba 500 Kč/h, práce 3 hodiny, přirážka 15 %.",
+      "order": {
+        "ulohy": "řezání tyčí (1D)",
+        "dily": [
+          {
+            "nazev": "sloupky",
+            "delka_mm": 2000,
+            "pocet": 10
+          },
+          {
+            "nazev": "příčky",
+            "delka_mm": 1500,
+            "pocet": 5
+          }
+        ],
+        "skladove_delky_mm": [
+          6000
+        ],
+        "prorez_mm": 3,
+        "plan": "spočítaný: 5 tyčí po 6000 mm, odpad 8 %"
+      }
+    },
+    "expected": {
+      "capability": "cost_estimate",
+      "intent": "change_order"
+    },
+    "tags": [
+      "kalkulace"
+    ],
+    "author_note": ""
+  },
+  {
+    "id": "router-dev-014",
+    "input": {
+      "message": "A kolik bude stát materiál?",
+      "order": {
+        "ulohy": "řezání tyčí (1D)",
+        "dily": [
+          {
+            "nazev": "sloupky",
+            "delka_mm": 2000,
+            "pocet": 10
+          },
+          {
+            "nazev": "příčky",
+            "delka_mm": 1500,
+            "pocet": 5
+          }
+        ],
+        "skladove_delky_mm": [
+          6000
+        ],
+        "prorez_mm": 3,
+        "plan": "spočítaný: 5 tyčí po 6000 mm, odpad 8 %"
+      }
+    },
+    "expected": {
+      "capability": "cost_estimate",
+      "intent": "result_question"
+    },
+    "tags": [
+      "kalkulace"
+    ],
+    "author_note": ""
+  },
+  {
+    "id": "router-dev-015",
+    "input": {
+      "message": "Kolik to bude celkem i s DPH?",
+      "order": {
+        "ulohy": "řezání tyčí (1D)",
+        "dily": [
+          {
+            "nazev": "sloupky",
+            "delka_mm": 2000,
+            "pocet": 10
+          },
+          {
+            "nazev": "příčky",
+            "delka_mm": 1500,
+            "pocet": 5
+          }
+        ],
+        "skladove_delky_mm": [
+          6000
+        ],
+        "prorez_mm": 3,
+        "plan": "spočítaný: 5 tyčí po 6000 mm, odpad 8 %"
+      }
+    },
+    "expected": {
+      "capability": "cost_estimate",
+      "intent": "result_question"
+    },
+    "tags": [
+      "kalkulace"
+    ],
+    "author_note": ""
+  },
+  {
+    "id": "router-dev-016",
+    "input": {
+      "message": "Přidej ještě 4 kusy po 900 mm.",
+      "order": {
+        "ulohy": "řezání tyčí (1D)",
+        "dily": [
+          {
+            "nazev": "sloupky",
+            "delka_mm": 2000,
+            "pocet": 10
+          },
+          {
+            "nazev": "příčky",
+            "delka_mm": 1500,
+            "pocet": 5
+          }
+        ],
+        "skladove_delky_mm": [
+          6000
+        ],
+        "prorez_mm": 3,
+        "plan": "spočítaný: 5 tyčí po 6000 mm, odpad 8 %"
+      }
+    },
+    "expected": {
+      "capability": "cutting_1d",
+      "intent": "change_order"
+    },
+    "tags": [
+      "zmena"
+    ],
+    "author_note": ""
+  },
+  {
+    "id": "router-dev-017",
+    "input": {
+      "message": "Ty příčky udělej o 5 cm kratší.",
+      "order": {
+        "ulohy": "řezání tyčí (1D)",
+        "dily": [
+          {
+            "nazev": "sloupky",
+            "delka_mm": 2000,
+            "pocet": 10
+          },
+          {
+            "nazev": "příčky",
+            "delka_mm": 1500,
+            "pocet": 5
+          }
+        ],
+        "skladove_delky_mm": [
+          6000
+        ],
+        "prorez_mm": 3,
+        "plan": "spočítaný: 5 tyčí po 6000 mm, odpad 8 %"
+      }
+    },
+    "expected": {
+      "capability": "cutting_1d",
+      "intent": "change_order"
+    },
+    "tags": [
+      "zmena",
+      "odkaz"
+    ],
+    "author_note": ""
+  },
+  {
+    "id": "router-dev-018",
+    "input": {
+      "message": "Odeber ty dlouhé kusy, nakonec je nepotřebuju.",
+      "order": {
+        "ulohy": "řezání tyčí (1D)",
+        "dily": [
+          {
+            "nazev": "sloupky",
+            "delka_mm": 2000,
+            "pocet": 10
+          },
+          {
+            "nazev": "příčky",
+            "delka_mm": 1500,
+            "pocet": 5
+          }
+        ],
+        "skladove_delky_mm": [
+          6000
+        ],
+        "prorez_mm": 3,
+        "plan": "spočítaný: 5 tyčí po 6000 mm, odpad 8 %"
+      }
+    },
+    "expected": {
+      "capability": "cutting_1d",
+      "intent": "change_order"
+    },
+    "tags": [
+      "zmena",
+      "odkaz"
+    ],
+    "author_note": ""
+  },
+  {
+    "id": "router-dev-019",
+    "input": {
+      "message": "Dodavatel teď má i tyče 3 m, zkus to přepočítat.",
+      "order": {
+        "ulohy": "řezání tyčí (1D)",
+        "dily": [
+          {
+            "nazev": "sloupky",
+            "delka_mm": 2000,
+            "pocet": 10
+          },
+          {
+            "nazev": "příčky",
+            "delka_mm": 1500,
+            "pocet": 5
+          }
+        ],
+        "skladove_delky_mm": [
+          6000
+        ],
+        "prorez_mm": 3,
+        "plan": "spočítaný: 5 tyčí po 6000 mm, odpad 8 %"
+      }
+    },
+    "expected": {
+      "capability": "cutting_1d",
+      "intent": "change_order"
+    },
+    "tags": [
+      "zmena"
+    ],
+    "author_note": ""
+  },
+  {
+    "id": "router-dev-020",
+    "input": {
+      "message": "Změň prořez na 4 mm.",
+      "order": {
+        "ulohy": "řezání tyčí (1D)",
+        "dily": [
+          {
+            "nazev": "sloupky",
+            "delka_mm": 2000,
+            "pocet": 10
+          },
+          {
+            "nazev": "příčky",
+            "delka_mm": 1500,
+            "pocet": 5
+          }
+        ],
+        "skladove_delky_mm": [
+          6000
+        ],
+        "prorez_mm": 3,
+        "plan": "spočítaný: 5 tyčí po 6000 mm, odpad 8 %"
+      }
+    },
+    "expected": {
+      "capability": "cutting_1d",
+      "intent": "change_order"
+    },
+    "tags": [
+      "zmena"
+    ],
+    "author_note": ""
+  },
+  {
+    "id": "router-dev-021",
+    "input": {
+      "message": "Proč je v jedné tyči tak velký zbytek?",
+      "order": {
+        "ulohy": "řezání tyčí (1D)",
+        "dily": [
+          {
+            "nazev": "sloupky",
+            "delka_mm": 2000,
+            "pocet": 10
+          },
+          {
+            "nazev": "příčky",
+            "delka_mm": 1500,
+            "pocet": 5
+          }
+        ],
+        "skladove_delky_mm": [
+          6000
+        ],
+        "prorez_mm": 3,
+        "plan": "spočítaný: 5 tyčí po 6000 mm, odpad 8 %"
+      }
+    },
+    "expected": {
+      "capability": "cutting_1d",
+      "intent": "result_question"
+    },
+    "tags": [
+      "dotaz_k_vysledku"
+    ],
+    "author_note": ""
+  },
+  {
+    "id": "router-dev-022",
+    "input": {
+      "message": "Kolik odpadu celkem vznikne?",
+      "order": {
+        "ulohy": "řezání tyčí (1D)",
+        "dily": [
+          {
+            "nazev": "sloupky",
+            "delka_mm": 2000,
+            "pocet": 10
+          },
+          {
+            "nazev": "příčky",
+            "delka_mm": 1500,
+            "pocet": 5
+          }
+        ],
+        "skladove_delky_mm": [
+          6000
+        ],
+        "prorez_mm": 3,
+        "plan": "spočítaný: 5 tyčí po 6000 mm, odpad 8 %"
+      }
+    },
+    "expected": {
+      "capability": "cutting_1d",
+      "intent": "result_question"
+    },
+    "tags": [
+      "dotaz_k_vysledku"
+    ],
+    "author_note": ""
+  },
+  {
+    "id": "router-dev-023",
+    "input": {
+      "message": "Chci vyrobit skříň.",
+      "order": null
+    },
+    "expected": {
+      "capability": "unclear",
+      "intent": null
+    },
+    "tags": [
+      "unclear"
+    ],
+    "author_note": "Příklad z UC-05."
+  },
+  {
+    "id": "router-dev-024",
+    "input": {
+      "message": "Potřebuju něco nařezat.",
+      "order": null
+    },
+    "expected": {
+      "capability": "unclear",
+      "intent": null
+    },
+    "tags": [
+      "unclear"
+    ],
+    "author_note": "Řezání, ale bez dílů; doptat se."
+  },
+  {
+    "id": "router-dev-025",
+    "input": {
+      "message": "Dobrý den, můžete mi pomoct?",
+      "order": null
+    },
+    "expected": {
+      "capability": "unclear",
+      "intent": null
+    },
+    "tags": [
+      "unclear"
+    ],
+    "author_note": ""
+  },
+  {
+    "id": "router-dev-026",
+    "input": {
+      "message": "Kolik toho potřebuju?",
+      "order": null
+    },
+    "expected": {
+      "capability": "unclear",
+      "intent": null
+    },
+    "tags": [
+      "unclear"
+    ],
+    "author_note": "Bez zakázky nejde poznat, o co jde."
+  },
+  {
+    "id": "router-dev-027",
+    "input": {
+      "message": "Naskládej tyto bedny do dodávky: 12 beden 60×40×40 cm.",
+      "order": null
+    },
+    "expected": {
+      "capability": "unsupported",
+      "intent": null
+    },
+    "tags": [
+      "unsupported"
+    ],
+    "author_note": "Příklad z UC-05 (3D skládání)."
+  },
+  {
+    "id": "router-dev-028",
+    "input": {
+      "message": "Rozvrhni mi z desky 2800×2070 osm dvířek 600×400.",
+      "order": null
+    },
+    "expected": {
+      "capability": "unsupported",
+      "intent": null
+    },
+    "tags": [
+      "unsupported",
+      "2d"
+    ],
+    "author_note": "cutting_2d není implementované, router ho nenabízí."
+  },
+  {
+    "id": "router-dev-029",
+    "input": {
+      "message": "Napiš mi fakturu pro zákazníka Novák.",
+      "order": null
+    },
+    "expected": {
+      "capability": "unsupported",
+      "intent": null
+    },
+    "tags": [
+      "unsupported"
+    ],
+    "author_note": "Kalkulace není faktura (UC-04)."
+  },
+  {
+    "id": "router-dev-030",
+    "input": {
+      "message": "Jaké bude zítra počasí?",
+      "order": null
+    },
+    "expected": {
+      "capability": "unsupported",
+      "intent": null
+    },
+    "tags": [
+      "unsupported",
+      "mimo_obor"
+    ],
+    "author_note": ""
+  },
+  {
+    "id": "router-dev-031",
+    "input": {
+      "message": "Kolik metrů čtverečních dlaždic potřebuju do koupelny 2×3 m?",
+      "order": null
+    },
+    "expected": {
+      "capability": "unsupported",
+      "intent": null
+    },
+    "tags": [
+      "unsupported"
+    ],
+    "author_note": "Spotřeba obkladů je mimo rozsah (kap. 13)."
+  }
+]
