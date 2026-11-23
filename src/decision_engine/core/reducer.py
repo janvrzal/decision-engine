@@ -10,12 +10,14 @@ from decision_engine.core.events import (
     Event,
     MessageSent,
     ProposalConfirmed,
+    ProposalEdited,
     ProposalReceived,
     ProposalRejected,
     SolveFinished,
     SolveRequested,
 )
 from decision_engine.core.model.proposal import confirm_proposal
+from decision_engine.core.model.proposal_edit import edit_proposal
 from decision_engine.core.result import Err, Ok
 from decision_engine.core.state import AppState, Message, PendingOperation
 
@@ -29,6 +31,8 @@ def reduce(state: AppState, event: Event) -> Transition:
             return _message_sent(state, text)
         case ProposalReceived():
             return _proposal_received(state, event)
+        case ProposalEdited():
+            return _proposal_edited(state, event)
         case ProposalConfirmed():
             return _proposal_confirmed(state)
         case ProposalRejected():
@@ -75,6 +79,20 @@ def _proposal_received(state: AppState, event: ProposalReceived) -> Transition:
         reply = Message(id=state.next_message_id, role="assistant", kind="text", text=event.reply)
         new_state = _with_message(new_state, reply)
     return new_state, ()
+
+
+def _proposal_edited(state: AppState, event: ProposalEdited) -> Transition:
+    if state.proposal is None or state.pending is not None:
+        return _unchanged(state)
+    proposal = edit_proposal(
+        state.proposal,
+        name=event.name,
+        material=event.material,
+        parts=event.parts,
+        stock=event.stock,
+        parameters=event.parameters,
+    )
+    return state.model_copy(update={"proposal": proposal, "proposal_errors": ()}), ()
 
 
 def _proposal_confirmed(state: AppState) -> Transition:
