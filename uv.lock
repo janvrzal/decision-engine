@@ -172,6 +172,7 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "httpx" },
     { name = "hypothesis" },
     { name = "import-linter" },
     { name = "pre-commit" },
@@ -193,6 +194,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "httpx", specifier = ">=0.28.1" },
     { name = "hypothesis", specifier = ">=6.120" },
     { name = "import-linter", specifier = ">=2.1" },
     { name = "pre-commit", specifier = ">=4.0" },
