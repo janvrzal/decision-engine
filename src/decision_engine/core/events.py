@@ -8,7 +8,12 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict
 
 from decision_engine.core.model.calculation import CalculationResult
-from decision_engine.core.model.proposal import ChangeProposal
+from decision_engine.core.model.proposal import (
+    ChangeProposal,
+    ParametersDraft,
+    PartDraft,
+    StockLengthDraft,
+)
 from decision_engine.core.state import AiErrorKind
 
 
@@ -30,6 +35,17 @@ class ProposalReceived(_Event):
     proposal: ChangeProposal
     reply: str = ""
     """Krátká odpověď asistenta do Panelu Dialog."""
+
+
+class ProposalEdited(_Event):
+    """Uživatel upravil návrh v kontrolní tabulce (celý nový obsah návrhu)."""
+
+    type: Literal["ProposalEdited"] = "ProposalEdited"
+    name: str | None
+    material: str | None
+    parts: tuple[PartDraft, ...]
+    stock: tuple[StockLengthDraft, ...]
+    parameters: ParametersDraft
 
 
 class ProposalConfirmed(_Event):
@@ -67,6 +83,7 @@ class AiFailed(_Event):
 type Event = (
     MessageSent
     | ProposalReceived
+    | ProposalEdited
     | ProposalConfirmed
     | ProposalRejected
     | SolveRequested

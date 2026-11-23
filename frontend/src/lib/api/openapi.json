@@ -5,6 +5,121 @@
 		"version": "0.1.0"
 	},
 	"paths": {
+		"/api/sessions": {
+			"post": {
+				"tags": ["sessions"],
+				"summary": "Založit relaci",
+				"operationId": "create_session_api_sessions_post",
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ViewModel"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/sessions/{session_id}": {
+			"get": {
+				"tags": ["sessions"],
+				"summary": "Stav relace",
+				"operationId": "get_session_api_sessions__session_id__get",
+				"parameters": [
+					{
+						"name": "session_id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"title": "Session Id"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ViewModel"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Relace neexistuje (např. po restartu serveru)."
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/sessions/{session_id}/events": {
+			"post": {
+				"tags": ["sessions"],
+				"summary": "Poslat událost",
+				"operationId": "post_event_api_sessions__session_id__events_post",
+				"parameters": [
+					{
+						"name": "session_id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"title": "Session Id"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UserEvent"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ViewModel"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Relace neexistuje (např. po restartu serveru)."
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
 		"/api/health": {
 			"get": {
 				"tags": ["system"],
@@ -27,6 +142,101 @@
 	},
 	"components": {
 		"schemas": {
+			"AiView": {
+				"properties": {
+					"extraction_available": {
+						"type": "boolean",
+						"title": "Extraction Available"
+					}
+				},
+				"type": "object",
+				"required": ["extraction_available"],
+				"title": "AiView"
+			},
+			"BarView": {
+				"properties": {
+					"numbers": {
+						"items": {
+							"type": "integer"
+						},
+						"type": "array",
+						"title": "Numbers"
+					},
+					"length_mm": {
+						"type": "integer",
+						"title": "Length Mm"
+					},
+					"pieces": {
+						"items": {
+							"$ref": "#/components/schemas/PieceView"
+						},
+						"type": "array",
+						"title": "Pieces"
+					},
+					"cuts_mm": {
+						"items": {
+							"type": "integer"
+						},
+						"type": "array",
+						"title": "Cuts Mm"
+					},
+					"tail": {
+						"type": "string",
+						"enum": ["none", "remnant", "waste"],
+						"title": "Tail"
+					},
+					"tail_length_mm": {
+						"type": "integer",
+						"title": "Tail Length Mm"
+					}
+				},
+				"type": "object",
+				"required": ["numbers", "length_mm", "pieces", "cuts_mm", "tail", "tail_length_mm"],
+				"title": "BarView"
+			},
+			"CapabilityView": {
+				"properties": {
+					"id": {
+						"type": "string",
+						"title": "Id"
+					},
+					"label": {
+						"type": "string",
+						"title": "Label"
+					}
+				},
+				"type": "object",
+				"required": ["id", "label"],
+				"title": "CapabilityView"
+			},
+			"FieldErrorView": {
+				"properties": {
+					"field": {
+						"type": "string",
+						"title": "Field"
+					},
+					"message": {
+						"type": "string",
+						"title": "Message"
+					}
+				},
+				"type": "object",
+				"required": ["field", "message"],
+				"title": "FieldErrorView"
+			},
+			"HTTPValidationError": {
+				"properties": {
+					"detail": {
+						"items": {
+							"$ref": "#/components/schemas/ValidationError"
+						},
+						"type": "array",
+						"title": "Detail"
+					}
+				},
+				"type": "object",
+				"title": "HTTPValidationError"
+			},
 			"HealthResponse": {
 				"properties": {
 					"status": {
@@ -43,6 +253,967 @@
 				"required": ["status", "version"],
 				"title": "HealthResponse",
 				"description": "Stav backendu pro kontrolu spojení z frontendu."
+			},
+			"IntCell": {
+				"properties": {
+					"value": {
+						"anyOf": [
+							{
+								"type": "integer"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Value"
+					},
+					"unconfirmed": {
+						"type": "boolean",
+						"title": "Unconfirmed"
+					},
+					"error": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Error"
+					}
+				},
+				"type": "object",
+				"required": ["value", "unconfirmed", "error"],
+				"title": "IntCell"
+			},
+			"MessageSent": {
+				"properties": {
+					"type": {
+						"type": "string",
+						"const": "MessageSent",
+						"title": "Type",
+						"default": "MessageSent"
+					},
+					"text": {
+						"type": "string",
+						"title": "Text"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": ["text"],
+				"title": "MessageSent",
+				"description": "Uživatel odeslal zprávu nebo zadání."
+			},
+			"MessageView": {
+				"properties": {
+					"id": {
+						"type": "integer",
+						"title": "Id"
+					},
+					"role": {
+						"type": "string",
+						"enum": ["user", "assistant"],
+						"title": "Role"
+					},
+					"kind": {
+						"type": "string",
+						"enum": ["text", "error"],
+						"title": "Kind"
+					},
+					"text": {
+						"type": "string",
+						"title": "Text"
+					}
+				},
+				"type": "object",
+				"required": ["id", "role", "kind", "text"],
+				"title": "MessageView"
+			},
+			"MetricsView": {
+				"properties": {
+					"bars_used": {
+						"type": "integer",
+						"title": "Bars Used"
+					},
+					"bars_by_length": {
+						"items": {
+							"prefixItems": [
+								{
+									"type": "integer"
+								},
+								{
+									"type": "integer"
+								}
+							],
+							"type": "array",
+							"maxItems": 2,
+							"minItems": 2
+						},
+						"type": "array",
+						"title": "Bars By Length"
+					},
+					"parts_length_mm": {
+						"type": "integer",
+						"title": "Parts Length Mm"
+					},
+					"consumed_length_mm": {
+						"type": "integer",
+						"title": "Consumed Length Mm"
+					},
+					"remnant_length_mm": {
+						"type": "integer",
+						"title": "Remnant Length Mm"
+					},
+					"remnant_count": {
+						"type": "integer",
+						"title": "Remnant Count"
+					},
+					"waste_length_mm": {
+						"type": "integer",
+						"title": "Waste Length Mm"
+					},
+					"yield_ratio": {
+						"type": "number",
+						"title": "Yield Ratio"
+					}
+				},
+				"type": "object",
+				"required": [
+					"bars_used",
+					"bars_by_length",
+					"parts_length_mm",
+					"consumed_length_mm",
+					"remnant_length_mm",
+					"remnant_count",
+					"waste_length_mm",
+					"yield_ratio"
+				],
+				"title": "MetricsView"
+			},
+			"MoneyCell": {
+				"properties": {
+					"value": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Value"
+					},
+					"unconfirmed": {
+						"type": "boolean",
+						"title": "Unconfirmed"
+					},
+					"error": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Error"
+					}
+				},
+				"type": "object",
+				"required": ["value", "unconfirmed", "error"],
+				"title": "MoneyCell"
+			},
+			"Objective": {
+				"type": "string",
+				"enum": ["cheapest", "fewest_bars", "least_material"],
+				"title": "Objective",
+				"description": "Cíl optimalizace, který si uživatel zvolí (spec UC-01)."
+			},
+			"ObjectiveOption": {
+				"properties": {
+					"value": {
+						"$ref": "#/components/schemas/Objective"
+					},
+					"label": {
+						"type": "string",
+						"title": "Label"
+					},
+					"hint": {
+						"type": "string",
+						"title": "Hint"
+					},
+					"disabled_reason": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Disabled Reason"
+					}
+				},
+				"type": "object",
+				"required": ["value", "label", "hint", "disabled_reason"],
+				"title": "ObjectiveOption"
+			},
+			"ParametersDraft": {
+				"properties": {
+					"kerf_mm": {
+						"anyOf": [
+							{
+								"type": "integer"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Kerf Mm"
+					},
+					"trim_mm": {
+						"anyOf": [
+							{
+								"type": "integer"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Trim Mm"
+					},
+					"min_remnant_mm": {
+						"anyOf": [
+							{
+								"type": "integer"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Min Remnant Mm"
+					},
+					"objective": {
+						"anyOf": [
+							{
+								"$ref": "#/components/schemas/Objective"
+							},
+							{
+								"type": "null"
+							}
+						]
+					},
+					"time_limit_s": {
+						"anyOf": [
+							{
+								"type": "integer"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Time Limit S"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"title": "ParametersDraft"
+			},
+			"ParametersView": {
+				"properties": {
+					"kerf_mm": {
+						"$ref": "#/components/schemas/IntCell"
+					},
+					"trim_mm": {
+						"$ref": "#/components/schemas/IntCell"
+					},
+					"min_remnant_mm": {
+						"$ref": "#/components/schemas/IntCell"
+					},
+					"time_limit_s": {
+						"$ref": "#/components/schemas/IntCell"
+					}
+				},
+				"type": "object",
+				"required": ["kerf_mm", "trim_mm", "min_remnant_mm", "time_limit_s"],
+				"title": "ParametersView"
+			},
+			"PartDraft": {
+				"properties": {
+					"id": {
+						"type": "string",
+						"title": "Id"
+					},
+					"name": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Name"
+					},
+					"length_mm": {
+						"anyOf": [
+							{
+								"type": "integer"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Length Mm"
+					},
+					"quantity": {
+						"anyOf": [
+							{
+								"type": "integer"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Quantity"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": ["id"],
+				"title": "PartDraft"
+			},
+			"PartRow": {
+				"properties": {
+					"id": {
+						"type": "string",
+						"title": "Id"
+					},
+					"name": {
+						"$ref": "#/components/schemas/TextCell"
+					},
+					"length_mm": {
+						"$ref": "#/components/schemas/IntCell"
+					},
+					"quantity": {
+						"$ref": "#/components/schemas/IntCell"
+					}
+				},
+				"type": "object",
+				"required": ["id", "name", "length_mm", "quantity"],
+				"title": "PartRow"
+			},
+			"PendingOperationView": {
+				"properties": {
+					"kind": {
+						"type": "string",
+						"enum": ["extraction", "solving"],
+						"title": "Kind"
+					},
+					"label": {
+						"type": "string",
+						"title": "Label"
+					}
+				},
+				"type": "object",
+				"required": ["kind", "label"],
+				"title": "PendingOperationView"
+			},
+			"PieceView": {
+				"properties": {
+					"part_id": {
+						"type": "string",
+						"title": "Part Id"
+					},
+					"name": {
+						"type": "string",
+						"title": "Name"
+					},
+					"length_mm": {
+						"type": "integer",
+						"title": "Length Mm"
+					},
+					"start_mm": {
+						"type": "integer",
+						"title": "Start Mm"
+					}
+				},
+				"type": "object",
+				"required": ["part_id", "name", "length_mm", "start_mm"],
+				"title": "PieceView"
+			},
+			"ProjectView": {
+				"properties": {
+					"name": {
+						"type": "string",
+						"title": "Name"
+					},
+					"revision": {
+						"anyOf": [
+							{
+								"type": "integer"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Revision"
+					},
+					"step": {
+						"type": "string",
+						"enum": ["input", "review", "result"],
+						"title": "Step"
+					},
+					"steps": {
+						"items": {
+							"$ref": "#/components/schemas/StepView"
+						},
+						"type": "array",
+						"title": "Steps"
+					},
+					"has_content": {
+						"type": "boolean",
+						"title": "Has Content"
+					}
+				},
+				"type": "object",
+				"required": ["name", "revision", "step", "steps", "has_content"],
+				"title": "ProjectView"
+			},
+			"ProposalConfirmed": {
+				"properties": {
+					"type": {
+						"type": "string",
+						"const": "ProposalConfirmed",
+						"title": "Type",
+						"default": "ProposalConfirmed"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"title": "ProposalConfirmed",
+				"description": "Uživatel klikl na „Potvrdit a vypočítat“."
+			},
+			"ProposalEdited": {
+				"properties": {
+					"type": {
+						"type": "string",
+						"const": "ProposalEdited",
+						"title": "Type",
+						"default": "ProposalEdited"
+					},
+					"name": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Name"
+					},
+					"material": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Material"
+					},
+					"parts": {
+						"items": {
+							"$ref": "#/components/schemas/PartDraft"
+						},
+						"type": "array",
+						"title": "Parts"
+					},
+					"stock": {
+						"items": {
+							"$ref": "#/components/schemas/StockLengthDraft"
+						},
+						"type": "array",
+						"title": "Stock"
+					},
+					"parameters": {
+						"$ref": "#/components/schemas/ParametersDraft"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": ["name", "material", "parts", "stock", "parameters"],
+				"title": "ProposalEdited",
+				"description": "Uživatel upravil návrh v kontrolní tabulce (celý nový obsah návrhu)."
+			},
+			"ProposalRejected": {
+				"properties": {
+					"type": {
+						"type": "string",
+						"const": "ProposalRejected",
+						"title": "Type",
+						"default": "ProposalRejected"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"title": "ProposalRejected",
+				"description": "Uživatel návrh zahodil („Zahodit změny“)."
+			},
+			"ProposalView": {
+				"properties": {
+					"is_change": {
+						"type": "boolean",
+						"title": "Is Change"
+					},
+					"name": {
+						"$ref": "#/components/schemas/TextCell"
+					},
+					"material": {
+						"$ref": "#/components/schemas/TextCell"
+					},
+					"parts": {
+						"items": {
+							"$ref": "#/components/schemas/PartRow"
+						},
+						"type": "array",
+						"title": "Parts"
+					},
+					"stock": {
+						"items": {
+							"$ref": "#/components/schemas/StockRow"
+						},
+						"type": "array",
+						"title": "Stock"
+					},
+					"parameters": {
+						"$ref": "#/components/schemas/ParametersView"
+					},
+					"objective": {
+						"anyOf": [
+							{
+								"$ref": "#/components/schemas/Objective"
+							},
+							{
+								"type": "null"
+							}
+						]
+					},
+					"objective_unconfirmed": {
+						"type": "boolean",
+						"title": "Objective Unconfirmed"
+					},
+					"objective_options": {
+						"items": {
+							"$ref": "#/components/schemas/ObjectiveOption"
+						},
+						"type": "array",
+						"title": "Objective Options"
+					},
+					"errors": {
+						"items": {
+							"$ref": "#/components/schemas/FieldErrorView"
+						},
+						"type": "array",
+						"title": "Errors"
+					},
+					"can_confirm": {
+						"type": "boolean",
+						"title": "Can Confirm"
+					},
+					"confirm_disabled_reason": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Confirm Disabled Reason"
+					}
+				},
+				"type": "object",
+				"required": [
+					"is_change",
+					"name",
+					"material",
+					"parts",
+					"stock",
+					"parameters",
+					"objective",
+					"objective_unconfirmed",
+					"objective_options",
+					"errors",
+					"can_confirm",
+					"confirm_disabled_reason"
+				],
+				"title": "ProposalView"
+			},
+			"ResultView": {
+				"properties": {
+					"status": {
+						"$ref": "#/components/schemas/SolutionStatus"
+					},
+					"status_label": {
+						"type": "string",
+						"title": "Status Label"
+					},
+					"stale": {
+						"type": "boolean",
+						"title": "Stale"
+					},
+					"stale_reason": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Stale Reason"
+					},
+					"svg": {
+						"type": "string",
+						"title": "Svg"
+					},
+					"metrics": {
+						"$ref": "#/components/schemas/MetricsView"
+					},
+					"bars": {
+						"items": {
+							"$ref": "#/components/schemas/BarView"
+						},
+						"type": "array",
+						"title": "Bars"
+					},
+					"unplaced": {
+						"items": {
+							"$ref": "#/components/schemas/UnplacedView"
+						},
+						"type": "array",
+						"title": "Unplaced"
+					}
+				},
+				"type": "object",
+				"required": [
+					"status",
+					"status_label",
+					"stale",
+					"stale_reason",
+					"svg",
+					"metrics",
+					"bars",
+					"unplaced"
+				],
+				"title": "ResultView"
+			},
+			"SessionView": {
+				"properties": {
+					"id": {
+						"type": "string",
+						"title": "Id"
+					},
+					"ai": {
+						"$ref": "#/components/schemas/AiView"
+					}
+				},
+				"type": "object",
+				"required": ["id", "ai"],
+				"title": "SessionView"
+			},
+			"SolutionStatus": {
+				"type": "string",
+				"enum": ["optimal", "best_found", "partial", "infeasible"],
+				"title": "SolutionStatus",
+				"description": "Stav plánu (spec kap. 4): „Optimální“ jen při prokázaném optimu (AGENTS.md pravidlo 9)."
+			},
+			"SolveRequested": {
+				"properties": {
+					"type": {
+						"type": "string",
+						"const": "SolveRequested",
+						"title": "Type",
+						"default": "SolveRequested"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"title": "SolveRequested",
+				"description": "Uživatel chce plán spočítat znovu („Přepočítat“)."
+			},
+			"StepState": {
+				"type": "string",
+				"enum": ["pending", "active", "done", "stale", "unavailable"]
+			},
+			"StepView": {
+				"properties": {
+					"id": {
+						"type": "string",
+						"enum": ["input", "review", "result"],
+						"title": "Id"
+					},
+					"label": {
+						"type": "string",
+						"title": "Label"
+					},
+					"state": {
+						"$ref": "#/components/schemas/StepState"
+					}
+				},
+				"type": "object",
+				"required": ["id", "label", "state"],
+				"title": "StepView"
+			},
+			"StockLengthDraft": {
+				"properties": {
+					"id": {
+						"type": "string",
+						"title": "Id"
+					},
+					"length_mm": {
+						"anyOf": [
+							{
+								"type": "integer"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Length Mm"
+					},
+					"price": {
+						"anyOf": [
+							{
+								"type": "number"
+							},
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Price"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": ["id"],
+				"title": "StockLengthDraft"
+			},
+			"StockRow": {
+				"properties": {
+					"id": {
+						"type": "string",
+						"title": "Id"
+					},
+					"length_mm": {
+						"$ref": "#/components/schemas/IntCell"
+					},
+					"price": {
+						"$ref": "#/components/schemas/MoneyCell"
+					}
+				},
+				"type": "object",
+				"required": ["id", "length_mm", "price"],
+				"title": "StockRow"
+			},
+			"TextCell": {
+				"properties": {
+					"value": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Value"
+					},
+					"unconfirmed": {
+						"type": "boolean",
+						"title": "Unconfirmed"
+					},
+					"error": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Error"
+					}
+				},
+				"type": "object",
+				"required": ["value", "unconfirmed", "error"],
+				"title": "TextCell"
+			},
+			"UnplacedView": {
+				"properties": {
+					"part_id": {
+						"type": "string",
+						"title": "Part Id"
+					},
+					"name": {
+						"type": "string",
+						"title": "Name"
+					},
+					"length_mm": {
+						"type": "integer",
+						"title": "Length Mm"
+					},
+					"quantity": {
+						"type": "integer",
+						"title": "Quantity"
+					},
+					"reason": {
+						"type": "string",
+						"title": "Reason"
+					}
+				},
+				"type": "object",
+				"required": ["part_id", "name", "length_mm", "quantity", "reason"],
+				"title": "UnplacedView"
+			},
+			"UserEvent": {
+				"oneOf": [
+					{
+						"$ref": "#/components/schemas/MessageSent"
+					},
+					{
+						"$ref": "#/components/schemas/ProposalEdited"
+					},
+					{
+						"$ref": "#/components/schemas/ProposalConfirmed"
+					},
+					{
+						"$ref": "#/components/schemas/ProposalRejected"
+					},
+					{
+						"$ref": "#/components/schemas/SolveRequested"
+					}
+				],
+				"discriminator": {
+					"propertyName": "type",
+					"mapping": {
+						"MessageSent": "#/components/schemas/MessageSent",
+						"ProposalConfirmed": "#/components/schemas/ProposalConfirmed",
+						"ProposalEdited": "#/components/schemas/ProposalEdited",
+						"ProposalRejected": "#/components/schemas/ProposalRejected",
+						"SolveRequested": "#/components/schemas/SolveRequested"
+					}
+				}
+			},
+			"ValidationError": {
+				"properties": {
+					"loc": {
+						"items": {
+							"anyOf": [
+								{
+									"type": "string"
+								},
+								{
+									"type": "integer"
+								}
+							]
+						},
+						"type": "array",
+						"title": "Location"
+					},
+					"msg": {
+						"type": "string",
+						"title": "Message"
+					},
+					"type": {
+						"type": "string",
+						"title": "Error Type"
+					},
+					"input": {
+						"title": "Input"
+					},
+					"ctx": {
+						"type": "object",
+						"title": "Context"
+					}
+				},
+				"type": "object",
+				"required": ["loc", "msg", "type"],
+				"title": "ValidationError"
+			},
+			"ViewModel": {
+				"properties": {
+					"session": {
+						"$ref": "#/components/schemas/SessionView"
+					},
+					"capabilities": {
+						"items": {
+							"$ref": "#/components/schemas/CapabilityView"
+						},
+						"type": "array",
+						"title": "Capabilities"
+					},
+					"project": {
+						"$ref": "#/components/schemas/ProjectView"
+					},
+					"pending_operation": {
+						"anyOf": [
+							{
+								"$ref": "#/components/schemas/PendingOperationView"
+							},
+							{
+								"type": "null"
+							}
+						]
+					},
+					"messages": {
+						"items": {
+							"$ref": "#/components/schemas/MessageView"
+						},
+						"type": "array",
+						"title": "Messages"
+					},
+					"proposal": {
+						"anyOf": [
+							{
+								"$ref": "#/components/schemas/ProposalView"
+							},
+							{
+								"type": "null"
+							}
+						]
+					},
+					"result": {
+						"anyOf": [
+							{
+								"$ref": "#/components/schemas/ResultView"
+							},
+							{
+								"type": "null"
+							}
+						]
+					}
+				},
+				"type": "object",
+				"required": [
+					"session",
+					"capabilities",
+					"project",
+					"pending_operation",
+					"messages",
+					"proposal",
+					"result"
+				],
+				"title": "ViewModel",
+				"description": "Celý stav relace pro UI."
 			}
 		}
 	}

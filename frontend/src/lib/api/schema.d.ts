@@ -4,6 +4,57 @@
  */
 
 export interface paths {
+	'/api/sessions': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Založit relaci */
+		post: operations['create_session_api_sessions_post'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/sessions/{session_id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Stav relace */
+		get: operations['get_session_api_sessions__session_id__get'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/sessions/{session_id}/events': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Poslat událost */
+		post: operations['post_event_api_sessions__session_id__events_post'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/api/health': {
 		parameters: {
 			query?: never;
@@ -25,6 +76,48 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
 	schemas: {
+		/** AiView */
+		AiView: {
+			/** Extraction Available */
+			extraction_available: boolean;
+		};
+		/** BarView */
+		BarView: {
+			/** Numbers */
+			numbers: number[];
+			/** Length Mm */
+			length_mm: number;
+			/** Pieces */
+			pieces: components['schemas']['PieceView'][];
+			/** Cuts Mm */
+			cuts_mm: number[];
+			/**
+			 * Tail
+			 * @enum {string}
+			 */
+			tail: 'none' | 'remnant' | 'waste';
+			/** Tail Length Mm */
+			tail_length_mm: number;
+		};
+		/** CapabilityView */
+		CapabilityView: {
+			/** Id */
+			id: string;
+			/** Label */
+			label: string;
+		};
+		/** FieldErrorView */
+		FieldErrorView: {
+			/** Field */
+			field: string;
+			/** Message */
+			message: string;
+		};
+		/** HTTPValidationError */
+		HTTPValidationError: {
+			/** Detail */
+			detail?: components['schemas']['ValidationError'][];
+		};
 		/**
 		 * HealthResponse
 		 * @description Stav backendu pro kontrolu spojení z frontendu.
@@ -38,6 +131,354 @@ export interface components {
 			/** Version */
 			version: string;
 		};
+		/** IntCell */
+		IntCell: {
+			/** Value */
+			value: number | null;
+			/** Unconfirmed */
+			unconfirmed: boolean;
+			/** Error */
+			error: string | null;
+		};
+		/**
+		 * MessageSent
+		 * @description Uživatel odeslal zprávu nebo zadání.
+		 */
+		MessageSent: {
+			/**
+			 * @description discriminator enum property added by openapi-typescript
+			 * @enum {string}
+			 */
+			type: 'MessageSent';
+			/** Text */
+			text: string;
+		};
+		/** MessageView */
+		MessageView: {
+			/** Id */
+			id: number;
+			/**
+			 * Role
+			 * @enum {string}
+			 */
+			role: 'user' | 'assistant';
+			/**
+			 * Kind
+			 * @enum {string}
+			 */
+			kind: 'text' | 'error';
+			/** Text */
+			text: string;
+		};
+		/** MetricsView */
+		MetricsView: {
+			/** Bars Used */
+			bars_used: number;
+			/** Bars By Length */
+			bars_by_length: [number, number][];
+			/** Parts Length Mm */
+			parts_length_mm: number;
+			/** Consumed Length Mm */
+			consumed_length_mm: number;
+			/** Remnant Length Mm */
+			remnant_length_mm: number;
+			/** Remnant Count */
+			remnant_count: number;
+			/** Waste Length Mm */
+			waste_length_mm: number;
+			/** Yield Ratio */
+			yield_ratio: number;
+		};
+		/** MoneyCell */
+		MoneyCell: {
+			/** Value */
+			value: string | null;
+			/** Unconfirmed */
+			unconfirmed: boolean;
+			/** Error */
+			error: string | null;
+		};
+		/**
+		 * Objective
+		 * @description Cíl optimalizace, který si uživatel zvolí (spec UC-01).
+		 * @enum {string}
+		 */
+		Objective: 'cheapest' | 'fewest_bars' | 'least_material';
+		/** ObjectiveOption */
+		ObjectiveOption: {
+			value: components['schemas']['Objective'];
+			/** Label */
+			label: string;
+			/** Hint */
+			hint: string;
+			/** Disabled Reason */
+			disabled_reason: string | null;
+		};
+		/** ParametersDraft */
+		ParametersDraft: {
+			/** Kerf Mm */
+			kerf_mm?: number | null;
+			/** Trim Mm */
+			trim_mm?: number | null;
+			/** Min Remnant Mm */
+			min_remnant_mm?: number | null;
+			objective?: components['schemas']['Objective'] | null;
+			/** Time Limit S */
+			time_limit_s?: number | null;
+		};
+		/** ParametersView */
+		ParametersView: {
+			kerf_mm: components['schemas']['IntCell'];
+			trim_mm: components['schemas']['IntCell'];
+			min_remnant_mm: components['schemas']['IntCell'];
+			time_limit_s: components['schemas']['IntCell'];
+		};
+		/** PartDraft */
+		PartDraft: {
+			/** Id */
+			id: string;
+			/** Name */
+			name?: string | null;
+			/** Length Mm */
+			length_mm?: number | null;
+			/** Quantity */
+			quantity?: number | null;
+		};
+		/** PartRow */
+		PartRow: {
+			/** Id */
+			id: string;
+			name: components['schemas']['TextCell'];
+			length_mm: components['schemas']['IntCell'];
+			quantity: components['schemas']['IntCell'];
+		};
+		/** PendingOperationView */
+		PendingOperationView: {
+			/**
+			 * Kind
+			 * @enum {string}
+			 */
+			kind: 'extraction' | 'solving';
+			/** Label */
+			label: string;
+		};
+		/** PieceView */
+		PieceView: {
+			/** Part Id */
+			part_id: string;
+			/** Name */
+			name: string;
+			/** Length Mm */
+			length_mm: number;
+			/** Start Mm */
+			start_mm: number;
+		};
+		/** ProjectView */
+		ProjectView: {
+			/** Name */
+			name: string;
+			/** Revision */
+			revision: number | null;
+			/**
+			 * Step
+			 * @enum {string}
+			 */
+			step: 'input' | 'review' | 'result';
+			/** Steps */
+			steps: components['schemas']['StepView'][];
+			/** Has Content */
+			has_content: boolean;
+		};
+		/**
+		 * ProposalConfirmed
+		 * @description Uživatel klikl na „Potvrdit a vypočítat“.
+		 */
+		ProposalConfirmed: {
+			/**
+			 * @description discriminator enum property added by openapi-typescript
+			 * @enum {string}
+			 */
+			type: 'ProposalConfirmed';
+		};
+		/**
+		 * ProposalEdited
+		 * @description Uživatel upravil návrh v kontrolní tabulce (celý nový obsah návrhu).
+		 */
+		ProposalEdited: {
+			/**
+			 * @description discriminator enum property added by openapi-typescript
+			 * @enum {string}
+			 */
+			type: 'ProposalEdited';
+			/** Name */
+			name: string | null;
+			/** Material */
+			material: string | null;
+			/** Parts */
+			parts: components['schemas']['PartDraft'][];
+			/** Stock */
+			stock: components['schemas']['StockLengthDraft'][];
+			parameters: components['schemas']['ParametersDraft'];
+		};
+		/**
+		 * ProposalRejected
+		 * @description Uživatel návrh zahodil („Zahodit změny“).
+		 */
+		ProposalRejected: {
+			/**
+			 * @description discriminator enum property added by openapi-typescript
+			 * @enum {string}
+			 */
+			type: 'ProposalRejected';
+		};
+		/** ProposalView */
+		ProposalView: {
+			/** Is Change */
+			is_change: boolean;
+			name: components['schemas']['TextCell'];
+			material: components['schemas']['TextCell'];
+			/** Parts */
+			parts: components['schemas']['PartRow'][];
+			/** Stock */
+			stock: components['schemas']['StockRow'][];
+			parameters: components['schemas']['ParametersView'];
+			objective: components['schemas']['Objective'] | null;
+			/** Objective Unconfirmed */
+			objective_unconfirmed: boolean;
+			/** Objective Options */
+			objective_options: components['schemas']['ObjectiveOption'][];
+			/** Errors */
+			errors: components['schemas']['FieldErrorView'][];
+			/** Can Confirm */
+			can_confirm: boolean;
+			/** Confirm Disabled Reason */
+			confirm_disabled_reason: string | null;
+		};
+		/** ResultView */
+		ResultView: {
+			status: components['schemas']['SolutionStatus'];
+			/** Status Label */
+			status_label: string;
+			/** Stale */
+			stale: boolean;
+			/** Stale Reason */
+			stale_reason: string | null;
+			/** Svg */
+			svg: string;
+			metrics: components['schemas']['MetricsView'];
+			/** Bars */
+			bars: components['schemas']['BarView'][];
+			/** Unplaced */
+			unplaced: components['schemas']['UnplacedView'][];
+		};
+		/** SessionView */
+		SessionView: {
+			/** Id */
+			id: string;
+			ai: components['schemas']['AiView'];
+		};
+		/**
+		 * SolutionStatus
+		 * @description Stav plánu (spec kap. 4): „Optimální“ jen při prokázaném optimu (AGENTS.md pravidlo 9).
+		 * @enum {string}
+		 */
+		SolutionStatus: 'optimal' | 'best_found' | 'partial' | 'infeasible';
+		/**
+		 * SolveRequested
+		 * @description Uživatel chce plán spočítat znovu („Přepočítat“).
+		 */
+		SolveRequested: {
+			/**
+			 * @description discriminator enum property added by openapi-typescript
+			 * @enum {string}
+			 */
+			type: 'SolveRequested';
+		};
+		/** @enum {string} */
+		StepState: 'pending' | 'active' | 'done' | 'stale' | 'unavailable';
+		/** StepView */
+		StepView: {
+			/**
+			 * Id
+			 * @enum {string}
+			 */
+			id: 'input' | 'review' | 'result';
+			/** Label */
+			label: string;
+			state: components['schemas']['StepState'];
+		};
+		/** StockLengthDraft */
+		StockLengthDraft: {
+			/** Id */
+			id: string;
+			/** Length Mm */
+			length_mm?: number | null;
+			/** Price */
+			price?: number | string | null;
+		};
+		/** StockRow */
+		StockRow: {
+			/** Id */
+			id: string;
+			length_mm: components['schemas']['IntCell'];
+			price: components['schemas']['MoneyCell'];
+		};
+		/** TextCell */
+		TextCell: {
+			/** Value */
+			value: string | null;
+			/** Unconfirmed */
+			unconfirmed: boolean;
+			/** Error */
+			error: string | null;
+		};
+		/** UnplacedView */
+		UnplacedView: {
+			/** Part Id */
+			part_id: string;
+			/** Name */
+			name: string;
+			/** Length Mm */
+			length_mm: number;
+			/** Quantity */
+			quantity: number;
+			/** Reason */
+			reason: string;
+		};
+		UserEvent:
+			| components['schemas']['MessageSent']
+			| components['schemas']['ProposalEdited']
+			| components['schemas']['ProposalConfirmed']
+			| components['schemas']['ProposalRejected']
+			| components['schemas']['SolveRequested'];
+		/** ValidationError */
+		ValidationError: {
+			/** Location */
+			loc: (string | number)[];
+			/** Message */
+			msg: string;
+			/** Error Type */
+			type: string;
+			/** Input */
+			input?: unknown;
+			/** Context */
+			ctx?: Record<string, never>;
+		};
+		/**
+		 * ViewModel
+		 * @description Celý stav relace pro UI.
+		 */
+		ViewModel: {
+			session: components['schemas']['SessionView'];
+			/** Capabilities */
+			capabilities: components['schemas']['CapabilityView'][];
+			project: components['schemas']['ProjectView'];
+			pending_operation: components['schemas']['PendingOperationView'] | null;
+			/** Messages */
+			messages: components['schemas']['MessageView'][];
+			proposal: components['schemas']['ProposalView'] | null;
+			result: components['schemas']['ResultView'] | null;
+		};
 	};
 	responses: never;
 	parameters: never;
@@ -47,6 +488,106 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+	create_session_api_sessions_post: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Successful Response */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['ViewModel'];
+				};
+			};
+		};
+	};
+	get_session_api_sessions__session_id__get: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				session_id: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Successful Response */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['ViewModel'];
+				};
+			};
+			/** @description Relace neexistuje (např. po restartu serveru). */
+			404: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			/** @description Validation Error */
+			422: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['HTTPValidationError'];
+				};
+			};
+		};
+	};
+	post_event_api_sessions__session_id__events_post: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				session_id: string;
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['UserEvent'];
+			};
+		};
+		responses: {
+			/** @description Successful Response */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['ViewModel'];
+				};
+			};
+			/** @description Relace neexistuje (např. po restartu serveru). */
+			404: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			/** @description Validation Error */
+			422: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['HTTPValidationError'];
+				};
+			};
+		};
+	};
 	health_api_health_get: {
 		parameters: {
 			query?: never;

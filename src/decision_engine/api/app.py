@@ -1,5 +1,7 @@
 """Aplikace FastAPI: endpointy pod `/api` a servírování sestaveného frontendu (ADR-0007)."""
 
+from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
 from importlib.metadata import version
 from pathlib import Path
 from typing import Literal
@@ -7,6 +9,12 @@ from typing import Literal
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse, HTMLResponse
 from pydantic import BaseModel, ConfigDict
+
+from decision_engine.adapters.config import UnavailableLlm, build_ai_adapters
+from decision_engine.api.routes import Services, session_router
+from decision_engine.api.sessions import SessionStore
+from decision_engine.app.ports import Ports
+from decision_engine.app.solving import RegistrySolver
 
 _FRONTEND_MISSING_HTML = """<!doctype html>
 <html lang="cs">
@@ -30,9 +38,32 @@ class HealthResponse(BaseModel):
     version: str
 
 
-def create_app(static_dir: Path | None) -> FastAPI:
-    """Vytvoří aplikaci; `static_dir` je složka sestaveného frontendu, nebo `None`."""
-    app = FastAPI(title="DecisionEngine", version=version("decision-engine"))
+def build_services() -> Services:
+    """Sestavení závislostí z prostředí (composition root, ADR-0006)."""
+    ai = build_ai_adapters()
+    ports = Ports(llm=ai.llm, prompts=ai.prompts, tracer=ai.tracer, solver=RegistrySolver())
+    return Services(
+        store=SessionStore(),
+        ports=ports,
+        extraction_available=not isinstance(ai.llm, UnavailableLlm),
+        on_shutdown=ai.tracer.flush,
+    )
+
+
+def create_app(static_dir: Path | None, services: Services | None = None) -> FastAPI:
+    """Vytvoří aplikaci; `static_dir` je složka sestaveného frontendu, nebo `None`.
+
+    Bez `services` se závislosti sestaví z prostředí; testy předají falešné adaptéry.
+    """
+    resolved = services if services is not None else build_services()
+
+    @asynccontextmanager
+    async def lifespan(_: FastAPI) -> AsyncGenerator[None]:
+        yield
+        resolved.on_shutdown()
+
+    app = FastAPI(title="DecisionEngine", version=version("decision-engine"), lifespan=lifespan)
+    app.include_router(session_router(resolved))
 
     @app.get("/api/health", tags=["system"])
     def health() -> HealthResponse:  # pyright: ignore[reportUnusedFunction]
