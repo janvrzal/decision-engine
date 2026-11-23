@@ -46,7 +46,7 @@ UI je jediný povinný a hodnocený požadavek zadání. Cílem je, aby aplikace
 - Vše ovladatelné klávesnicí včetně editace tabulek; viditelný fokus; logické pořadí tabulátoru.
 - Kontrast WCAG AA; informace nikdy jen barvou (stav má i ikonu nebo text).
 - Plán v SVG má `title`/`aria-label` a textový rozpis jako alternativu.
-- Široká obrazovka: dialog vlevo, pracovní plocha vpravo. Od 768 px pod sebou. Ověř obě šířky.
+- Od 1280 px: dialog vlevo, pracovní plocha vpravo. 768–1279 px: dialog jako vysouvací panel zleva (`Sheet`), pracovní plocha přes celou šířku. Ověř 1440 i 768 px.
 
 ## Postup u změny UI
 

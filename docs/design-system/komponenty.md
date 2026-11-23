@@ -14,7 +14,7 @@ Pravidla pro všechny komponenty:
 
 | Komponenta | Chování | Varianty a stavy | Pravidla |
 |---|---|---|---|
-| `Button` | nativní `<button>` | `primary`, `secondary`, `ghost`, `danger`; výchozí, hover, fokus, stisk, neaktivní, načítání | V panelu nejvýš jeden `primary`. Neaktivní tlačítko má v tooltipu nebo pod sebou důvod („Nejdřív opravte 2 pole“). Načítání: po spodní hraně zametá linka 2 px v barvě textu (1,2 s), text i šířka zůstávají, `aria-busy`; při omezeném pohybu linka zmizí. |
+| `Button` | nativní `<button>` | `primary`, `secondary`, `ghost`, `danger`; výchozí, hover, fokus, stisk, neaktivní, načítání | V panelu nejvýš jeden `primary`. Neaktivní tlačítko má v tooltipu nebo pod sebou důvod („Nejdřív opravte 2 pole“). Neaktivní tlačítko má `aria-disabled` místo `disabled`, aby zůstalo v pořadí tabulátoru a důvod šel přečíst i z klávesnice. Načítání: po spodní hraně zametá linka 2 px v barvě textu (1,2 s), text i šířka zůstávají, `aria-busy`; při omezeném pohybu linka zmizí. |
 | `IconButton` | nativní `<button>` | `ghost`, `secondary`; velikost 32 a 24 px | Vždy `aria-label` a tooltip s názvem akce. |
 | `Chip` | nativní `<button>` | výchozí, vybraný | Ukázky zadání, rychlé úpravy a volby doptání v dialogu. Nikdy nenahrazuje hlavní akci. |
 | `Badge` | — | `neutral`, `info`, `success`, `warning`, `danger`, `proposal` | Krátký štítek (nový, sklad, nákup, Demo, Příklad). Styl `label`, výška 22 px, vždy text, volitelně ikona. |
@@ -22,7 +22,7 @@ Pravidla pro všechny komponenty:
 | `Icon` | — | 16 px | Ikony Lucide, viz výše. |
 | `Loader` | — | malý 44 × 12 px, velký 96 × 16 px | Indikátor práce místo spinneru: do malé tyče postupně padají díly v barvách plánu oddělené prořezem (cyklus 1,8 s). Vždy s textem; v tlačítku se nepoužívá. Text fáze AI má jemný přeliv. Při omezeném pohybu stojí se dvěma vloženými díly. |
 | `Tooltip` | Bits Tooltip | — | Vysvětlení nepotvrzené hodnoty, neaktivní akce, ikon. Otevře se i fokusem z klávesnice. Nenese jedinou kopii důležité informace. |
-| `DropdownMenu` | Bits DropdownMenu | — | Akce „⋯“ v hlavičce zakázky (na střední šířce). |
+| `DropdownMenu` | Bits DropdownMenu | — | Akce „⋯“ v hlavičce zakázky (na střední šířce). Neaktivní položka má důvod stylem `small` pod názvem, protože v menu se tooltip nezobrazí. |
 | `Collapsible` | Bits Collapsible | sbaleno, rozbaleno | „Další nastavení“, „Rozpis po tyčích“. Šipka se otáčí, popisek se nemění. |
 | `Tabs` | Bits Tabs | — | Vývojářský panel, sklad. Aktivní záložka má podtržení `accent-text` 2 px. |
 
