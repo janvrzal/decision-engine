@@ -1,0 +1,31 @@
+{
+  "id": "extraction-dev-13",
+  "input": "Svařuju bránu 3,5 m širokou: 2× 3,5 m vodorovně, 9× 1,4 m svisle. Jekl 40×40×2, tyče 6 m po 520 Kč, prořez 3 mm.",
+  "expected": {
+    "parts": [
+      {
+        "length_mm": 3500,
+        "quantity": 2
+      },
+      {
+        "length_mm": 1400,
+        "quantity": 9
+      }
+    ],
+    "stock": [
+      {
+        "length_mm": 6000,
+        "price": "520"
+      }
+    ],
+    "kerf_mm": 3,
+    "trim_mm": null,
+    "min_remnant_mm": null,
+    "objective": null
+  },
+  "tags": [
+    "jednotky_m",
+    "kontextove_cislo"
+  ],
+  "author_note": "Šířka brány není další díl."
+}

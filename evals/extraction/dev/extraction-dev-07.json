@@ -1,0 +1,23 @@
+{
+  "id": "extraction-dev-07",
+  "input": "Potřebuju nějaké díly z jeklu 40×20, asi po 1,8 m.",
+  "expected": {
+    "parts": [
+      {
+        "length_mm": 1800,
+        "quantity": null
+      }
+    ],
+    "stock": [],
+    "kerf_mm": null,
+    "trim_mm": null,
+    "min_remnant_mm": null,
+    "objective": null
+  },
+  "tags": [
+    "chybi_pocet",
+    "nejasne",
+    "chybi_sklad"
+  ],
+  "author_note": "Počet chybí, nesmí se vymyslet."
+}

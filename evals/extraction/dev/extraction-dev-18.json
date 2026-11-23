@@ -1,0 +1,32 @@
+{
+  "id": "extraction-dev-18",
+  "input": "Řezat z 6metrových tyčí: 3 ks po 2 450 mm, 3 ks po 1 225 mm, prořez 3mm, tyč za 612,- Kč.",
+  "expected": {
+    "parts": [
+      {
+        "length_mm": 2450,
+        "quantity": 3
+      },
+      {
+        "length_mm": 1225,
+        "quantity": 3
+      }
+    ],
+    "stock": [
+      {
+        "length_mm": 6000,
+        "price": "612"
+      }
+    ],
+    "kerf_mm": 3,
+    "trim_mm": null,
+    "min_remnant_mm": null,
+    "objective": null
+  },
+  "tags": [
+    "oddelovac_tisicu",
+    "neprima_formulace",
+    "cena_format"
+  ],
+  "author_note": "Formát ceny „612,-“."
+}

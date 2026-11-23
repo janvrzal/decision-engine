@@ -1,0 +1,36 @@
+{
+  "id": "extraction-dev-10",
+  "input": "Na rám stolu: 2× 1600, 2× 800, 4× 720 (vše v mm). Profil 40×40, tyč 6 m.",
+  "expected": {
+    "parts": [
+      {
+        "length_mm": 1600,
+        "quantity": 2
+      },
+      {
+        "length_mm": 800,
+        "quantity": 2
+      },
+      {
+        "length_mm": 720,
+        "quantity": 4
+      }
+    ],
+    "stock": [
+      {
+        "length_mm": 6000,
+        "price": null
+      }
+    ],
+    "kerf_mm": null,
+    "trim_mm": null,
+    "min_remnant_mm": null,
+    "objective": null
+  },
+  "tags": [
+    "jednotky_mm",
+    "zkracene",
+    "chybi_cena"
+  ],
+  "author_note": "Jednotka uvedená jednou pro všechny díly."
+}

@@ -1,0 +1,28 @@
+{
+  "id": "extraction-dev-16",
+  "input": "Plot: 25 latí po 1,2 m. Cena tyče 6 m je 180 Kč. Šetři peníze.",
+  "expected": {
+    "parts": [
+      {
+        "length_mm": 1200,
+        "quantity": 25
+      }
+    ],
+    "stock": [
+      {
+        "length_mm": 6000,
+        "price": "180"
+      }
+    ],
+    "kerf_mm": null,
+    "trim_mm": null,
+    "min_remnant_mm": null,
+    "objective": "cheapest"
+  },
+  "tags": [
+    "jednotky_m",
+    "cil",
+    "chybi_prorez"
+  ],
+  "author_note": "Výslovný cíl nejnižší cena."
+}

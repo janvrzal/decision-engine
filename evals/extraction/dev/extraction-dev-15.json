@@ -1,0 +1,31 @@
+{
+  "id": "extraction-dev-15",
+  "input": "200 cm × 4, 120 cm × 4, tyč 600 cm, 399 Kč/ks, kerf 3.",
+  "expected": {
+    "parts": [
+      {
+        "length_mm": 2000,
+        "quantity": 4
+      },
+      {
+        "length_mm": 1200,
+        "quantity": 4
+      }
+    ],
+    "stock": [
+      {
+        "length_mm": 6000,
+        "price": "399"
+      }
+    ],
+    "kerf_mm": 3,
+    "trim_mm": null,
+    "min_remnant_mm": null,
+    "objective": null
+  },
+  "tags": [
+    "jednotky_cm",
+    "zkracene"
+  ],
+  "author_note": "Úsporný zápis, skladová délka v cm."
+}
