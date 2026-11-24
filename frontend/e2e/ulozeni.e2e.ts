@@ -65,7 +65,7 @@ test.describe('široká obrazovka 1440 px', () => {
 		await expect(page.getByRole('textbox', { name: 'Název zakázky' })).toHaveValue(
 			'Regál do dílny'
 		);
-		await expect(page.getByRole('textbox', { name: 'Díl 1, Délka' })).toHaveValue('1800');
+		await expect(page.getByRole('textbox', { name: 'Díl 1, Délka' })).toHaveValue('1\u00a0800');
 		await expect(page.getByRole('textbox', { name: 'Skladová délka 1, Cena za kus' })).toHaveValue(
 			'320,50'
 		);

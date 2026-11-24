@@ -40,7 +40,7 @@ test.describe('široká obrazovka 1440 px', () => {
 		// Kontrola údajů: díly z AI a nepotvrzené hodnoty označené.
 		const parts = page.getByRole('table', { name: 'Díly' });
 		await expect(parts.getByRole('textbox', { name: 'Díl 1, Název' })).toHaveValue('noha');
-		await expect(parts.getByRole('textbox', { name: 'Díl 2, Délka' })).toHaveValue('1200');
+		await expect(parts.getByRole('textbox', { name: 'Díl 2, Délka' })).toHaveValue('1\u00a0200');
 		const stockLength = page.getByRole('textbox', { name: 'Skladová délka 1, Délka tyče' });
 		await expect(stockLength).toHaveAccessibleDescription(/Nepotvrzená hodnota/);
 		await expect(page.getByText('Rozpoznal jsem 2 druhy dílů')).toBeVisible();
@@ -128,6 +128,70 @@ test.describe('široká obrazovka 1440 px', () => {
 		await expect(page.getByText(/Neaktuální:.*čekají nepotvrzené změny/)).toBeVisible();
 	});
 
+	test('úprava a přepočet: Zahodit změny vrátí aktuální plán, potvrzení spočítá nový', async ({
+		page
+	}) => {
+		await toReview(page);
+		await page.getByRole('button', { name: 'Potvrdit a vypočítat' }).click();
+		await expect(page.getByRole('img', { name: /Nářezový plán: .* tyč/ })).toBeVisible();
+		const stale = page.getByText(/Neaktuální/);
+		await expect(stale).toHaveCount(0);
+
+		// Rozpracovaná úprava: plán je neaktuální, zakázka se nemění.
+		await page.getByRole('button', { name: 'Upravit údaje' }).click();
+		const length = page.getByRole('textbox', { name: 'Díl 1, Délka' });
+		await length.fill('1900');
+		await length.press('Tab');
+		await expect(length).toHaveValue('1\u00a0900');
+		await page.getByRole('button', { name: /Plán a cena/ }).click();
+		await expect(page.getByText(/Neaktuální:.*čekají nepotvrzené změny/)).toBeVisible();
+
+		// Zahodit změny vrátí poslední potvrzenou revizi a plán je zase aktuální.
+		await page.getByRole('button', { name: 'Zkontrolovat změny' }).first().click();
+		await page.getByRole('button', { name: 'Zahodit změny' }).click();
+		await expect(page.getByRole('img', { name: /Nářezový plán: .* tyč/ })).toBeVisible();
+		await expect(stale).toHaveCount(0);
+		await page.getByRole('button', { name: 'Upravit údaje' }).click();
+		await expect(length).toHaveValue('1\u00a0800');
+
+		// Potvrzená úprava spočítá nový plán z nové hodnoty.
+		await length.fill('1900');
+		await length.press('Tab');
+		await page.getByRole('button', { name: 'Potvrdit a vypočítat' }).click();
+		await expect(page.getByRole('img', { name: /Nářezový plán: .* tyč/ })).toBeVisible();
+		await expect(stale).toHaveCount(0);
+		await page.getByRole('button', { name: 'Upravit údaje' }).click();
+		await expect(length).toHaveValue('1\u00a0900');
+	});
+
+	test('odkaz v souhrnu chyb přesune fokus na pole', async ({ page }) => {
+		await toReview(page);
+
+		const length = page.getByRole('textbox', { name: 'Díl 1, Délka' });
+		await length.fill('');
+		await length.press('Tab');
+		await page.getByRole('link', { name: 'Díl 1, délka: Chybí hodnota.' }).click();
+
+		await expect(length).toBeFocused();
+		expect(await seriousA11yIssues(page)).toEqual([]);
+	});
+
+	test('čísla v buňkách se po potvrzení ukážou ve formátu cs-CZ', async ({ page }) => {
+		await toReview(page);
+
+		const length = page.getByRole('textbox', { name: 'Skladová délka 1, Délka tyče' });
+		await expect(length).toHaveValue('6\u00a0000');
+		await length.fill('12500');
+		await expect(length).toHaveValue('12500'); // během psaní se text nemění
+		await length.press('Tab');
+		await expect(length).toHaveValue('12\u00a0500');
+
+		const price = page.getByRole('textbox', { name: 'Skladová délka 1, Cena za kus' });
+		await price.fill('1234,5');
+		await price.press('Tab');
+		await expect(price).toHaveValue('1\u00a0234,50');
+	});
+
 	test('výpadek AI ukáže chybu s nabídkou zkusit znovu', async ({ page }) => {
 		await page.goto('/project');
 
@@ -148,6 +212,16 @@ test.describe('střední šířka 768 px', () => {
 		await sendMessage(page, ZADANI);
 		await expect(page.getByRole('heading', { name: 'Kontrola údajů' })).toBeVisible();
 		expect(await seriousA11yIssues(page)).toEqual([]);
+
+		// Souhrn chyb s odkazem je přístupný i na střední šířce.
+		const length = page.getByRole('textbox', { name: 'Díl 1, Délka' });
+		await length.fill('');
+		await length.press('Tab');
+		await page.getByRole('link', { name: 'Díl 1, délka: Chybí hodnota.' }).click();
+		await expect(length).toBeFocused();
+		expect(await seriousA11yIssues(page)).toEqual([]);
+		await length.fill('1800');
+		await length.press('Tab');
 
 		await page.getByRole('button', { name: 'Potvrdit a vypočítat' }).click();
 		await expect(page.getByRole('heading', { name: 'Nářezový plán' })).toBeVisible();

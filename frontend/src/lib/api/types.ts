@@ -18,6 +18,7 @@ export type IntCell = Schemas['IntCell'];
 export type TextCell = Schemas['TextCell'];
 export type MoneyCell = Schemas['MoneyCell'];
 export type ProposalEdited = Schemas['ProposalEdited'];
+export type FieldErrorView = Schemas['FieldErrorView'];
 
 export type UserEvent =
 	| Schemas['MessageSent']

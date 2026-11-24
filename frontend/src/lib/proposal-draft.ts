@@ -216,3 +216,40 @@ export function draftToEvent(draft: ProposalDraft): DraftResult {
 	};
 	return Object.keys(errors).length > 0 ? { ok: false, errors } : { ok: true, event, conversions };
 }
+
+/**
+ * Koncept s platnými čísly ve formátu `cs-CZ` (`12500` → `12 500`, `1,5 m` → `1 500`,
+ * `1234,5` → `1 234,50`). Volá se při potvrzení buňky, ne během psaní; text, který číslem
+ * není, zůstane, jak ho uživatel napsal, aby šel opravit.
+ */
+export function normalizeDraft(draft: ProposalDraft): ProposalDraft {
+	const int = (text: string) => {
+		const parsed = parseInteger(text);
+		return parsed.ok ? integerText(parsed.value) : text;
+	};
+	const length = (text: string) => {
+		const parsed = parseLength(text);
+		return parsed.ok ? integerText(parsed.value) : text;
+	};
+	const money = (text: string) => {
+		const parsed = parseMoney(text);
+		return parsed.ok ? moneyText(parsed.value) : text;
+	};
+	return {
+		...draft,
+		parts: draft.parts.map((row) => ({
+			...row,
+			length_mm: length(row.length_mm),
+			quantity: int(row.quantity)
+		})),
+		stock: draft.stock.map((row) => ({
+			...row,
+			length_mm: length(row.length_mm),
+			price: money(row.price)
+		})),
+		kerf_mm: int(draft.kerf_mm),
+		trim_mm: int(draft.trim_mm),
+		min_remnant_mm: int(draft.min_remnant_mm),
+		time_limit_s: int(draft.time_limit_s)
+	};
+}

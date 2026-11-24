@@ -151,7 +151,9 @@ def test_neplatny_navrh_nejde_potvrdit_a_rekne_proc() -> None:
     proposal = view["proposal"]
     assert proposal["can_confirm"] is False
     assert proposal["confirm_disabled_reason"] == "Opravte 1 pole, než spustíte výpočet."
-    assert proposal["errors"] == [{"field": "Díl 1, délka", "message": "Chybí hodnota."}]
+    assert proposal["errors"] == [
+        {"field": "Díl 1, délka", "message": "Chybí hodnota.", "target": "parts.0.length_mm"}
+    ]
     assert proposal["parts"][0]["length_mm"]["error"] == "Chybí hodnota."
     # Skladová délka chyběla → výchozí 6 000 mm jako nepotvrzená (UC-01 A2).
     assert proposal["stock"][0]["length_mm"] == {"value": 6000, "unconfirmed": True, "error": None}

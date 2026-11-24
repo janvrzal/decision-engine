@@ -33,7 +33,7 @@ async function manualPlan(page: Page) {
 	await expect(page.getByRole('status').filter({ hasText: 'Převedeno' })).toContainText(
 		'1,8 m = 1 800 mm'
 	);
-	await expect(page.getByRole('textbox', { name: 'Díl 1, Délka' })).toHaveValue('1800');
+	await expect(page.getByRole('textbox', { name: 'Díl 1, Délka' })).toHaveValue('1\u00a0800');
 	await fillCell(page, 'Díl 1, Počet', '4');
 	await fillCell(page, 'Prořez', '3');
 
@@ -72,7 +72,7 @@ test.describe('široká obrazovka 1440 px', () => {
 			await cell.press('Tab');
 		}
 
-		await expect(page.getByRole('textbox', { name: 'Díl 1, Délka' })).toHaveValue('1800');
+		await expect(page.getByRole('textbox', { name: 'Díl 1, Délka' })).toHaveValue('1\u00a0800');
 		await expect(page.getByRole('textbox', { name: 'Díl 1, Počet' })).toHaveValue('4');
 		await expect(page.getByRole('button', { name: 'Potvrdit a vypočítat' })).not.toHaveAttribute(
 			'aria-disabled',
@@ -86,7 +86,7 @@ test.describe('široká obrazovka 1440 px', () => {
 		await page.getByRole('button', { name: 'Upravit údaje' }).click();
 		await expect(page.getByRole('heading', { name: 'Kontrola údajů' })).toBeVisible();
 		await expect(page.getByText('Úprava zakázky')).toBeVisible();
-		await expect(page.getByRole('textbox', { name: 'Díl 1, Délka' })).toHaveValue('1800');
+		await expect(page.getByRole('textbox', { name: 'Díl 1, Délka' })).toHaveValue('1\u00a0800');
 
 		await fillCell(page, 'Díl 1, Počet', '6');
 		await page.getByRole('button', { name: 'Potvrdit a vypočítat' }).click();

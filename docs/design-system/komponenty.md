@@ -31,7 +31,7 @@ Pravidla pro všechny komponenty:
 | Komponenta | Chování | Varianty a stavy | Pravidla |
 |---|---|---|---|
 | `TextField`, `TextArea` | nativní | výchozí, fokus, neaktivní, jen ke čtení, chyba | Popisek nad polem (`Label`, Bits Label), nápověda a chyba pod polem stylem `small`. Chyba = okraj `danger`, ikona a text. |
-| `NumberUnitInput` | nativní + `behaviors/number-input` | výchozí, nepotvrzená, změněná, chyba | Číslo vpravo s `numeric`, jednotka (mm, ks, Kč, %, s) uvnitř pole vpravo v `ink-muted`. Přijímá čárku i tečku, zobrazuje `cs-CZ`. |
+| `NumberUnitInput` | nativní + `behaviors/number-input` | výchozí, nepotvrzená, změněná, chyba | Číslo vpravo s `numeric`, jednotka (mm, ks, Kč, %, s) uvnitř pole vpravo v `ink-muted`. Přijímá čárku i tečku, zobrazuje `cs-CZ` (`12 500`, `1 234,50`); formát se použije při potvrzení hodnoty, ne během psaní. |
 | `RadioCardGroup` | Bits RadioGroup | výchozí, vybraná, neaktivní s důvodem, chyba skupiny | Cíl optimalizace: karta s názvem a jednou větou nápovědy; výchozí volba má poznámku „Výchozí“. |
 | `Switch` | Bits Switch | zapnuto, vypnuto, neaktivní | Jen pro okamžitě platná nastavení („Použít sklad“). |
 | `Checkbox` | Bits Checkbox | zaškrtnuto, nezaškrtnuto, neurčité | Výběr řádků (zápis do skladu). |
@@ -108,7 +108,7 @@ Kontrolní tabulka dílů a skladových délek v kroku Kontrola údajů. Chován
 
 ### `ValidationSummary` a `ChangeSummary`
 
-- `ValidationSummary` (`Alert danger`): „Opravte 2 pole, než spustíte výpočet“ a seznam chyb jako odkazy, které přesunou fokus na pole. U prázdného ručního zadání se souhrn ani chyby buněk neukazují, dokud uživatel nezačne vyplňovat.
+- `ValidationSummary` (`Alert danger`, `review/ValidationSummary.svelte`): „Opravte 2 pole, než spustíte výpočet“ a seznam chyb jako odkazy, které přesunou fokus na pole. Pole nese `data-cell` s klíčem z view modelu (`target`: `parts.1.length_mm`, `parameters.objective`); u chyby celé tabulky dostane fokus první buňka, u cíle vybraná volba. Chyba bez pole ve formuláři zůstane textem. U prázdného ručního zadání se souhrn ani chyby buněk neukazují, dokud uživatel nezačne vyplňovat.
 - Převod jednotek v buňce délky („1,5 m“ → 1 500 mm) oznámí stavový řádek „Převedeno: 1,5 m = 1 500 mm.“ (`role=status`).
 - Krok Kontrola údajů bez návrhu (zakázka je potvrzená): `EmptyState` „Údaje jsou potvrzené“ s akcí „Upravit údaje“ (`primary`). Stejná akce (`secondary`) je v záhlaví kroku Plán a cena.
 - `ChangeSummary` (rámeček s přerušovaným okrajem `proposal`, podklad `proposal-bg`): „Změny oproti verzi 2“ a seznam změn („+ 2× příčka 850 mm“, „sloupek: 2 000 → 2 200 mm“). Akce „Potvrdit a vypočítat“ (`primary`) a „Zahodit změny“ (`ghost`) jsou v patičce kroku, ne ve shrnutí.

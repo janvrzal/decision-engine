@@ -111,9 +111,15 @@ def build_proposal(proposal: ChangeProposal, session_id: str) -> ProposalView:
             )
             for objective, (label, hint) in OBJECTIVES.items()
         ),
-        errors=tuple(FieldErrorView(field=field_label(e.path), message=e.message) for e in errors),
+        errors=tuple(_error_view(e) for e in errors),
         can_confirm=not errors,
         confirm_disabled_reason=confirm_disabled_reason(len(errors)),
+    )
+
+
+def _error_view(error: FieldError) -> FieldErrorView:
+    return FieldErrorView(
+        field=field_label(error.path), message=error.message, target=field_target(error.path)
     )
 
 
@@ -140,6 +146,28 @@ def field_label(path: FieldPath) -> str:
             return label[:1].upper() + label[1:]
         case _:
             return "Zakázka"
+
+
+ROW_FIELDS = {"parts": ("name", "length_mm", "quantity"), "stock": ("length_mm", "price")}
+
+
+def field_target(path: FieldPath) -> str | None:
+    """Klíč pole ve formuláři (`parts.1.length_mm`, `parameters.kerf_mm`) pro odkaz v souhrnu.
+
+    Chyba bez vlastní buňky (např. označení řádku) míří na první buňku řádku.
+    """
+    match path:
+        case ("problem", "parts" | "stock" as collection, int(index), str(field)):
+            fields = ROW_FIELDS[collection]
+            return f"{collection}.{index}.{field if field in fields else fields[0]}"
+        case ("problem", "parts" | "stock" as collection):
+            return collection
+        case ("parameters", str(field)) if field in (*PARAMETER_FIELDS, "objective"):
+            return f"parameters.{field}"
+        case ("name",):
+            return "name"
+        case _:
+            return None
 
 
 def confirm_disabled_reason(error_count: int) -> str | None:

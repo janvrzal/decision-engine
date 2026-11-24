@@ -14,6 +14,7 @@
 		keepEditsSince,
 		mergeDraft,
 		nextRowId,
+		normalizeDraft,
 		type CellKey,
 		type ParameterKey,
 		type ProposalDraft
@@ -25,6 +26,7 @@
 	import CellInput from './CellInput.svelte';
 	import EditableGrid from './EditableGrid.svelte';
 	import type { CellState } from './grid-types.js';
+	import ValidationSummary from './ValidationSummary.svelte';
 
 	/**
 	 * Krok Kontrola údajů (mapa obrazovek): tabulky dílů a skladových délek, parametry
@@ -49,6 +51,12 @@
 	let conversion = $state('');
 	let showErrors = $derived(proposal.errors.length > 0 && (!isNewManual || touched));
 
+	// Chybné pole v „Dalším nastavení“ nesmí zůstat schované (odkaz ze souhrnu chyb na něj vede).
+	let moreOpen = $state(false);
+	$effect(() => {
+		if (showErrors && proposal.parameters.time_limit_s.error) moreOpen = true;
+	});
+
 	// Ruční zadání začíná fokusem v prvním řádku dílů (UC-13 krok 2).
 	$effect(() => {
 		if (!section || !untrack(() => isNewManual)) return;
@@ -68,8 +76,11 @@
 
 	function commit() {
 		touched = true;
-		const snapshot = $state.snapshot(draft);
-		const result = draftToEvent(snapshot);
+		// Potvrzená buňka se ukáže ve formátu cs-CZ (`12 500`); během psaní se text nemění.
+		const raw = $state.snapshot(draft);
+		const result = draftToEvent(raw);
+		const snapshot = normalizeDraft(raw);
+		draft = structuredClone(snapshot);
 		if (!result.ok) {
 			localErrors = result.errors;
 			return;
@@ -126,13 +137,11 @@
 	{/if}
 
 	{#if showErrors}
-		<Alert variant="danger" title={proposal.confirm_disabled_reason ?? 'Opravte chyby'}>
-			<ul class="list-disc pl-4">
-				{#each proposal.errors as error (`${error.field}:${error.message}`)}
-					<li>{error.field}: {error.message}</li>
-				{/each}
-			</ul>
-		</Alert>
+		<ValidationSummary
+			title={proposal.confirm_disabled_reason ?? 'Opravte chyby'}
+			errors={proposal.errors}
+			scope={section}
+		/>
 	{/if}
 
 	<p role="status" class="text-small text-ink-muted" class:sr-only={!conversion}>{conversion}</p>
@@ -143,6 +152,7 @@
 			<CellInput
 				bind:value={draft.name}
 				label="Název zakázky"
+				data-cell="name"
 				{...cellState(proposal.name, 'name')}
 				oncommit={commit}
 			/>
@@ -160,6 +170,7 @@
 
 	<EditableGrid
 		caption="Díly"
+		name="parts"
 		bind:rows={draft.parts}
 		columns={[
 			{ key: 'name', label: 'Název', placeholder: 'např. sloupek' },
@@ -182,6 +193,7 @@
 
 	<EditableGrid
 		caption="Skladové délky"
+		name="stock"
 		bind:rows={draft.stock}
 		columns={[
 			{ key: 'length_mm', label: 'Délka tyče', unit: 'mm', numeric: true },
@@ -209,6 +221,7 @@
 					<CellInput
 						bind:value={draft[parameter.key]}
 						label={parameter.label}
+						data-cell="parameters.{parameter.key}"
 						unit={parameter.unit}
 						numeric
 						{...cellState(proposal.parameters[parameter.key], `parameters.${parameter.key}`)}
@@ -217,12 +230,13 @@
 				</label>
 			{/each}
 		</div>
-		<Collapsible label="Další nastavení">
+		<Collapsible label="Další nastavení" bind:open={moreOpen}>
 			<label class="flex max-w-60 flex-col gap-1">
 				<span class="text-small font-medium text-ink">Časový limit výpočtu</span>
 				<CellInput
 					bind:value={draft.time_limit_s}
 					label="Časový limit výpočtu"
+					data-cell="parameters.time_limit_s"
 					unit="s"
 					numeric
 					{...cellState(proposal.parameters.time_limit_s, 'parameters.time_limit_s')}
@@ -232,7 +246,7 @@
 		</Collapsible>
 	</div>
 
-	<div class="flex flex-col gap-3">
+	<div class="flex flex-col gap-3" data-cell="parameters.objective">
 		<h3 class="text-heading text-ink">Cíl optimalizace</h3>
 		<RadioCardGroup
 			label="Cíl optimalizace"
