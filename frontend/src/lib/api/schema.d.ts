@@ -195,6 +195,8 @@ export interface components {
 			value: string | null;
 			/** Unconfirmed */
 			unconfirmed: boolean;
+			/** Unconfirmed Note */
+			unconfirmed_note?: string | null;
 			/** Error */
 			error: string | null;
 			/** Previous */
@@ -256,6 +258,8 @@ export interface components {
 			value: number | null;
 			/** Unconfirmed */
 			unconfirmed: boolean;
+			/** Unconfirmed Note */
+			unconfirmed_note?: string | null;
 			/** Error */
 			error: string | null;
 			/** Previous */
@@ -328,6 +332,8 @@ export interface components {
 			value: string | null;
 			/** Unconfirmed */
 			unconfirmed: boolean;
+			/** Unconfirmed Note */
+			unconfirmed_note?: string | null;
 			/** Error */
 			error: string | null;
 			/** Previous */
@@ -674,6 +680,8 @@ export interface components {
 			value: string | null;
 			/** Unconfirmed */
 			unconfirmed: boolean;
+			/** Unconfirmed Note */
+			unconfirmed_note?: string | null;
 			/** Error */
 			error: string | null;
 			/** Previous */

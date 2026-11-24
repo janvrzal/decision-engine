@@ -23,7 +23,8 @@ class _Frozen(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
 
-type AiErrorKind = Literal["connection", "rate_limit", "invalid_response"]
+type AiErrorKind = Literal["connection", "rate_limit", "invalid_response", "configuration"]
+"""`configuration`: neplatný nebo chybějící klíč modelu; opakování nepomůže."""
 """Druh selhání AI; český text pro uživatele skládá view model."""
 
 

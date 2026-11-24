@@ -12,6 +12,7 @@ promptu (`prompt`, výchozí je extrakce; router má vlastní odpovědi):
 """
 
 import json
+import re
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Any, cast
@@ -20,8 +21,14 @@ from decision_engine.app.ports import ChatMessage, LlmError, Prompt
 from decision_engine.core.result import Err, Ok, Result
 from decision_engine.core.state import AiErrorKind
 
-_ERROR_KINDS: tuple[AiErrorKind, ...] = ("connection", "rate_limit", "invalid_response")
+_ERROR_KINDS: tuple[AiErrorKind, ...] = (
+    "connection",
+    "rate_limit",
+    "invalid_response",
+    "configuration",
+)
 DEFAULT_PROMPT = "extract-proposal-1d"
+_DATA_BLOCK = re.compile(r"<zakazka>.*?</zakazka>", re.DOTALL)
 """Odpovědi bez `prompt` patří extrakci (i jejímu opravnému pokusu)."""
 
 
@@ -39,7 +46,9 @@ class ReplayLlm:
     def complete_json(
         self, messages: Sequence[ChatMessage], *, prompt: Prompt, attempt: int
     ) -> Result[str, LlmError]:
-        user_text = next((m.content for m in reversed(messages) if m.role == "user"), "").lower()
+        user_text = next((m.content for m in reversed(messages) if m.role == "user"), "")
+        # Zakázka v bloku <zakazka> jsou data, ne zpráva; podle ní se odpověď nevybírá.
+        user_text = _DATA_BLOCK.sub("", user_text).lower()
         for answer in self._answers:
             if str(answer.get("prompt", DEFAULT_PROMPT)) != prompt.name:
                 continue

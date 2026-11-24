@@ -6,16 +6,22 @@ Výchozí hodnoty doplňuje kód podle specifikace, ne model, a označí je jako
 
 from decimal import Decimal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from decision_engine.core.errors import FieldPath
-from decision_engine.core.model.cutting_1d import Objective, Project
+from decision_engine.core.model.cutting_1d import MAX_PARTS, MAX_STOCK, Objective, Project
 from decision_engine.core.model.proposal import (
     ChangeProposal,
     ParametersDraft,
     PartDraft,
     StockLengthDraft,
     default_objective,
+)
+from decision_engine.core.number_anchors import (
+    anchored,
+    anchored_length,
+    numbers_in,
+    project_numbers,
 )
 
 DEFAULT_STOCK_LENGTH_MM = 6000
@@ -26,6 +32,11 @@ DEFAULT_TRIM_MM = Decimal(0)
 """Zarovnávací ořez je volitelný; bez zmínky v zadání se nepoužije."""
 DEFAULT_PROJECT_NAME = "Nová zakázka"
 """Název, když ho extrakce nenajde (mapa obrazovek, Hlavička zakázky)."""
+
+
+_PART_FIELDS = frozenset({"name", "length_mm", "quantity"})
+_STOCK_FIELDS = frozenset({"length_mm", "price"})
+"""Pole, která smí model označit jako odhad; jiné názvy se zahodí."""
 
 
 class _Output(BaseModel):
@@ -42,6 +53,11 @@ class ExtractedPart(_Output):
         (), description="pole, která jsi musel odhadnout (např. length_mm)"
     )
 
+    @field_validator("uncertain", mode="after")
+    @classmethod
+    def _known_part_fields(cls, value: tuple[str, ...]) -> tuple[str, ...]:
+        return tuple(field for field in value if field in _PART_FIELDS)
+
 
 class ExtractedStock(_Output):
     ref: str | None = Field(None, description="id skladové délky z potvrzené zakázky")
@@ -49,14 +65,19 @@ class ExtractedStock(_Output):
     price: Decimal | None = Field(None, description="cena za jednu tyč v Kč, pokud je uvedena")
     uncertain: tuple[str, ...] = ()
 
+    @field_validator("uncertain", mode="after")
+    @classmethod
+    def _known_stock_fields(cls, value: tuple[str, ...]) -> tuple[str, ...]:
+        return tuple(field for field in value if field in _STOCK_FIELDS)
+
 
 class ExtractionOutput(_Output):
     """Co model ze zadání vyčetl. Chybějící údaje jsou `null`, nevymýšlí se."""
 
     name: str | None = Field(None, description="krátký název zakázky")
     material: str | None = Field(None, description="materiál nebo profil, např. jekl 40×40×2")
-    parts: tuple[ExtractedPart, ...] = ()
-    stock: tuple[ExtractedStock, ...] = ()
+    parts: tuple[ExtractedPart, ...] = Field((), max_length=MAX_PARTS)
+    stock: tuple[ExtractedStock, ...] = Field((), max_length=MAX_STOCK)
     kerf_mm: Decimal | None = Field(
         None, description="prořez v milimetrech (smí mít desetiny), jen pokud je uveden"
     )
@@ -68,8 +89,14 @@ class ExtractionOutput(_Output):
     reply: str = Field("", description="jedna až dvě věty pro uživatele česky")
 
 
-def proposal_from_extraction(output: ExtractionOutput, base: Project | None) -> ChangeProposal:
-    """Převede výstup modelu na návrh změny proti `base` (nebo nové zakázce)."""
+def proposal_from_extraction(
+    output: ExtractionOutput, base: Project | None, message: str | None = None
+) -> ChangeProposal:
+    """Převede výstup modelu na návrh změny proti `base` (nebo nové zakázce).
+
+    Se zprávou uživatele (`message`) ověří, že čísla od modelu mají oporu ve zprávě nebo
+    v potvrzené zakázce; co ji nemá, označí jako odhad AI (pravidlo 8, Issue #54).
+    """
     unconfirmed: set[FieldPath] = set()
 
     part_ids = _ids(
@@ -100,6 +127,7 @@ def proposal_from_extraction(output: ExtractionOutput, base: Project | None) -> 
     )
     for index, item in enumerate(output.stock):
         unconfirmed |= {("problem", "stock", index, field) for field in item.uncertain}
+    model_uncertain = set(unconfirmed)
     if not stock and base is not None:
         stock = tuple(
             StockLengthDraft(id=item.id, length_mm=item.length_mm, price=item.price)
@@ -110,6 +138,12 @@ def proposal_from_extraction(output: ExtractionOutput, base: Project | None) -> 
         unconfirmed.add(("problem", "stock", 0, "length_mm"))
 
     parameters, defaulted = _parameters(output, stock, base)
+    estimated = model_uncertain
+    if message is not None:
+        # Výchozí nebo převzatá skladová délka není číslo od modelu, neověřuje se.
+        modelled = stock if output.stock else ()
+        estimated |= _unanchored(parts, modelled, parameters, defaulted, message, base)
+    unconfirmed |= estimated
     unconfirmed |= {("parameters", field) for field in defaulted}
 
     return ChangeProposal(
@@ -122,7 +156,40 @@ def proposal_from_extraction(output: ExtractionOutput, base: Project | None) -> 
         stock=stock,
         parameters=parameters,
         unconfirmed=frozenset(unconfirmed),
+        estimated=frozenset(estimated),
     )
+
+
+def _unanchored(
+    parts: tuple[PartDraft, ...],
+    stock: tuple[StockLengthDraft, ...],
+    parameters: ParametersDraft,
+    defaulted: set[str],
+    message: str,
+    base: Project | None,
+) -> set[FieldPath]:
+    """Pole s číslem, které nemá oporu ve zprávě ani v potvrzené zakázce."""
+    source = numbers_in(message) | project_numbers(base)
+    found: set[FieldPath] = set()
+    for index, part in enumerate(parts):
+        if part.length_mm is not None and not anchored_length(Decimal(part.length_mm), source):
+            found.add(("problem", "parts", index, "length_mm"))
+        if part.quantity is not None and not anchored(Decimal(part.quantity), source):
+            found.add(("problem", "parts", index, "quantity"))
+    for index, item in enumerate(stock):
+        if item.length_mm is not None and not anchored_length(Decimal(item.length_mm), source):
+            found.add(("problem", "stock", index, "length_mm"))
+        if item.price is not None and not anchored(item.price, source):
+            found.add(("problem", "stock", index, "price"))
+    for field in ("kerf_mm", "trim_mm", "min_remnant_mm"):
+        value = getattr(parameters, field)
+        if (
+            field not in defaulted
+            and value is not None
+            and not anchored_length(Decimal(value), source)
+        ):
+            found.add(("parameters", field))
+    return found
 
 
 def _parameters(

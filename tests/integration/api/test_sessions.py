@@ -87,6 +87,7 @@ def test_uc01_cely_tok_pres_http() -> None:
     assert proposal["parameters"]["min_remnant_mm"] == {
         "value": 300,
         "unconfirmed": True,
+        "unconfirmed_note": "Výchozí hodnota, ověřte.",
         "error": None,
         "previous": None,
     }
@@ -160,6 +161,7 @@ def test_neplatny_navrh_nejde_potvrdit_a_rekne_proc() -> None:
     assert proposal["stock"][0]["length_mm"] == {
         "value": 6000,
         "unconfirmed": True,
+        "unconfirmed_note": "Výchozí hodnota, ověřte.",
         "error": None,
         "previous": None,
     }

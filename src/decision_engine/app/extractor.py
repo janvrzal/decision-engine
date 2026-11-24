@@ -14,6 +14,8 @@ from decision_engine.app.ports import ChatMessage, Ports, Prompt
 from decision_engine.core.effects import CallExtractor
 from decision_engine.core.events import AiFailed, Event, ProposalReceived
 from decision_engine.core.extraction import ExtractionOutput, proposal_from_extraction
+from decision_engine.core.model.proposal import ChangeProposal
+from decision_engine.core.number_anchors import grounded_reply
 from decision_engine.core.result import Err, Ok
 
 EXTRACT_PROMPT = "extract-proposal-1d"
@@ -33,6 +35,8 @@ class ExtractionTrace:
     prompt_source: str
     attempts: int
     validation_errors: tuple[str, ...]
+    error_detail: str | None = None
+    """Technický důvod selhání volání modelu (bez klíčů) pro trasování."""
 
 
 def run_extraction(effect: CallExtractor, ports: Ports) -> tuple[Event, ExtractionTrace]:
@@ -47,7 +51,8 @@ def run_extraction(effect: CallExtractor, ports: Ports) -> tuple[Event, Extracti
     for attempt in range(1, MAX_ATTEMPTS + 1):
         match ports.llm.complete_json(messages, prompt=prompt, attempt=attempt):
             case Err(error):
-                return AiFailed(kind=error.kind), _trace(prompt, attempt, errors)
+                trace = _trace(prompt, attempt, errors, detail=f"{error.kind}: {error.detail}")
+                return AiFailed(kind=error.kind), trace
             case Ok(text):
                 try:
                     output = ExtractionOutput.model_validate_json(text)
@@ -58,11 +63,20 @@ def run_extraction(effect: CallExtractor, ports: Ports) -> tuple[Event, Extracti
                         *_repair_messages(ports, errors),
                     ]
                     continue
-                proposal = proposal_from_extraction(output, effect.base)
-                event = ProposalReceived(proposal=proposal, reply=output.reply)
+                proposal = proposal_from_extraction(output, effect.base, effect.text)
+                event = ProposalReceived(proposal=proposal, reply=_reply(output.reply, proposal))
                 return event, _trace(prompt, attempt, errors)
 
     return AiFailed(kind="invalid_response"), _trace(prompt, MAX_ATTEMPTS, errors)
+
+
+def _reply(reply: str, proposal: ChangeProposal) -> str:
+    """Odpověď modelu, jen když všechna její čísla jsou v návrhu (pravidlo 8)."""
+    if grounded_reply(reply, proposal):
+        return reply
+    count = len(proposal.parts)
+    kinds = "druh dílu" if count == 1 else "druhy dílů" if 2 <= count <= 4 else "druhů dílů"
+    return f"Rozpoznal jsem {count} {kinds}. Zkontrolujte údaje v tabulce."
 
 
 def _repair_messages(ports: Ports, errors: tuple[str, ...]) -> tuple[ChatMessage, ...]:
@@ -77,11 +91,14 @@ def _describe(error: ValidationError) -> list[str]:
     ]
 
 
-def _trace(prompt: Prompt, attempts: int, errors: tuple[str, ...]) -> ExtractionTrace:
+def _trace(
+    prompt: Prompt, attempts: int, errors: tuple[str, ...], detail: str | None = None
+) -> ExtractionTrace:
     return ExtractionTrace(
         prompt_name=prompt.name,
         prompt_version=prompt.version,
         prompt_source=prompt.source,
         attempts=attempts,
         validation_errors=errors,
+        error_detail=detail,
     )

@@ -82,6 +82,8 @@ class MessageView(_View):
 class TextCell(_View):
     value: str | None
     unconfirmed: bool
+    unconfirmed_note: str | None = None
+    """Proč je hodnota nepotvrzená: výchozí hodnota, odhad AI, nebo neplatná ze souboru."""
     error: str | None
     previous: str | None = None
     """Hodnota v potvrzené revizi, změnil-li ji návrh („původně 1 800 mm“)."""
@@ -90,6 +92,8 @@ class TextCell(_View):
 class IntCell(_View):
     value: int | None
     unconfirmed: bool
+    unconfirmed_note: str | None = None
+    """Proč je hodnota nepotvrzená: výchozí hodnota, odhad AI, nebo neplatná ze souboru."""
     error: str | None
     previous: str | None = None
     """Hodnota v potvrzené revizi, změnil-li ji návrh („původně 1 800 mm“)."""
@@ -100,6 +104,8 @@ class DecimalCell(_View):
 
     value: Decimal | None
     unconfirmed: bool
+    unconfirmed_note: str | None = None
+    """Proč je hodnota nepotvrzená: výchozí hodnota, odhad AI, nebo neplatná ze souboru."""
     error: str | None
     previous: str | None = None
     """Hodnota v potvrzené revizi, změnil-li ji návrh („původně 1 800 mm“)."""
@@ -108,6 +114,8 @@ class DecimalCell(_View):
 class MoneyCell(_View):
     value: Decimal | None
     unconfirmed: bool
+    unconfirmed_note: str | None = None
+    """Proč je hodnota nepotvrzená: výchozí hodnota, odhad AI, nebo neplatná ze souboru."""
     error: str | None
     previous: str | None = None
     """Hodnota v potvrzené revizi, změnil-li ji návrh („původně 1 800 mm“)."""

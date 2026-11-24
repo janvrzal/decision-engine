@@ -150,6 +150,7 @@
 	function cellState(cell: IntCell | MoneyCell | TextCell | undefined, key: CellKey): CellState {
 		return {
 			unconfirmed: cell?.unconfirmed ?? false,
+			unconfirmedNote: cell?.unconfirmed_note ?? null,
 			error: localErrors[key] ?? (isNewManual && !touched ? null : (cell?.error ?? null)),
 			previous: cell?.previous ?? null
 		};

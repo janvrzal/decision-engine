@@ -58,6 +58,8 @@ class ChangeProposal(_Frozen):
     """Hodnoty z výchozího nastavení nebo odhadnuté modelem (R6); UI je označí."""
     origin: Literal["ai", "manual", "file"] = "ai"
     """Odkud návrh je: extrakce z textu, ruční zadání nebo úprava (UC-13), soubor (UC-06)."""
+    estimated: frozenset[FieldPath] = frozenset()
+    """Nepotvrzené hodnoty, které odhadla AI (ne výchozí nastavení); UI řekne „odhad AI“."""
     file_errors: frozenset[FieldPath] = frozenset()
     """Pole, jejichž hodnota v načteném souboru měla nečekaný tvar (E2); načetla se prázdná."""
 
@@ -95,6 +97,7 @@ def inputs_fingerprint(proposal: ChangeProposal) -> ChangeProposal:
             "base_revision": None,
             "origin": "manual",
             "unconfirmed": frozenset(),
+            "estimated": frozenset(),
             "file_errors": frozenset(),
         }
     )

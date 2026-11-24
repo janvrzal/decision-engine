@@ -59,8 +59,17 @@ def edit_proposal(
         for path in proposal.file_errors
         if (moved := _follow(path, proposal, edited)) is not None and _value(edited, moved) is None
     }
+    still_estimated = {
+        moved
+        for path in proposal.estimated
+        if (moved := _follow(path, proposal, edited)) is not None and moved in still
+    }
     return edited.model_copy(
-        update={"unconfirmed": frozenset(still), "file_errors": frozenset(still_broken)}
+        update={
+            "unconfirmed": frozenset(still),
+            "estimated": frozenset(still_estimated),
+            "file_errors": frozenset(still_broken),
+        }
     )
 
 

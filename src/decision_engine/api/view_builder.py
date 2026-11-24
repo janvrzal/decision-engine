@@ -38,6 +38,10 @@ AI_ERROR_TEXT = {
         "Ze zadání jsem nevyčetl díly k řezání. Uveďte díly s délkou a počtem a délku tyčí, "
         "nebo údaje vyplňte ručně."
     ),
+    "configuration": (
+        "AI není správně nastavená (neplatný klíč modelu). Zkontrolujte LLM_API_KEY v .env, "
+        "nebo vyplňte údaje ručně."
+    ),
 }
 PENDING_LABEL = {
     "extraction": "Připravuji údaje ke kontrole…",

@@ -122,6 +122,7 @@
 								numeric={column.numeric}
 								placeholder={column.placeholder}
 								unconfirmed={state.unconfirmed}
+								unconfirmedNote={state.unconfirmedNote}
 								error={state.error}
 								previous={state.previous}
 								readonly={disabled}

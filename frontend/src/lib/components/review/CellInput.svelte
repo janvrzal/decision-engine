@@ -14,6 +14,7 @@
 		unit,
 		numeric = false,
 		unconfirmed = false,
+		unconfirmedNote = null,
 		error,
 		previous = null,
 		ref = $bindable(null),
@@ -26,6 +27,8 @@
 		unit?: string;
 		numeric?: boolean;
 		unconfirmed?: boolean;
+		/** Původ nepotvrzené hodnoty od backendu (výchozí, odhad AI, ze souboru). */
+		unconfirmedNote?: string | null;
 		error?: string | null;
 		/** Hodnota v potvrzené revizi, změnil-li ji návrh (ukáže se přeškrtnutá). */
 		previous?: string | null;
@@ -63,7 +66,7 @@
 			<span class="pr-2 text-small text-ink-muted" aria-hidden="true">{unit}</span>
 		{/if}
 		{#if unconfirmed && !error}
-			<Tooltip content="Výchozí hodnota nebo odhad AI, ověřte.">
+			<Tooltip content={unconfirmedNote ?? 'Výchozí hodnota nebo odhad AI, ověřte.'}>
 				{#snippet trigger({ props })}
 					<!-- Mimo pořadí tabulátoru: z klávesnice stejnou informaci nese popis pole. -->
 					<span
@@ -86,6 +89,8 @@
 			původně <s>{previous}</s>
 		</p>
 	{:else if unconfirmed}
-		<span id="{id}-note" class="sr-only">Nepotvrzená hodnota: výchozí nebo odhad AI, ověřte.</span>
+		<span id="{id}-note" class="sr-only">
+			Nepotvrzená hodnota: {unconfirmedNote ?? 'výchozí nebo odhad AI, ověřte.'}
+		</span>
 	{/if}
 </div>

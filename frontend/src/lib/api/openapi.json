@@ -433,6 +433,17 @@
 						"type": "boolean",
 						"title": "Unconfirmed"
 					},
+					"unconfirmed_note": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Unconfirmed Note"
+					},
 					"error": {
 						"anyOf": [
 							{
@@ -582,6 +593,17 @@
 					"unconfirmed": {
 						"type": "boolean",
 						"title": "Unconfirmed"
+					},
+					"unconfirmed_note": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Unconfirmed Note"
 					},
 					"error": {
 						"anyOf": [
@@ -743,6 +765,17 @@
 					"unconfirmed": {
 						"type": "boolean",
 						"title": "Unconfirmed"
+					},
+					"unconfirmed_note": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Unconfirmed Note"
 					},
 					"error": {
 						"anyOf": [
@@ -1617,6 +1650,17 @@
 					"unconfirmed": {
 						"type": "boolean",
 						"title": "Unconfirmed"
+					},
+					"unconfirmed_note": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Unconfirmed Note"
 					},
 					"error": {
 						"anyOf": [

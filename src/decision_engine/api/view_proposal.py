@@ -50,17 +50,32 @@ class _Cells:
         unconfirmed: frozenset[FieldPath],
         errors: Mapping[FieldPath, str],
         previous: Mapping[FieldPath, str],
+        estimated: frozenset[FieldPath] = frozenset(),
+        from_file: frozenset[FieldPath] = frozenset(),
     ):
         self._unconfirmed = unconfirmed
+        self._estimated = estimated
+        self._from_file = from_file
         self._errors = errors
         self._previous = previous
 
     def _state(self, path: FieldPath) -> dict[str, object]:
         return {
             "unconfirmed": path in self._unconfirmed,
+            "unconfirmed_note": self._note(path),
             "error": self._errors.get(path),
             "previous": self._previous.get(path),
         }
+
+    def _note(self, path: FieldPath) -> str | None:
+        """Původ nepotvrzené hodnoty konkrétně (obsah.md): odhad AI, nebo výchozí."""
+        if path not in self._unconfirmed:
+            return None
+        if path in self._from_file:
+            return "Hodnota v souboru byla neplatná, ověřte."
+        if path in self._estimated:
+            return "Odhad AI, ověřte."
+        return "Výchozí hodnota, ověřte."
 
     def text(self, path: FieldPath, value: str | None) -> TextCell:
         return TextCell.model_validate({"value": value, **self._state(path)})
@@ -88,6 +103,8 @@ def build_proposal(
         proposal.unconfirmed,
         {error.path: error.message for error in errors},
         previous_values(diff) if diff else {},
+        estimated=proposal.estimated,
+        from_file=proposal.file_errors,
     )
     added_parts = set(diff.added_parts) if diff else set[str]()
     added_stock = set(diff.added_stock) if diff else set[str]()

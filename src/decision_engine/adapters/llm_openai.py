@@ -71,8 +71,11 @@ class OpenAICompatibleLlm:
             return Err(LlmError(kind="rate_limit", detail=str(error)))
         except (openai.APIConnectionError, openai.APITimeoutError) as error:
             return Err(LlmError(kind="connection", detail=str(error)))
-        except openai.AuthenticationError as error:
-            return Err(LlmError(kind="connection", detail=f"neplatný klíč: {error}"))
+        except (openai.AuthenticationError, openai.PermissionDeniedError) as error:
+            return Err(LlmError(kind="configuration", detail=f"neplatný klíč: {error}"))
+        except openai.InternalServerError as error:
+            # Výpadek na straně poskytovatele (5xx) je problém spojení, ne odpovědi.
+            return Err(LlmError(kind="connection", detail=str(error)))
         except openai.APIStatusError as error:
             # Např. Groq `json_validate_failed`: model nevrátil platný JSON.
             return Err(LlmError(kind="invalid_response", detail=str(error)))
