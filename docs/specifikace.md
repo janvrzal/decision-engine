@@ -4,7 +4,7 @@
 **Datum:** 24. 11. 2026  
 **Stav:** Specifikace budoucího chování; tento dokument nepopisuje dokončenou implementaci.
 
-**Změny oproti 0.6.0:** Layo vyřazeno, router má implementace Jev, LLM a ruční (ADR-0012). Horní meze velikosti úlohy a dodržení časového limitu (kap. 8). Prořez a ořez v desetinách mm, odvozování výchozího cíle a potvrzení ručně zapsané hodnoty (UC-01, ADR-0011). První etapa UC-04: orientační cena materiálu u výsledku. Dolní mez a štítek „Optimální“ (kap. 8).
+**Změny oproti 0.6.0:** Layo vyřazeno, router má implementace Jev, LLM a ruční (ADR-0012). Horní meze velikosti úlohy a dodržení časového limitu (kap. 8). Prořez a ořez v desetinách mm, odvozování výchozího cíle a potvrzení ručně zapsané hodnoty (UC-01, ADR-0011). První etapa UC-04: orientační cena materiálu u výsledku. Dolní mez a štítek „Optimální“ (kap. 8). Souhrn změn u navazující úpravy (kap. 4).
 
 ## 1. Produkt a jeho účel
 
@@ -473,7 +473,7 @@ Projekt řeší téma 2 „Vytvoření středně složité aplikace“; plné zn
 | Propojení LLM s výpočtem nebo datovým zdrojem | 2 ze 4 | Výpočet nářezového plánu a kalkulace nad potvrzenými daty a vlastními cenami; u rozšíření i práce se skladem jako datovým zdrojem |
 | Multimodalita na vstupu | 2 ze 4 | Není součástí semestrální verze |
 
-Cílová aplikace tedy pokrývá tři ze čtyř volitelných kritérií (požadovány jsou dvě). Protože TypeSafe vymezuje Jev (System One) jako odlišnou kategorii od generativních LLM, splnění požadavků nestojí pouze na jeho klasifikaci. Hlavními doklady jsou generativní extrakce, kontextový dialog a propojení s výpočty.
+Cílová aplikace tedy pokrývá tři ze čtyř volitelných kritérií (požadovány jsou dvě); aktuální stav jednotlivých use casů uvádí README. Protože TypeSafe vymezuje Jev (System One) jako odlišnou kategorii od generativních LLM, splnění požadavků nestojí pouze na jeho klasifikaci. Hlavními doklady jsou generativní extrakce, kontextový dialog a propojení s výpočty.
 
 Projekt vzniká v novém repozitáři během semestru; celá historie repozitáře tedy dokládá práci provedenou v rámci předmětu.
 

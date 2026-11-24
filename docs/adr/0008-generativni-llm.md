@@ -27,3 +27,7 @@ Extrakce, návrhy změn a doptávání potřebují generativní model se struktu
 - Výměna poskytovatele = změna konfigurace, případně nový adaptér; zbytek aplikace se nemění.
 - Adaptér používá `json_object`; přechod na `json_schema` nebo tool calling by vyžadoval nové ověření, u `qwen/qwen3.8-27b` `json_schema` nefunguje spolehlivě.
 - Free tier Groq má limity tokenů za minutu (8 000 TPM u gpt-oss, 1 000 výstupních TPM u qwen); pro jednoho uživatele stačí, evaluace musí volání rozkládat v čase.
+
+## Upřesnění (2026-11-24, Issue #62)
+
+Implementace se od prvního bodu rozhodnutí liší a platí tento stav: port `LlmClient.complete_json` vrací `Result[str, LlmError]` (text odpovědi) a schéma i opravný pokus řeší volající v `app/` (`app/extractor.py`, `adapters/llm_router.py`). Port tak zůstává nezávislý na konkrétním schématu a stejný adaptér slouží extrakci i LLM routeru. Druhy chyb: `connection` (výpadek, 5xx), `rate_limit`, `invalid_response` a `configuration` (neplatný klíč).
