@@ -47,7 +47,10 @@
 		<div class="flex items-center gap-3">
 			<h2 id="result-title" class="text-title text-ink">Nářezový plán</h2>
 			{#if result && !solving}
-				<SolutionStatusBadge status={result.status} label={result.status_label} />
+				<!-- Neaktuální plán: štítek kvality patří předchozí verzi, proto je ztlumený. -->
+				<span class={result.stale ? 'opacity-60' : ''}>
+					<SolutionStatusBadge status={result.status} label={result.status_label} />
+				</span>
 			{/if}
 		</div>
 		{#if result && !solving && !proposalPending}
@@ -106,7 +109,11 @@
 			</Alert>
 		{/if}
 
-		<div class="grid gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5">
+		<div
+			class="grid gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 {result.stale
+				? 'opacity-60'
+				: ''}"
+		>
 			<MetricCard
 				label="Spotřebované tyče"
 				value={number(result.metrics.bars_used)}

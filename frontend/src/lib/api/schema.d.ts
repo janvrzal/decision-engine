@@ -414,6 +414,8 @@ export interface components {
 			save_note: string | null;
 			/** Unsaved Changes */
 			unsaved_changes: boolean;
+			/** Unsaved Badge */
+			unsaved_badge: boolean;
 			/** Can Start New */
 			can_start_new: boolean;
 		};

@@ -47,6 +47,8 @@
 	let solving = $derived(session.pending?.kind === 'solving');
 	let step = $derived(solving ? 'result' : (shownStep ?? view.project.step));
 	let busy = $derived(session.pending !== null);
+	// Zobrazený krok je aktivní; neaktuální krok si svůj stav ponechá a aktivní je jen
+	// přes `current` (aria-current), aby stav „neaktuální“ nezmizel.
 	let steps = $derived(
 		view.project.steps.map((s) => ({
 			...s,
@@ -194,11 +196,12 @@
 	<ProjectHeader
 		name={view.project.name}
 		{steps}
+		currentStep={step}
 		onselectstep={selectStep}
 		onopenchat={() => (chatSheetOpen = true)}
 		saveDisabledReason={saveReason}
 		saveNote={view.project.save_note}
-		unsaved={view.project.unsaved_changes}
+		unsaved={view.project.unsaved_badge}
 		newDisabledReason={newReason}
 		onsave={() => void save()}
 		onload={openImport}

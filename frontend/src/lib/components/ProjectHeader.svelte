@@ -15,6 +15,7 @@
 	let {
 		name,
 		steps,
+		currentStep,
 		onselectstep,
 		onopenchat,
 		saveDisabledReason,
@@ -27,6 +28,8 @@
 	}: {
 		name: string;
 		steps: StepView[];
+		/** Právě zobrazený krok (může být i neaktuální). */
+		currentStep?: StepView['id'];
 		onselectstep: (id: StepView['id']) => void;
 		onopenchat: () => void;
 		/** Proč teď nejde uložit; `undefined` = jde. */
@@ -63,7 +66,7 @@
 		{/if}
 	</div>
 	<div class="flex-1">
-		<StepIndicator {steps} onselect={onselectstep} />
+		<StepIndicator {steps} current={currentStep} onselect={onselectstep} />
 	</div>
 	<div class="flex items-center gap-2">
 		{#if saveNote && !saveDisabledReason}

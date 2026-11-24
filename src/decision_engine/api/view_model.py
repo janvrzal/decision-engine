@@ -55,6 +55,8 @@ class ProjectView(_View):
     """Upozornění k uložení, např. že rozpracovaný návrh nebude součástí souboru (UC-06 A2)."""
     unsaved_changes: bool
     """Zahozením by se ztratila práce: neuložená zakázka nebo rozpracovaný návrh (UC-15)."""
+    unsaved_badge: bool
+    """Ukázat štítek „neuloženo“: jen u potvrzené zakázky, kterou jde uložit."""
     can_start_new: bool
     """Novou zakázku lze začít (nic neběží)."""
 

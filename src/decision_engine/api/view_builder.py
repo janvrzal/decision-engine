@@ -71,6 +71,7 @@ def build_view_model(state: AppState, *, extraction_available: bool) -> ViewMode
                 else None
             ),
             unsaved_changes=has_unsaved_changes(state),
+            unsaved_badge=state.project is not None and has_unsaved_changes(state),
             can_start_new=state.pending is None,
         ),
         pending_operation=(

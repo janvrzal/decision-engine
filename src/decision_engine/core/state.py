@@ -90,10 +90,17 @@ def current_step(state: AppState) -> Step:
 
 
 def is_result_stale(state: AppState) -> bool:
-    """Plán je neaktuální, když čeká návrh nebo se od výpočtu změnily vstupy plánu (R3)."""
+    """Plán je neaktuální, když se od výpočtu změnily vstupy plánu (R3).
+
+    Čekající návrh dělá plán neaktuálním, jen když se jeho vstupy od výpočtu liší;
+    pouhé otevření úpravy bez změny plán nezneplatní.
+    """
     if state.result is None:
         return False
-    if state.proposal is not None:
+    source = state.result.source
+    if state.proposal is not None and _draft_plan_inputs(state.proposal) != _draft_plan_inputs(
+        proposal_from_project(source)
+    ):
         return True
     current = state.project
     return current is None or _plan_inputs(state.result.source) != _plan_inputs(current)
@@ -105,6 +112,14 @@ def _plan_inputs(project: Project) -> object:
     if project.parameters.objective is not Objective.CHEAPEST:
         stock = tuple(item.model_copy(update={"price": None}) for item in stock)
     return (project.problem.parts, stock, project.parameters)
+
+
+def _draft_plan_inputs(proposal: ChangeProposal) -> object:
+    """Vstupy plánu z návrhu; ceny jen při cíli „nejnižší cena“ (jako `_plan_inputs`)."""
+    stock = proposal.stock
+    if proposal.parameters.objective is not Objective.CHEAPEST:
+        stock = tuple(item.model_copy(update={"price": None}) for item in stock)
+    return (proposal.parts, stock, proposal.parameters)
 
 
 def has_unsaved_changes(state: AppState) -> bool:

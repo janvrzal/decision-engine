@@ -88,9 +88,9 @@ def test_upravit_udaje_nabidne_potvrzenou_zakazku_k_uprave() -> None:
     assert proposal.base_revision == 0
     assert proposal.unconfirmed == frozenset()
     assert [p.length_mm for p in proposal.parts] == [1800, 1200]
-    # Čekající návrh označí plán jako neaktuální (R3), výsledek ale zůstává.
+    # Otevřená úprava bez změny plán nezneplatní (R3); výsledek zůstává aktuální.
     assert state.result is not None
-    assert is_result_stale(state)
+    assert not is_result_stale(state)
 
 
 def test_uprava_potvrzene_zakazky_vytvori_novou_revizi() -> None:

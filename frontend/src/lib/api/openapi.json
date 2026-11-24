@@ -921,6 +921,10 @@
 						"type": "boolean",
 						"title": "Unsaved Changes"
 					},
+					"unsaved_badge": {
+						"type": "boolean",
+						"title": "Unsaved Badge"
+					},
 					"can_start_new": {
 						"type": "boolean",
 						"title": "Can Start New"
@@ -937,6 +941,7 @@
 					"can_save",
 					"save_note",
 					"unsaved_changes",
+					"unsaved_badge",
 					"can_start_new"
 				],
 				"title": "ProjectView"
