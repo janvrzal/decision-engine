@@ -1,10 +1,10 @@
 # DecisionEngine — specifikace cílové verze pro semestrální práci
 
-**Verze:** 0.4.3 — ruční zadání a úprava  
+**Verze:** 0.5.0 — soubor zakázky  
 **Datum:** 23. 11. 2026  
 **Stav:** Specifikace budoucího chování; tento dokument nepopisuje dokončenou implementaci.
 
-**Změny oproti 0.4.2:** Potvrzenou zakázku lze ručně upravit akcí „Upravit údaje“ (kap. 7, Stav zakázky); karta nástroje otevírá ruční zadání (UC-13 v service designu).
+**Změny oproti 0.4.3:** Popsán soubor zakázky pro uložení a načtení (kap. 7, Soubor zakázky): obsah, verze formátu a chování u neplatného souboru (UC-06).
 
 ## 1. Produkt a jeho účel
 
@@ -378,6 +378,10 @@ Stav zakázky je její poslední potvrzená revize. LLM ani solver do ní nezapi
 Vstupy zakázky se dělí na **vstupy plánu** (díly, skladové délky a jejich ceny, parametry, cíl optimalizace) a **vstupy kalkulace** (práce, další náklady, přirážka, DPH). Vstupy kalkulace se upravují přímo: úprava je sama potvrzením, vytvoří novou revizi a kalkulace se přepočítá bez solveru.
 
 Výsledek výpočtu nese číslo revize, ze které vznikl. Plán je **neaktuální**, pokud se od této revize změnily vstupy plánu (ceny skladových délek se počítají jen při cíli „nejnižší cena“, jinak plán neovlivňují), pokud čeká nepotvrzený návrh změny, nebo pokud se změnila revize skladu. Jde o odvozenou vlastnost, nikdo ji nenastavuje.
+
+### Soubor zakázky
+
+Uložení zakázky vytvoří soubor `<název>.decision.json` s potvrzenou revizí: verze formátu, typ úlohy, název, díly, skladové délky s cenami a parametry včetně cíle optimalizace. Ceny jsou zapsané jako text, aby se neztratila přesnost. Soubor neobsahuje API klíče, historii dialogu ani výsledek výpočtu; rozpracovaný návrh změny se neukládá. Načtení nevolá žádné API a soubor se nestane zakázkou hned: vznikne z něj návrh, který uživatel zkontroluje a potvrdí (R1). Neznámý obsah, jiná verze formátu nebo chybějící díly či skladové délky ukáží srozumitelnou chybu a aktuální zakázka zůstane beze změny; jednotlivé neplatné hodnoty (např. záporná délka) se načtou a označí v kontrolní tabulce. Vstupy kalkulace přibudou s další verzí formátu.
 
 Sklad má vlastní revize a vlastní úložiště. Výsledek výpočtu se skladem nese i revizi skladu; změna skladu označí výsledek jako neaktuální.
 

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import FileDown from '@lucide/svelte/icons/file-down';
+	import Save from '@lucide/svelte/icons/save';
 	import type { ResultView, UserEvent } from '#lib/api/types.js';
 	import { NOT_AVAILABLE_REASON } from '#lib/examples.js';
 	import { formatPercent } from '#lib/format.js';
@@ -11,12 +12,14 @@
 		result,
 		proposalPending,
 		onsend,
-		onreview
+		onreview,
+		onsave
 	}: {
 		result: ResultView;
 		proposalPending: boolean;
 		onsend: (event: UserEvent) => void;
 		onreview: () => void;
+		onsave: () => void;
 	} = $props();
 
 	let summary = $derived(
@@ -40,6 +43,10 @@
 			</Button>
 		{/if}
 	{/if}
+	<Button variant="secondary" onclick={onsave}>
+		<Save size={16} strokeWidth={1.5} aria-hidden="true" />
+		Uložit zakázku
+	</Button>
 	<Button variant="primary" disabledReason={NOT_AVAILABLE_REASON}>
 		<FileDown size={16} strokeWidth={1.5} aria-hidden="true" />
 		Stáhnout PDF

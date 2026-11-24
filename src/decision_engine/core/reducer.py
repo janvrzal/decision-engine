@@ -10,6 +10,7 @@ from decision_engine.core.events import (
     EditRequested,
     Event,
     MessageSent,
+    ProjectImported,
     ProposalConfirmed,
     ProposalEdited,
     ProposalReceived,
@@ -25,6 +26,7 @@ from decision_engine.core.model.proposal import (
     proposal_from_project,
 )
 from decision_engine.core.model.proposal_edit import edit_proposal
+from decision_engine.core.project_file import read_project_file
 from decision_engine.core.result import Err, Ok
 from decision_engine.core.state import AppState, Message, PendingOperation
 
@@ -33,6 +35,9 @@ type Transition = tuple[AppState, tuple[Effect, ...]]
 
 def reduce(state: AppState, event: Event) -> Transition:
     """Vrátí nový stav a efekty po události."""
+    if state.import_error is not None and not isinstance(event, ProjectImported):
+        # Chyba načtení patří jen k poslednímu pokusu; další akce ji schová.
+        state = state.model_copy(update={"import_error": None})
     match event:
         case MessageSent(text=text):
             return _message_sent(state, text)
@@ -42,6 +47,8 @@ def reduce(state: AppState, event: Event) -> Transition:
             if state.project is None:
                 return _unchanged(state)
             return _manual_proposal(state, proposal_from_project(state.project), needs_project=True)
+        case ProjectImported(content=content):
+            return _project_imported(state, content)
         case ProposalReceived():
             return _proposal_received(state, event)
         case ProposalEdited():
@@ -90,6 +97,34 @@ def _manual_proposal(
     if state.pending is not None or state.proposal is not None or has_project != needs_project:
         return _unchanged(state)
     return state.model_copy(update={"proposal": proposal, "proposal_errors": ()}), ()
+
+
+def _project_imported(state: AppState, content: str) -> Transition:
+    """Načtený soubor začne novou zakázku jako návrh ke kontrole; plán se nepočítá (UC-06)."""
+    if state.pending is not None:
+        return _unchanged(state)
+    match read_project_file(content):
+        case Err(message):
+            return state.model_copy(update={"import_error": message}), ()
+        case Ok(proposal):
+            note = Message(
+                id=state.next_message_id,
+                role="assistant",
+                kind="text",
+                text="Zakázka načtena. Zkontrolujte údaje a spusťte výpočet.",
+            )
+            fresh = state.model_copy(
+                update={
+                    "project": None,
+                    "proposal": proposal,
+                    "proposal_errors": (),
+                    "result": None,
+                    "messages": (note,),
+                    "next_message_id": state.next_message_id + 1,
+                    "import_error": None,
+                }
+            )
+            return fresh, ()
 
 
 def _proposal_received(state: AppState, event: ProposalReceived) -> Transition:

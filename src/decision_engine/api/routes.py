@@ -4,9 +4,10 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Annotated
 
-from fastapi import APIRouter, Body, HTTPException
+from fastapi import APIRouter, Body, HTTPException, Response
 from pydantic import Field
 
+from decision_engine.api.project_download import project_file_response
 from decision_engine.api.sessions import SessionNotFoundError, SessionStore
 from decision_engine.api.view_builder import build_view_model
 from decision_engine.api.view_model import ViewModel
@@ -15,6 +16,7 @@ from decision_engine.app.session import handle
 from decision_engine.core.events import (
     EditRequested,
     MessageSent,
+    ProjectImported,
     ProposalConfirmed,
     ProposalEdited,
     ProposalRejected,
@@ -27,6 +29,7 @@ type UserEvent = Annotated[
     MessageSent
     | ToolSelected
     | EditRequested
+    | ProjectImported
     | ProposalEdited
     | ProposalConfirmed
     | ProposalRejected
@@ -68,6 +71,28 @@ def session_router(services: Services) -> APIRouter:
             return view(services.store.get(session_id))
         except SessionNotFoundError as error:
             raise _not_found() from error
+
+    @router.get(
+        "/{session_id}/project",
+        summary="Stáhnout soubor zakázky",
+        response_class=Response,
+        responses={
+            200: {"content": {"application/json": {}}, "description": "Soubor zakázky (UC-06)."},
+            404: {"description": "Relace neexistuje."},
+            409: {"description": "Zakázka ještě není potvrzená."},
+        },
+    )
+    def download_project(session_id: str) -> Response:  # pyright: ignore[reportUnusedFunction]
+        try:
+            state = services.store.get(session_id)
+        except SessionNotFoundError as error:
+            raise _not_found() from error
+        if state.project is None:
+            raise HTTPException(
+                status_code=409,
+                detail={"code": "no_project", "message": "Uložit jde potvrzená zakázka."},
+            )
+        return project_file_response(state.project)
 
     @router.post(
         "/{session_id}/events",

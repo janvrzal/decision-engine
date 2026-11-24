@@ -54,7 +54,7 @@ Toasty se nepoužívají: chyby a potvrzení zůstávají v panelu nebo v histor
 
 | Komponenta | Chování | Varianty | Pravidla |
 |---|---|---|---|
-| `Modal` | Bits Dialog | šířka 520, 640, 720 px | Příklady, Načíst zakázku, Zápis do skladu. Nadpis, obsah, patička s akcemi vpravo (hlavní akce poslední). Zavření ✕, Esc a klik mimo. |
+| `Modal` | Bits Dialog | šířka 520, 640, 720 px | Příklady, Načíst zakázku (`ImportDialog`: výběr souboru i přetažení, upozornění „Aktuální zakázka bude nahrazena“, chyba načtení jako `Alert danger` v okně), Zápis do skladu. Nadpis, obsah, patička s akcemi vpravo (hlavní akce poslední). Zavření ✕, Esc a klik mimo. |
 | `ConfirmDialog` | Bits AlertDialog | — | Zahození rozpracované zakázky nebo změn. Fokus na bezpečné akci („Zrušit“), destruktivní akce je `danger`. |
 | `Sheet` | Bits Dialog | vlevo (dialog na střední šířce, 380 px), vpravo (vývojářský panel, 460 px) | Vysouvací panel přes obsah se `shadow-overlay`. |
 

@@ -5,6 +5,7 @@
 	import Save from '@lucide/svelte/icons/save';
 	import StepIndicator from './StepIndicator.svelte';
 	import Button from './ui/Button.svelte';
+	import Tooltip from './ui/Tooltip.svelte';
 	import DropdownMenu, { type MenuItem } from './ui/DropdownMenu.svelte';
 	import type { StepView } from '#lib/api/types.js';
 	import { NOT_AVAILABLE_REASON } from '#lib/examples.js';
@@ -14,19 +15,29 @@
 		name,
 		steps,
 		onselectstep,
-		onopenchat
+		onopenchat,
+		saveDisabledReason,
+		saveNote,
+		onsave,
+		onload
 	}: {
 		name: string;
 		steps: StepView[];
 		onselectstep: (id: StepView['id']) => void;
 		onopenchat: () => void;
+		/** Proč teď nejde uložit; `undefined` = jde. */
+		saveDisabledReason: string | undefined;
+		/** Upozornění k uložení (rozpracovaný návrh nebude v souboru). */
+		saveNote: string | null;
+		onsave: () => void;
+		onload: () => void;
 	} = $props();
 
 	// Na střední šířce jsou méně časté akce v menu „⋯“ (komponenty.md).
-	const moreActions: MenuItem[] = [
-		{ label: 'Načíst zakázku', icon: FolderOpen, disabledReason: NOT_AVAILABLE_REASON },
+	let moreActions = $derived<MenuItem[]>([
+		{ label: 'Načíst zakázku', icon: FolderOpen, onselect: onload },
 		{ label: 'Nová zakázka', icon: FilePlus, disabledReason: NOT_AVAILABLE_REASON }
-	];
+	]);
 </script>
 
 <div class="flex shrink-0 items-center gap-x-6 gap-y-2 border-b border-border bg-surface px-4 py-3">
@@ -41,12 +52,24 @@
 		<StepIndicator {steps} onselect={onselectstep} />
 	</div>
 	<div class="flex items-center gap-2">
-		<Button variant="secondary" disabledReason={NOT_AVAILABLE_REASON}>
-			<Save size={16} strokeWidth={1.5} aria-hidden="true" />
-			Uložit
-		</Button>
+		{#if saveNote && !saveDisabledReason}
+			<!-- UC-06 A2: uloží se jen potvrzená verze, rozpracovaný návrh ne. -->
+			<Tooltip content={saveNote}>
+				{#snippet trigger({ props })}
+					<Button {...props} variant="secondary" onclick={onsave}>
+						<Save size={16} strokeWidth={1.5} aria-hidden="true" />
+						Uložit
+					</Button>
+				{/snippet}
+			</Tooltip>
+		{:else}
+			<Button variant="secondary" disabledReason={saveDisabledReason} onclick={onsave}>
+				<Save size={16} strokeWidth={1.5} aria-hidden="true" />
+				Uložit
+			</Button>
+		{/if}
 		<div class="hidden items-center gap-2 xl:flex">
-			<Button variant="ghost" disabledReason={NOT_AVAILABLE_REASON}>
+			<Button variant="ghost" onclick={onload}>
 				<FolderOpen size={16} strokeWidth={1.5} aria-hidden="true" />
 				Načíst
 			</Button>

@@ -12,12 +12,15 @@ function view(id: string, messages: ViewModel['messages'] = []): ViewModel {
 			step: 'input',
 			steps: [],
 			has_content: false,
-			can_edit: false
+			can_edit: false,
+			can_save: false,
+			save_note: null
 		},
 		pending_operation: null,
 		messages,
 		proposal: null,
-		result: null
+		result: null,
+		import_error: null
 	};
 }
 

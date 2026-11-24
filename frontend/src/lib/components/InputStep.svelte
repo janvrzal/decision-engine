@@ -1,5 +1,6 @@
 <script lang="ts">
 	import ArrowRight from '@lucide/svelte/icons/arrow-right';
+	import FolderOpen from '@lucide/svelte/icons/folder-open';
 	import Shuffle from '@lucide/svelte/icons/shuffle';
 	import ToolCard from './ToolCard.svelte';
 	import Alert from './ui/Alert.svelte';
@@ -13,7 +14,8 @@
 		extractionAvailable,
 		busy,
 		onsubmit,
-		onmanual
+		onmanual,
+		onload
 	}: {
 		capabilities: { id: string; label: string }[];
 		extractionAvailable: boolean;
@@ -21,6 +23,8 @@
 		onsubmit: (text: string) => void;
 		/** Ruční zadání bez AI zvoleným nástrojem (UC-13). */
 		onmanual: (capability: string) => void;
+		/** Otevře okno Načíst zakázku (UC-06). */
+		onload: () => void;
 	} = $props();
 
 	let manualReason = $derived(busy ? 'Zpracovávám předchozí zadání.' : undefined);
@@ -91,13 +95,19 @@
 	<div class="flex flex-col gap-3">
 		<div class="flex flex-wrap items-baseline justify-between gap-2">
 			<h2 class="text-heading text-ink">Nebo začněte nástrojem</h2>
-			<Button
-				variant={extractionAvailable ? 'ghost' : 'primary'}
-				disabledReason={manualReason}
-				onclick={() => onmanual(tools[0]?.id ?? 'cutting_1d')}
-			>
-				Zadat ručně
-			</Button>
+			<div class="flex flex-wrap gap-2">
+				<Button variant="ghost" onclick={onload}>
+					<FolderOpen size={16} strokeWidth={1.5} aria-hidden="true" />
+					Načíst zakázku
+				</Button>
+				<Button
+					variant={extractionAvailable ? 'ghost' : 'primary'}
+					disabledReason={manualReason}
+					onclick={() => onmanual(tools[0]?.id ?? 'cutting_1d')}
+				>
+					Zadat ručně
+				</Button>
+			</div>
 		</div>
 		<ul class="grid gap-4 md:grid-cols-2">
 			{#each tools as tool (tool.id)}

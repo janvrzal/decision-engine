@@ -189,7 +189,7 @@ Kroky scénářů uvádějí události (→ `Event`) a efekty (⇒ `Effect`) pod
 
 **Hlavní scénář — načtení**
 
-1. Na úvodní obrazovce nebo v hlavičce zakázky uživatel zvolí „Načíst zakázku“ a vybere soubor (nebo ho přetáhne). → `ProjectImported`*
+1. Na úvodní obrazovce nebo v hlavičce zakázky uživatel zvolí „Načíst zakázku“ a vybere soubor (nebo ho přetáhne). → `ProjectImported`
 2. Jádro ověří verzi formátu a strukturu.
 3. Pracovní plocha ukáže krok Kontrola údajů s obnovenými daty. Plán se nevypočítá automaticky. Panel Dialog řekne „Zakázka načtena. Zkontrolujte údaje a spusťte výpočet.“
 4. Uživatel zvolí „Potvrdit a vypočítat“ (→ UC-01, krok 9).
@@ -297,7 +297,7 @@ Kroky scénářů uvádějí události (→ `Event`) a efekty (⇒ `Effect`) pod
 **Hlavní scénář**
 
 1. Uživatel na úvodní obrazovce zvolí „Otevřít příklad“. Zobrazí se Dialog Příklady se seznamem: „Plot z jeklů“, „Regál z L profilů“, „Rám s více délkami tyčí“, u rozšíření i „Police z lamina“ a „Plot se zbytky ze skladu“. Každý příklad má jednu větu popisu.
-2. Uživatel vybere příklad. → `ExampleOpened`* ⇒ `LoadExample`* → `ProjectImported`*
+2. Uživatel vybere příklad. → `ExampleOpened`* ⇒ `LoadExample`* → `ProjectImported`
 3. Pracovní obrazovka ukáže krok Kontrola údajů s daty příkladu. Panel Dialog obsahuje původní textové zadání příkladu jako první zprávu a hlavička ukazuje štítek „Příklad“.
 4. Uživatel pokračuje jako v UC-06 krok 4.
 
@@ -479,7 +479,7 @@ Události ze specifikace (kap. 7) jsou bez hvězdičky. Ostatní jsou návrh toh
 | `RetryRequested`* | uživatel | Opakování poslední neúspěšné operace | 07 |
 | `CostInputsChanged`* | uživatel | Změna práce, nákladů, přirážky nebo DPH (přímo, R2) | 04 |
 | `PdfRequested`* / `PdfRendered`* / `PdfFailed`* | uživatel / app | Export PDF | 04 |
-| `ProjectImported`* | uživatel / app | Načtení souboru nebo příkladu | 06, 10 |
+| `ProjectImported` | uživatel / app | Načtení souboru nebo příkladu; obsah ověří jádro, neplatný soubor nastaví jen chybu načtení | 06, 10 |
 | `ExampleOpened`* | uživatel | Výběr příkladu | 10 |
 | `ExplanationReceived`* | app | Odpověď na dotaz k výsledku | 14 |
 | `ProjectRenamed`* | uživatel | Přejmenování zakázky v Hlavičce (nemění vstupy plánu) | 06, 15 |
@@ -494,7 +494,7 @@ Události ze specifikace (kap. 7) jsou bez hvězdičky. Ostatní jsou návrh toh
 | `CallExplainer`* | Generativní LLM | `ExplanationReceived`*, `AiFailed` |
 | `RunSolver` | Registr schopností (v `app/`, mimo reducer kvůli času) | `SolveFinished`, `SolveFailed`* |
 | `RenderPdf` | PDF (WeasyPrint) | `PdfRendered`*, `PdfFailed`* |
-| `LoadExample`* | Úložiště příkladů | `ProjectImported`* |
+| `LoadExample`* | Úložiště příkladů | `ProjectImported` |
 | `WriteStock`* | Úložiště skladu (SQLite) | `StockChangeConfirmed`* / chyba |
 
 Uložení zakázky do JSON je čtení stavu (endpoint vrací soubor), ne událost. Přepočet kalkulace po `CostInputsChanged`* je čistá funkce v reduceru, ne efekt.

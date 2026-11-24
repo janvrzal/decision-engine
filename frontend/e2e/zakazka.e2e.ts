@@ -57,9 +57,12 @@ test.describe('široká obrazovka 1440 px', () => {
 	test('neaktivní akce mají důvod', async ({ page }) => {
 		await page.goto('/project');
 
-		await expect(page.getByRole('button', { name: 'Uložit' })).toHaveAccessibleDescription(
-			'Tato akce zatím není k dispozici.'
-		);
+		await expect(
+			page.getByRole('button', { name: 'Uložit', exact: true })
+		).toHaveAccessibleDescription('Uložit jde potvrzená zakázka.');
+		await expect(
+			page.getByRole('button', { name: 'Nová zakázka', exact: true })
+		).toHaveAccessibleDescription('Tato akce zatím není k dispozici.');
 	});
 
 	test('přístupnost: axe bez závažných nálezů', async ({ page }) => {

@@ -67,6 +67,48 @@
 				}
 			}
 		},
+		"/api/sessions/{session_id}/project": {
+			"get": {
+				"tags": ["sessions"],
+				"summary": "Stáhnout soubor zakázky",
+				"operationId": "download_project_api_sessions__session_id__project_get",
+				"parameters": [
+					{
+						"name": "session_id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"title": "Session Id"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Soubor zakázky (UC-06).",
+						"content": {
+							"application/json": {}
+						}
+					},
+					"404": {
+						"description": "Relace neexistuje."
+					},
+					"409": {
+						"description": "Zakázka ještě není potvrzená."
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
 		"/api/sessions/{session_id}/events": {
 			"post": {
 				"tags": ["sessions"],
@@ -663,6 +705,26 @@
 				"required": ["part_id", "name", "length_mm", "start_mm"],
 				"title": "PieceView"
 			},
+			"ProjectImported": {
+				"properties": {
+					"type": {
+						"type": "string",
+						"const": "ProjectImported",
+						"title": "Type",
+						"default": "ProjectImported"
+					},
+					"content": {
+						"type": "string",
+						"maxLength": 1000000,
+						"title": "Content"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": ["content"],
+				"title": "ProjectImported",
+				"description": "Uživatel načetl soubor zakázky (UC-06); obsah se ověří v jádře."
+			},
 			"ProjectView": {
 				"properties": {
 					"name": {
@@ -699,10 +761,34 @@
 					"can_edit": {
 						"type": "boolean",
 						"title": "Can Edit"
+					},
+					"can_save": {
+						"type": "boolean",
+						"title": "Can Save"
+					},
+					"save_note": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Save Note"
 					}
 				},
 				"type": "object",
-				"required": ["name", "revision", "step", "steps", "has_content", "can_edit"],
+				"required": [
+					"name",
+					"revision",
+					"step",
+					"steps",
+					"has_content",
+					"can_edit",
+					"can_save",
+					"save_note"
+				],
 				"title": "ProjectView"
 			},
 			"ProposalConfirmed": {
@@ -795,7 +881,7 @@
 					},
 					"origin": {
 						"type": "string",
-						"enum": ["ai", "manual"],
+						"enum": ["ai", "manual", "file"],
 						"title": "Origin"
 					},
 					"name": {
@@ -1145,6 +1231,9 @@
 						"$ref": "#/components/schemas/EditRequested"
 					},
 					{
+						"$ref": "#/components/schemas/ProjectImported"
+					},
+					{
 						"$ref": "#/components/schemas/ProposalEdited"
 					},
 					{
@@ -1162,6 +1251,7 @@
 					"mapping": {
 						"EditRequested": "#/components/schemas/EditRequested",
 						"MessageSent": "#/components/schemas/MessageSent",
+						"ProjectImported": "#/components/schemas/ProjectImported",
 						"ProposalConfirmed": "#/components/schemas/ProposalConfirmed",
 						"ProposalEdited": "#/components/schemas/ProposalEdited",
 						"ProposalRejected": "#/components/schemas/ProposalRejected",
@@ -1257,6 +1347,17 @@
 								"type": "null"
 							}
 						]
+					},
+					"import_error": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Import Error"
 					}
 				},
 				"type": "object",
@@ -1267,7 +1368,8 @@
 					"pending_operation",
 					"messages",
 					"proposal",
-					"result"
+					"result",
+					"import_error"
 				],
 				"title": "ViewModel",
 				"description": "Celý stav relace pro UI."
