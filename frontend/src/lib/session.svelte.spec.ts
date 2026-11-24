@@ -144,3 +144,87 @@ describe('Session – fronta úprav', () => {
 		expect(session.view?.messages[0]?.text).toBe('druhá');
 	});
 });
+
+describe('Session – opakování a dlouhé operace', () => {
+	it('záznam o uložení počká ve frontě za výpočtem a neztratí se', async () => {
+		sessionStorage.clear();
+		const fake = fakeClient([
+			{ data: view('r5'), status: 200 },
+			{ data: view('r5'), status: 200 },
+			{ data: view('r5'), status: 200 }
+		]);
+		const session = new Session(fake.client as never);
+		await session.start();
+
+		const solving = session.send({ type: 'ProposalConfirmed' });
+		const saved = session.send({ type: 'ProjectSaved', revision: 0 });
+		fake.finish();
+		fake.finish();
+		await Promise.all([solving, saved]);
+
+		const events = fake.calls.filter((call) => call.path.endsWith('/events'));
+		expect(events.map((call) => (call.body as { type: string }).type)).toEqual([
+			'ProposalConfirmed',
+			'ProjectSaved'
+		]);
+	});
+
+	it('„Zkusit znovu“ po výpadku pošle událost, která se neprovedla, ne jinou', async () => {
+		sessionStorage.clear();
+		const fake = fakeClient([
+			{ data: view('r6'), status: 200 },
+			{ data: view('r6'), status: 200 },
+			{ status: 503 },
+			{ data: view('r6'), status: 200 }
+		]);
+		const session = new Session(fake.client as never);
+		await session.start();
+
+		const edit = session.send({ type: 'EditRequested' });
+		fake.finish();
+		await edit;
+		const solve = session.send({ type: 'SolveRequested' });
+		fake.finish();
+		await solve;
+		expect(session.problem).toBe('unreachable');
+
+		const retry = session.retry();
+		fake.finish();
+		await retry;
+
+		const events = fake.calls.filter((call) => call.path.endsWith('/events'));
+		expect((events.at(-1)?.body as { type: string }).type).toBe('SolveRequested');
+		expect(session.problem).toBeNull();
+	});
+
+	it('odmítnutou akci (422) ohlásí jako odmítnutou, ne jako výpadek', async () => {
+		sessionStorage.clear();
+		const fake = fakeClient([{ data: view('r7'), status: 200 }, { status: 422 }]);
+		const session = new Session(fake.client as never);
+		await session.start();
+
+		const sending = session.send({ type: 'EditRequested' });
+		fake.finish();
+		await sending;
+
+		expect(session.problem).toBe('rejected');
+		expect(session.lastFailed).toBeNull();
+	});
+
+	it('po obnovení stránky během výpočtu počká na jeho konec', async () => {
+		sessionStorage.setItem('decision-engine:session', 'r8');
+		const running = { ...view('r8'), pending_operation: { kind: 'solving' as const, label: '' } };
+		const fake = fakeClient([
+			{ data: running, status: 200 },
+			{ data: running, status: 200 },
+			{ data: view('r8'), status: 200 }
+		]);
+		const session = new Session(fake.client as never, 1);
+
+		await session.start();
+		expect(session.pending).toEqual({ kind: 'solving' });
+
+		await expect.poll(() => session.pending).toBeNull();
+		expect(fake.calls).toHaveLength(3);
+	});
+});

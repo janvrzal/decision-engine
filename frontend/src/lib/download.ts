@@ -55,7 +55,8 @@ export async function saveProject(client: Client, sessionId: string): Promise<Sa
 		link.href = url;
 		link.download = fileName;
 		link.click();
-		URL.revokeObjectURL(url);
+		// Některé prohlížeče začnou stahovat až po návratu do smyčky událostí.
+		setTimeout(() => URL.revokeObjectURL(url), 0);
 		return {
 			ok: true,
 			fileName,

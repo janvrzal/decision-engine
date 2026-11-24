@@ -50,6 +50,8 @@ class ProjectImported(_Event):
 
     type: Literal["ProjectImported"] = "ProjectImported"
     content: str = Field(max_length=1_000_000)
+    discard_unsaved: bool = False
+    """Uživatel potvrdil zahození neuložené práce; jinak se neuložená práce nezahodí."""
 
 
 class ProjectSaved(_Event):
@@ -62,10 +64,12 @@ class ProjectSaved(_Event):
 class NewProjectRequested(_Event):
     """Uživatel začíná novou zakázku; rozpracovaná se zahodí (UC-15).
 
-    Na neuložené změny se ptá UI předem, reducer už jen začne znovu.
+    Na neuložené změny se ptá UI předem. Reducer neuloženou práci zahodí jen
+    s `discard_unsaved`: UI mohlo vycházet ze zastaralého stavu (druhá karta prohlížeče).
     """
 
     type: Literal["NewProjectRequested"] = "NewProjectRequested"
+    discard_unsaved: bool = False
 
 
 class ProposalReceived(_Event):

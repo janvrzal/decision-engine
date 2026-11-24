@@ -5,6 +5,7 @@ trace (Langfuse best practices: trace = jedno kolo dialogu, session = relace).
 """
 
 from collections import deque
+from collections.abc import Callable
 from dataclasses import asdict
 
 from decision_engine.app.extractor import ExtractionTrace, run_extraction
@@ -20,23 +21,37 @@ from decision_engine.core.events import (
 from decision_engine.core.reducer import reduce
 from decision_engine.core.state import AppState, current_step
 
+type Publish = Callable[[AppState], None]
+"""Zveřejní mezistav (např. s běžící operací), než se vykoná dlouhý efekt."""
 
-def handle(state: AppState, event: Event, ports: Ports) -> AppState:
-    """Zpracuje událost včetně všech efektů, které z ní vyplynou, a vrátí nový stav."""
+
+def _ignore(_: AppState) -> None:
+    return None
+
+
+def handle(state: AppState, event: Event, ports: Ports, publish: Publish = _ignore) -> AppState:
+    """Zpracuje událost včetně všech efektů, které z ní vyplynou, a vrátí nový stav.
+
+    Před každým efektem (volání AI, výpočet) zveřejní mezistav přes `publish`, aby
+    obnovená stránka viděla, že operace běží (R5).
+    """
     if isinstance(event, MessageSent) and event.text.strip():
         with ports.tracer.turn(
             name="process-message", session_id=state.session_id, input=event.text
         ) as turn:
-            new_state = _run(state, event, ports, turn)
+            new_state = _run(state, event, ports, turn, publish)
             _describe_turn(turn, state, new_state)
             return new_state
-    return _run(state, event, ports, None)
+    return _run(state, event, ports, None, publish)
 
 
-def _run(state: AppState, event: Event, ports: Ports, turn: Turn | None) -> AppState:
+def _run(
+    state: AppState, event: Event, ports: Ports, turn: Turn | None, publish: Publish
+) -> AppState:
     state, effects = reduce(state, event)
     queue: deque[Effect] = deque(effects)
     while queue:
+        publish(state)
         result = _execute(queue.popleft(), ports, turn)
         state, more = reduce(state, result)
         queue.extend(more)

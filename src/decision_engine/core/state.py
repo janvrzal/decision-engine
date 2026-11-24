@@ -35,6 +35,8 @@ class Message(_Frozen):
     kind: Literal["text", "error"]
     text: str = ""
     error_kind: AiErrorKind | None = None
+    retry_text: str | None = None
+    """U chyby AI text zprávy, kterou jde poslat znovu („Zkusit znovu“ i po obnovení)."""
 
 
 class PendingOperation(_Frozen):

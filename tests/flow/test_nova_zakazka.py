@@ -132,7 +132,7 @@ def test_nactena_a_potvrzena_zakazka_beze_zmen_je_ulozena() -> None:
 
 def test_nova_zakazka_zacne_s_prazdnym_kontextem() -> None:
     before = _planned()
-    state, effects = run([NewProjectRequested()], before)
+    state, effects = run([NewProjectRequested(discard_unsaved=True)], before)
 
     assert effects == ()
     assert state == AppState(session_id=before.session_id)
@@ -140,7 +140,7 @@ def test_nova_zakazka_zacne_s_prazdnym_kontextem() -> None:
 
 
 def test_nova_zakazka_zahodi_i_rozpracovany_navrh() -> None:
-    state = _after([EditRequested(), NewProjectRequested()], _planned())
+    state = _after([EditRequested(), NewProjectRequested(discard_unsaved=True)], _planned())
     assert state.proposal is None
     assert state.project is None
     assert not has_unsaved_changes(state)
@@ -149,3 +149,24 @@ def test_nova_zakazka_zahodi_i_rozpracovany_navrh() -> None:
 def test_behem_operace_nova_zakazka_nic_nezmeni() -> None:
     state = _after([MessageSent(text="regál")])
     assert run([NewProjectRequested()], state) == (state, ())
+
+
+def test_bez_potvrzeni_se_neulozena_prace_nezahodi() -> None:
+    """Druhá karta prohlížeče mohla vidět zastaralý stav bez neuložených změn (UC-15)."""
+    before = _planned()
+    assert has_unsaved_changes(before)
+
+    state, effects = run([NewProjectRequested()], before)
+
+    assert effects == ()
+    assert state == before
+
+
+def test_ulozena_zakazka_se_zahodi_i_bez_potvrzeni() -> None:
+    before = _planned()
+    assert before.project is not None
+    saved, _ = run([ProjectSaved(revision=before.project.revision)], before)
+
+    state, _ = run([NewProjectRequested()], saved)
+
+    assert state.project is None

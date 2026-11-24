@@ -43,7 +43,7 @@ def _saved() -> str:
 
 
 def test_nacteni_zacne_novou_zakazku_ke_kontrole_bez_vypoctu() -> None:
-    state, effects = run([ProjectImported(content=_saved())], _planned())
+    state, effects = run([ProjectImported(content=_saved(), discard_unsaved=True)], _planned())
 
     assert effects == ()
     assert current_step(state) is Step.REVIEW
@@ -125,3 +125,18 @@ def test_doplnena_hodnota_ze_souboru_prestane_byt_oznacena() -> None:
     assert state.proposal is not None
     assert state.proposal.file_errors == frozenset()
     assert build_proposal(state.proposal, state.session_id).can_confirm
+
+
+def test_platny_soubor_bez_potvrzeni_neulozenou_praci_nezahodi() -> None:
+    before = _planned()
+
+    state, _ = run([ProjectImported(content=_saved())], before)
+
+    assert state == before
+
+
+def test_neplatny_soubor_ukaze_chybu_i_s_neulozenou_praci() -> None:
+    state, _ = run([ProjectImported(content="nesmysl")], _planned())
+
+    assert state.import_error is not None
+    assert state.project is not None

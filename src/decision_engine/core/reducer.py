@@ -31,7 +31,13 @@ from decision_engine.core.model.proposal import (
 from decision_engine.core.model.proposal_edit import edit_proposal
 from decision_engine.core.project_file import read_project_file
 from decision_engine.core.result import Err, Ok
-from decision_engine.core.state import AppState, Message, PendingOperation, initial_state
+from decision_engine.core.state import (
+    AppState,
+    Message,
+    PendingOperation,
+    has_unsaved_changes,
+    initial_state,
+)
 
 type Transition = tuple[AppState, tuple[Effect, ...]]
 
@@ -50,12 +56,12 @@ def reduce(state: AppState, event: Event) -> Transition:
             if state.project is None:
                 return _unchanged(state)
             return _manual_proposal(state, proposal_from_project(state.project), needs_project=True)
-        case ProjectImported(content=content):
-            return _project_imported(state, content)
+        case ProjectImported(content=content, discard_unsaved=discard):
+            return _project_imported(state, content, discard)
         case ProjectSaved(revision=revision):
             return _project_saved(state, revision)
-        case NewProjectRequested():
-            if state.pending is not None:
+        case NewProjectRequested(discard_unsaved=discard):
+            if state.pending is not None or (has_unsaved_changes(state) and not discard):
                 return _unchanged(state)
             return initial_state(state.session_id), ()
         case ProposalReceived():
@@ -131,13 +137,16 @@ def _imported_text(broken: int) -> str:
     )
 
 
-def _project_imported(state: AppState, content: str) -> Transition:
+def _project_imported(state: AppState, content: str, discard: bool) -> Transition:
     """Načtený soubor začne novou zakázku jako návrh ke kontrole; plán se nepočítá (UC-06)."""
     if state.pending is not None:
         return _unchanged(state)
     match read_project_file(content):
         case Err(message):
             return state.model_copy(update={"import_error": message}), ()
+        case Ok(_) if has_unsaved_changes(state) and not discard:
+            # Neuloženou práci zahodí jen výslovné potvrzení uživatele (UC-15).
+            return _unchanged(state)
         case Ok(proposal):
             note = Message(
                 id=state.next_message_id,
@@ -242,5 +251,12 @@ def _solve_finished(state: AppState, event: SolveFinished) -> Transition:
 def _ai_failed(state: AppState, event: AiFailed) -> Transition:
     if state.pending is None or state.pending.kind != "extraction":
         return _unchanged(state)
-    error = Message(id=state.next_message_id, role="assistant", kind="error", error_kind=event.kind)
+    failed = next((m.text for m in reversed(state.messages) if m.role == "user"), None)
+    error = Message(
+        id=state.next_message_id,
+        role="assistant",
+        kind="error",
+        error_kind=event.kind,
+        retry_text=failed,
+    )
     return _with_message(state, error).model_copy(update={"pending": None}), ()

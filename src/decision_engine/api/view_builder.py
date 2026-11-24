@@ -111,4 +111,10 @@ def _message(message: Message) -> MessageView:
     text = message.text
     if message.kind == "error":
         text = AI_ERROR_TEXT.get(message.error_kind or "", AI_ERROR_TEXT["connection"])
-    return MessageView(id=message.id, role=message.role, kind=message.kind, text=text)
+    return MessageView(
+        id=message.id,
+        role=message.role,
+        kind=message.kind,
+        text=text,
+        retry_text=message.retry_text,
+    )

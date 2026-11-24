@@ -108,7 +108,8 @@ def session_router(services: Services) -> APIRouter:
     ) -> ViewModel:
         try:
             state = services.store.update(
-                session_id, lambda current: handle(current, event, services.ports)
+                session_id,
+                lambda current, publish: handle(current, event, services.ports, publish),
             )
         except SessionNotFoundError as error:
             raise _not_found() from error

@@ -13,12 +13,15 @@
 		open = $bindable(false),
 		busy,
 		error,
+		errorOnOpen = false,
 		onimport
 	}: {
 		open?: boolean;
 		busy: boolean;
 		/** Chyba načtení z backendu (`import_error` nebo ověření souboru). */
 		error: string | null;
+		/** Okno se otevírá znovu kvůli odmítnutému souboru: chybu ukáže hned. */
+		errorOnOpen?: boolean;
 		onimport: (content: string) => Promise<void>;
 	} = $props();
 
@@ -30,10 +33,10 @@
 	let attempted = $state(false);
 	let fileName = $state('');
 
-	// Každé otevření začíná bez staré chyby.
+	// Každé otevření začíná bez staré chyby, kromě opětovného otevření kvůli odmítnutí.
 	$effect(() => {
 		if (open) {
-			attempted = false;
+			attempted = errorOnOpen;
 			localError = null;
 			fileName = '';
 		}

@@ -69,6 +69,8 @@ class MessageView(_View):
     role: Literal["user", "assistant"]
     kind: Literal["text", "error"]
     text: str
+    retry_text: str | None = None
+    """U chyby AI zpráva, kterou „Zkusit znovu“ pošle znovu."""
 
 
 class TextCell(_View):

@@ -10,6 +10,7 @@
 	import ChatPanel from './ChatPanel.svelte';
 	import ChatRail from './ChatRail.svelte';
 	import DiscardProjectDialog from './DiscardProjectDialog.svelte';
+	import { DiscardGuard } from '#lib/behaviors/discard-guard.svelte.js';
 	import InputStep from './InputStep.svelte';
 	import ImportDialog from './ImportDialog.svelte';
 	import ProjectHeader from './ProjectHeader.svelte';
@@ -91,77 +92,66 @@
 	}
 
 	// Dialog Zahodit rozpracovanou zakázku (UC-15): akce čeká, než uživatel rozhodne.
-	let discard = $state<{ label: string; run: () => Promise<void> } | null>(null);
-	let discardOpen = $state(false);
-	let discardBusy = $state(false);
-	let discardError = $state<string | null>(null);
-
-	function guarded(label: string, run: () => Promise<void>) {
-		if (!view.project.unsaved_changes) {
-			void run();
-			return;
-		}
-		discard = { label, run };
-		discardError = null;
-		discardOpen = true;
-	}
-
-	async function proceed(saveFirst: boolean) {
-		if (!discard) return;
-		discardBusy = true;
-		const error = saveFirst ? await saveFile() : null;
-		discardBusy = false;
-		if (error) {
-			discardError = error;
-			return;
-		}
-		discardOpen = false;
-		await discard.run();
-	}
+	const guard = new DiscardGuard(() => session.view?.project.unsaved_changes ?? false, saveFile);
 
 	function newProject() {
 		chatSheetOpen = false;
-		guarded('Zahodit zakázku', async () => {
-			saveError = null;
-			await session.send({ type: 'NewProjectRequested' });
+		void guard.request({
+			label: 'Zahodit zakázku',
+			run: async (discardUnsaved) => {
+				saveError = null;
+				await session.send({ type: 'NewProjectRequested', discard_unsaved: discardUnsaved });
+				const fresh = session.view;
+				return fresh !== null && fresh.project.revision === null && fresh.proposal === null;
+			}
 		});
 	}
 
 	function openImport() {
 		chatSheetOpen = false;
 		checkError = null;
+		importErrorOnOpen = false;
 		importOpen = true;
 	}
 
-	async function sendImport(content: string) {
-		await session.send({ type: 'ProjectImported', content });
-		if (session.view && !session.view.import_error && !session.problem) importOpen = false;
-	}
+	let importErrorOnOpen = $state(false);
 
 	/** Platnost souboru se ověří dřív, než se nabídne zahození rozpracované zakázky (F4). */
 	async function importFile(content: string) {
 		checkError = null;
-		if (!view.project.unsaved_changes) {
-			await sendImport(content);
-			return;
-		}
-		try {
-			const { data } = await api.POST('/api/project-files/check', { body: { content } });
-			if (!data) throw new Error('bez dat');
-			if (!data.ok) {
-				checkError = data.message ?? 'Soubor se nepodařilo načíst.';
+		if (view.project.unsaved_changes) {
+			try {
+				const { data } = await api.POST('/api/project-files/check', { body: { content } });
+				if (!data) throw new Error('bez dat');
+				if (!data.ok) {
+					checkError = data.message ?? 'Soubor se nepodařilo načíst.';
+					return;
+				}
+			} catch {
+				checkError = 'Server neodpovídá, soubor se nenačetl.';
 				return;
 			}
-		} catch {
-			checkError = 'Server neodpovídá, soubor se nenačetl.';
-			return;
+			importOpen = false;
 		}
-		importOpen = false;
-		guarded('Zahodit a načíst', async () => {
-			await session.send({ type: 'ProjectImported', content });
-			// Soubor prošel ověřením; kdyby ho backend přesto odmítl, chyba se ukáže v okně.
-			if (session.view?.import_error) importOpen = true;
+		await guard.request({
+			label: 'Zahodit a načíst',
+			run: async (discardUnsaved) => {
+				const before = session.view?.messages.length ?? 0;
+				await session.send({ type: 'ProjectImported', content, discard_unsaved: discardUnsaved });
+				if (session.view?.import_error) {
+					// Soubor backend odmítl: chyba se ukáže v okně.
+					importErrorOnOpen = true;
+					importOpen = true;
+					return true;
+				}
+				// Načtení přidá do dialogu zprávu „Zakázka načtena…“; jinak se neprovedlo.
+				const applied = (session.view?.messages.length ?? 0) > before;
+				if (applied) importOpen = false;
+				return applied;
+			}
 		});
+		// Načtení čeká na rozhodnutí v dialogu Zahodit: okno s výběrem souboru se zavře.
+		if (guard.open) importOpen = false;
 	}
 
 	let editReason = $derived(view.project.can_edit ? undefined : 'Počkejte na dokončení výpočtu.');
@@ -248,6 +238,16 @@
 							{/snippet}
 						</Alert>
 					{/if}
+					{#if session.problem === 'rejected'}
+						<Alert variant="danger" title="Akce se neprovedla">
+							Server poslední akci odmítl, údaje se nezměnily. Obnovte stránku a zkuste to znovu.
+							{#snippet actions()}
+								<Button variant="secondary" onclick={() => location.reload()}>
+									Obnovit stránku
+								</Button>
+							{/snippet}
+						</Alert>
+					{/if}
 
 					{#if step === 'input'}
 						<InputStep
@@ -311,17 +311,18 @@
 	bind:open={importOpen}
 	busy={session.pending !== null}
 	error={checkError ?? view.import_error}
+	errorOnOpen={importErrorOnOpen}
 	onimport={importFile}
 />
 
 <DiscardProjectDialog
-	bind:open={discardOpen}
+	bind:open={guard.open}
 	name={view.project.name}
 	hasProject={view.project.can_save}
 	hasProposal={view.proposal !== null}
-	discardLabel={discard?.label ?? 'Zahodit zakázku'}
-	busy={discardBusy}
-	error={discardError}
-	onsave={() => void proceed(true)}
-	ondiscard={() => void proceed(false)}
+	discardLabel={guard.action?.label ?? 'Zahodit zakázku'}
+	busy={guard.busy}
+	error={guard.error}
+	onsave={() => void guard.proceed(true)}
+	ondiscard={() => void guard.proceed(false)}
 />

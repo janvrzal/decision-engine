@@ -155,6 +155,8 @@ def test_vypadek_ai_nezmeni_data_a_dovoli_dalsi_zpravu() -> None:
     assert state.pending is None
     assert state.messages[-1].kind == "error"
     assert state.messages[-1].error_kind == "connection"
+    # „Zkusit znovu“ pošle tutéž zprávu i po obnovení stránky (text je ve stavu).
+    assert state.messages[-1].retry_text == "Přidej příčku."
 
     _, effects = run([MessageSent(text="Přidej příčku.")], state)
     assert isinstance(effects[0], CallExtractor)

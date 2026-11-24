@@ -482,6 +482,17 @@
 					"text": {
 						"type": "string",
 						"title": "Text"
+					},
+					"retry_text": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Retry Text"
 					}
 				},
 				"type": "object",
@@ -579,12 +590,17 @@
 						"const": "NewProjectRequested",
 						"title": "Type",
 						"default": "NewProjectRequested"
+					},
+					"discard_unsaved": {
+						"type": "boolean",
+						"title": "Discard Unsaved",
+						"default": false
 					}
 				},
 				"additionalProperties": false,
 				"type": "object",
 				"title": "NewProjectRequested",
-				"description": "Uživatel začíná novou zakázku; rozpracovaná se zahodí (UC-15).\n\nNa neuložené změny se ptá UI předem, reducer už jen začne znovu."
+				"description": "Uživatel začíná novou zakázku; rozpracovaná se zahodí (UC-15).\n\nNa neuložené změny se ptá UI předem. Reducer neuloženou práci zahodí jen\ns `discard_unsaved`: UI mohlo vycházet ze zastaralého stavu (druhá karta prohlížeče)."
 			},
 			"Objective": {
 				"type": "string",
@@ -817,6 +833,11 @@
 						"type": "string",
 						"maxLength": 1000000,
 						"title": "Content"
+					},
+					"discard_unsaved": {
+						"type": "boolean",
+						"title": "Discard Unsaved",
+						"default": false
 					}
 				},
 				"additionalProperties": false,

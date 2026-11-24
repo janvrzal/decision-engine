@@ -235,6 +235,8 @@ export interface components {
 			kind: 'text' | 'error';
 			/** Text */
 			text: string;
+			/** Retry Text */
+			retry_text?: string | null;
 		};
 		/** MetricsView */
 		MetricsView: {
@@ -268,7 +270,8 @@ export interface components {
 		 * NewProjectRequested
 		 * @description Uživatel začíná novou zakázku; rozpracovaná se zahodí (UC-15).
 		 *
-		 *     Na neuložené změny se ptá UI předem, reducer už jen začne znovu.
+		 *     Na neuložené změny se ptá UI předem. Reducer neuloženou práci zahodí jen
+		 *     s `discard_unsaved`: UI mohlo vycházet ze zastaralého stavu (druhá karta prohlížeče).
 		 */
 		NewProjectRequested: {
 			/**
@@ -276,6 +279,11 @@ export interface components {
 			 * @enum {string}
 			 */
 			type: 'NewProjectRequested';
+			/**
+			 * Discard Unsaved
+			 * @default false
+			 */
+			discard_unsaved: boolean;
 		};
 		/**
 		 * Objective
@@ -364,6 +372,11 @@ export interface components {
 			type: 'ProjectImported';
 			/** Content */
 			content: string;
+			/**
+			 * Discard Unsaved
+			 * @default false
+			 */
+			discard_unsaved: boolean;
 		};
 		/**
 		 * ProjectSaved
