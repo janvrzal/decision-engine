@@ -68,7 +68,7 @@
 <section class="flex flex-col gap-8" aria-labelledby="input-step-title">
 	<div class="flex flex-col gap-4 rounded-lg border border-border bg-surface p-6 shadow-raised">
 		<div class="flex flex-col gap-1">
-			<h2 id="input-step-title" class="text-heading text-balance text-ink">
+			<h2 id="input-step-title" tabindex="-1" class="text-heading text-balance text-ink">
 				Co potřebujete nařezat?
 			</h2>
 			<p class="text-body text-ink-muted">

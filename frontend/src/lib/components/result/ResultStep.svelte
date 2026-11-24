@@ -52,7 +52,7 @@
 	{/if}
 	<div class="flex flex-wrap items-center justify-between gap-3">
 		<div class="flex items-center gap-3">
-			<h2 id="result-title" class="text-title text-ink">Nářezový plán</h2>
+			<h2 id="result-title" tabindex="-1" class="text-title text-ink">Nářezový plán</h2>
 			{#if result && !solving}
 				<!-- Neaktuální plán: štítek kvality patří předchozí verzi, proto je ztlumený. -->
 				<span class={result.stale ? 'opacity-60' : ''}>
@@ -123,7 +123,7 @@
 			</Alert>
 		{/if}
 
-		<div
+		<dl
 			class="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5 {result.stale
 				? 'opacity-60'
 				: ''}"
@@ -149,7 +149,7 @@
 				value={formatPercent(result.metrics.yield_ratio)}
 				note="délka dílů / spotřeba"
 			/>
-		</div>
+		</dl>
 
 		<CostSummary cost={result.cost} stale={result.stale} />
 

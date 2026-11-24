@@ -171,7 +171,7 @@
 
 <section bind:this={section} class="flex flex-col gap-6" aria-labelledby="review-title">
 	<div class="flex flex-col gap-1">
-		<h2 id="review-title" class="text-title text-ink">Kontrola údajů</h2>
+		<h2 id="review-title" tabindex="-1" class="text-title text-ink">Kontrola údajů</h2>
 		<p class="text-body text-ink-muted">
 			{#if proposal.origin === 'ai'}
 				Zkontrolujte, co jsem ze zadání vyčetl. Hodnoty s otazníkem jsou výchozí nebo odhad AI —

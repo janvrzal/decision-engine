@@ -1,5 +1,8 @@
 <script lang="ts">
 	import PanelLeftClose from '@lucide/svelte/icons/panel-left-close';
+	import { tick } from 'svelte';
+	import { STEP_HEADING, focusById, stepAnnouncement } from '#lib/behaviors/step-focus.js';
+	import { barsWord, formatPercent } from '#lib/format.js';
 	import { MediaQuery } from 'svelte/reactivity';
 	import type { StepView, UserEvent, ViewModel } from '#lib/api/types.js';
 	import { EXAMPLE_PROMPTS } from '#lib/examples.js';
@@ -50,6 +53,35 @@
 	});
 
 	let solving = $derived(session.pending?.kind === 'solving');
+
+	// Po změně kroku fokus na jeho nadpis a krátké oznámení pro čtečku (#59).
+	let announcement = $state('');
+	let focusedStep: StepView['id'] | null = null;
+	$effect(() => {
+		const current = step;
+		const result = view.result;
+		if (focusedStep === null) {
+			focusedStep = current; // první vykreslení: fokus nechat, kde je
+			return;
+		}
+		if (current === focusedStep || solving) return;
+		focusedStep = current;
+		const summary = result
+			? `${result.metrics.bars_used} ${barsWord(result.metrics.bars_used)}, výtěžnost ${formatPercent(result.metrics.yield_ratio)}`
+			: null;
+		announcement = stepAnnouncement(current, summary);
+		void tick().then(() => focusById(STEP_HEADING[current]));
+	});
+
+	async function collapseChat(collapsed: boolean) {
+		chatCollapsed = collapsed;
+		await tick();
+		document
+			.querySelector<HTMLElement>(
+				collapsed ? '[aria-label="Rozbalit dialog"]' : '[aria-label="Sbalit dialog"]'
+			)
+			?.focus();
+	}
 	let step = $derived(solving ? 'result' : (shownStep ?? view.project.step));
 	let busy = $derived(session.pending !== null);
 	// Zobrazený krok je aktivní; neaktuální krok si svůj stav ponechá a aktivní je jen
@@ -199,7 +231,7 @@
 					<IconButton
 						label="Sbalit dialog"
 						aria-expanded="true"
-						onclick={() => (chatCollapsed = true)}
+						onclick={() => void collapseChat(true)}
 					>
 						<PanelLeftClose size={16} strokeWidth={1.5} aria-hidden="true" />
 					</IconButton>
@@ -229,7 +261,7 @@
 	<div class="flex min-h-0 flex-1">
 		{#if wide.current}
 			{#if chatCollapsed}
-				<ChatRail onexpand={() => (chatCollapsed = false)} />
+				<ChatRail onexpand={() => void collapseChat(false)} />
 			{:else}
 				<aside class="flex w-90 shrink-0 flex-col border-r border-border bg-surface print:hidden">
 					{@render chat(true)}
@@ -238,7 +270,13 @@
 		{/if}
 
 		<div class="flex min-w-0 flex-1 flex-col">
-			<main class="min-h-0 flex-1 overflow-y-auto print:overflow-visible">
+			<!-- scroll-padding: lepivá lišta dole nezakryje pole s fokusem (WCAG 2.4.11). -->
+			<main
+				id="main"
+				tabindex="-1"
+				class="min-h-0 flex-1 scroll-pb-24 overflow-y-auto focus:outline-none print:overflow-visible"
+			>
+				<p role="status" class="sr-only">{announcement}</p>
 				<div class="mx-auto flex max-w-5xl flex-col gap-6 p-6">
 					{#if saveError}
 						<Alert variant="danger" title="Zakázka se neuložila">

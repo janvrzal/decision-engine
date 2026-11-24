@@ -59,3 +59,9 @@ export function formatMoney(amount: string | null): string {
 export function formatPercent(ratio: number): string {
 	return normalizeSpaces(percent.format(ratio));
 }
+
+/** Česky skloňované „tyč“: 1 tyč, 2–4 tyče, 5 a víc tyčí. */
+export function barsWord(count: number): string {
+	if (count === 1) return 'tyč';
+	return count >= 2 && count <= 4 ? 'tyče' : 'tyčí';
+}

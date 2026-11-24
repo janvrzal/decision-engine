@@ -196,6 +196,30 @@ test.describe('široká obrazovka 1440 px', () => {
 		await expect(page.getByRole('region', { name: 'Cena materiálu (orientačně)' })).toBeVisible();
 	});
 
+	test('klávesnice: po přechodu na krok je fokus na nadpisu a změna se oznámí', async ({
+		page
+	}) => {
+		await toReview(page);
+		await expect(page.getByRole('heading', { name: 'Kontrola údajů' })).toBeFocused();
+
+		const confirm = page.getByRole('button', { name: 'Potvrdit a vypočítat' });
+		await confirm.focus();
+		await page.keyboard.press('Enter');
+
+		await expect(page.getByRole('heading', { name: 'Nářezový plán' })).toBeFocused();
+		await expect(page.getByRole('status').filter({ hasText: 'Plán spočítán' })).toContainText(
+			/\d tyč.*výtěžnost/
+		);
+		// Skip link, landmarky a WCAG 2.2 AA.
+		await expect(page.getByRole('link', { name: 'Přeskočit na obsah' })).toBeAttached();
+		const wcag22 = await new AxeBuilder({ page })
+			.withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])
+			.analyze();
+		expect(
+			wcag22.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical')
+		).toEqual([]);
+	});
+
 	test('odkaz v souhrnu chyb přesune fokus na pole', async ({ page }) => {
 		await toReview(page);
 

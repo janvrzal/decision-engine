@@ -53,7 +53,8 @@
 </script>
 
 <!-- Pod 640 px má hlavička tři řádky: název, akce a kroky (#58). -->
-<div
+<section
+	aria-label="Zakázka"
 	class="flex shrink-0 flex-wrap items-center gap-x-6 gap-y-2 border-b border-border bg-surface px-4 py-3 print:hidden"
 >
 	<div class="xl:hidden">
@@ -105,4 +106,4 @@
 			<DropdownMenu label="Další akce se zakázkou" items={moreActions} />
 		</div>
 	</div>
-</div>
+</section>

@@ -64,5 +64,11 @@
 		</div>
 	</main>
 {:else}
+	<a
+		href="#main"
+		class="sr-only rounded-md bg-surface px-3 py-2 text-body font-semibold text-ink shadow-raised focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50"
+	>
+		Přeskočit na obsah
+	</a>
 	{@render children()}
 {/if}

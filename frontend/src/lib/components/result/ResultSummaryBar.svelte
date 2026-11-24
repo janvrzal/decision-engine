@@ -2,7 +2,7 @@
 	import Printer from '@lucide/svelte/icons/printer';
 	import Save from '@lucide/svelte/icons/save';
 	import type { ResultView, UserEvent } from '#lib/api/types.js';
-	import { formatPercent } from '#lib/format.js';
+	import { barsWord, formatPercent } from '#lib/format.js';
 	import SolutionStatusBadge from '../SolutionStatusBadge.svelte';
 	import Button from '../ui/Button.svelte';
 
@@ -22,11 +22,12 @@
 	} = $props();
 
 	let summary = $derived(
-		`${result.metrics.bars_used} ${result.metrics.bars_used === 1 ? 'tyč' : result.metrics.bars_used < 5 ? 'tyče' : 'tyčí'} · výtěžnost ${formatPercent(result.metrics.yield_ratio)}`
+		`${result.metrics.bars_used} ${barsWord(result.metrics.bars_used)} · výtěžnost ${formatPercent(result.metrics.yield_ratio)}`
 	);
 </script>
 
-<div
+<section
+	aria-label="Souhrn plánu"
 	class="sticky bottom-0 flex flex-wrap items-center gap-3 border-t border-border bg-surface px-6 py-3 shadow-raised print:hidden"
 >
 	<SolutionStatusBadge status={result.status} label={result.status_label} stale={result.stale} />
@@ -55,4 +56,4 @@
 		<Save size={16} strokeWidth={1.5} aria-hidden="true" />
 		Uložit zakázku
 	</Button>
-</div>
+</section>
