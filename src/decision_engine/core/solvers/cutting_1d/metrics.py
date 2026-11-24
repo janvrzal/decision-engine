@@ -1,5 +1,7 @@
 """Metriky plánu 1D (spec kap. 4 Výsledek): spotřeba, zbytky, odpad, výtěžnost."""
 
+from decimal import Decimal
+
 from decision_engine.core.model.calculation import Bar, Metrics
 from decision_engine.core.model.cutting_1d import Project
 from decision_engine.core.solvers.cutting_1d.geometry import remainder
@@ -15,7 +17,7 @@ def compute_metrics(project: Project, bars: tuple[Bar, ...]) -> Metrics:
         for kind, length in (remainder(bar.length_mm, bar.pieces, parameters) for bar in bars)
         if kind == "remnant"
     ]
-    remnant_length = sum(remnants)
+    remnant_length = sum(remnants, Decimal(0))
     by_stock = tuple(
         (stock.id, sum(1 for bar in bars if bar.stock_id == stock.id))
         for stock in project.problem.stock

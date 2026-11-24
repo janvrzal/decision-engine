@@ -31,9 +31,19 @@ export function formatAmount(amount: string): string {
 	return normalizeSpaces(money.format(amount as `${number}`));
 }
 
-/** Délka v celých milimetrech: `1 250 mm`. */
-export function formatLength(mm: number): string {
-	return `${formatInteger(mm)}${NBSP}mm`;
+const fine = new Intl.NumberFormat('cs-CZ', { maximumFractionDigits: 1 });
+
+/**
+ * Délka v milimetrech: `1 250 mm`, `2 005,5 mm`. Polohy a zbytky přicházejí z API
+ * jako string `Decimal` (prořez smí mít desetiny mm, ADR-0011).
+ */
+export function formatLength(mm: number | string): string {
+	return `${formatMillimeters(mm)}${NBSP}mm`;
+}
+
+/** Číslo milimetrů bez jednotky, nejvýš s jedním desetinným místem: `2 005,5`. */
+export function formatMillimeters(mm: number | string): string {
+	return normalizeSpaces(fine.format(Number(mm)));
 }
 
 /**

@@ -118,7 +118,7 @@ def test_uc01_cely_tok_pres_http() -> None:
     assert result["svg"].startswith("<svg")
     assert result["metrics"]["bars_used"] == 5
     assert result["bars"][0]["numbers"] == [1, 2, 3, 4, 5]
-    assert result["bars"][0]["cuts_mm"] == [2000, 4003, 5506]
+    assert result["bars"][0]["cuts_mm"] == ["2000", "4003", "5506"]
     assert result["bars"][0]["tail"] == "remnant"
     assert view["pending_operation"] is None
 

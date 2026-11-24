@@ -52,8 +52,8 @@ def projects(draw: st.DrawFn) -> Project:
         revision=draw(st.integers(min_value=0, max_value=1_000)),
         problem=Problem(material=draw(st.none() | _text), parts=parts, stock=stock),
         parameters=Parameters(
-            kerf_mm=draw(st.integers(min_value=0, max_value=10)),
-            trim_mm=draw(st.integers(min_value=0, max_value=shortest - 1)),
+            kerf_mm=Decimal(draw(st.integers(min_value=0, max_value=100))) / 10,
+            trim_mm=Decimal(draw(st.integers(min_value=0, max_value=shortest - 1))),
             min_remnant_mm=draw(st.integers(min_value=0, max_value=2_000)),
             objective=objective,
         ),

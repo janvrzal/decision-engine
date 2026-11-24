@@ -256,7 +256,7 @@
 					},
 					"cuts_mm": {
 						"items": {
-							"type": "integer"
+							"type": "string"
 						},
 						"type": "array",
 						"title": "Cuts Mm"
@@ -267,7 +267,7 @@
 						"title": "Tail"
 					},
 					"tail_length_mm": {
-						"type": "integer",
+						"type": "string",
 						"title": "Tail Length Mm"
 					}
 				},
@@ -304,6 +304,40 @@
 				"type": "object",
 				"required": ["id", "label"],
 				"title": "CapabilityView"
+			},
+			"DecimalCell": {
+				"properties": {
+					"value": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Value"
+					},
+					"unconfirmed": {
+						"type": "boolean",
+						"title": "Unconfirmed"
+					},
+					"error": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Error"
+					}
+				},
+				"type": "object",
+				"required": ["value", "unconfirmed", "error"],
+				"title": "DecimalCell",
+				"description": "Délka v mm s nejvýš jedním desetinným místem (prořez, ořez; ADR-0011)."
 			},
 			"EditRequested": {
 				"properties": {
@@ -521,7 +555,7 @@
 						"title": "Consumed Length Mm"
 					},
 					"remnant_length_mm": {
-						"type": "integer",
+						"type": "string",
 						"title": "Remnant Length Mm"
 					},
 					"remnant_count": {
@@ -529,7 +563,7 @@
 						"title": "Remnant Count"
 					},
 					"waste_length_mm": {
-						"type": "integer",
+						"type": "string",
 						"title": "Waste Length Mm"
 					},
 					"yield_ratio": {
@@ -642,7 +676,10 @@
 					"kerf_mm": {
 						"anyOf": [
 							{
-								"type": "integer"
+								"type": "number"
+							},
+							{
+								"type": "string"
 							},
 							{
 								"type": "null"
@@ -653,7 +690,10 @@
 					"trim_mm": {
 						"anyOf": [
 							{
-								"type": "integer"
+								"type": "number"
+							},
+							{
+								"type": "string"
 							},
 							{
 								"type": "null"
@@ -701,10 +741,10 @@
 			"ParametersView": {
 				"properties": {
 					"kerf_mm": {
-						"$ref": "#/components/schemas/IntCell"
+						"$ref": "#/components/schemas/DecimalCell"
 					},
 					"trim_mm": {
-						"$ref": "#/components/schemas/IntCell"
+						"$ref": "#/components/schemas/DecimalCell"
 					},
 					"min_remnant_mm": {
 						"$ref": "#/components/schemas/IntCell"
@@ -813,7 +853,7 @@
 						"title": "Length Mm"
 					},
 					"start_mm": {
-						"type": "integer",
+						"type": "string",
 						"title": "Start Mm"
 					}
 				},
@@ -1008,6 +1048,15 @@
 					},
 					"parameters": {
 						"$ref": "#/components/schemas/ParametersDraft"
+					},
+					"confirmed": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array",
+						"maxItems": 1500,
+						"title": "Confirmed",
+						"default": []
 					}
 				},
 				"additionalProperties": false,

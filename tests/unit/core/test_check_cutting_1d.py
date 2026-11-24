@@ -1,5 +1,6 @@
 """Validátor plánu 1D musí odhalit ručně pokažené výsledky."""
 
+from decimal import Decimal
 from typing import Any
 
 from solver_cases import project_1d
@@ -37,18 +38,18 @@ def test_chybejici_kus() -> None:
 
 def test_kusy_se_prekryvaji_kvuli_prorezu() -> None:
     pieces = (
-        PlacedPiece(part_id="p1", length_mm=2000, start_mm=0),
-        PlacedPiece(part_id="p1", length_mm=2000, start_mm=2001),
-        PlacedPiece(part_id="p2", length_mm=1000, start_mm=4004),
+        PlacedPiece(part_id="p1", length_mm=2000, start_mm=Decimal(0)),
+        PlacedPiece(part_id="p1", length_mm=2000, start_mm=Decimal(2001)),
+        PlacedPiece(part_id="p2", length_mm=1000, start_mm=Decimal(4004)),
     )
     assert "overlap" in _codes(_with_bar(VALID.bars[0], pieces=pieces))
 
 
 def test_prekrocena_kapacita() -> None:
     pieces = (
-        PlacedPiece(part_id="p1", length_mm=2000, start_mm=0),
-        PlacedPiece(part_id="p1", length_mm=2000, start_mm=2003),
-        PlacedPiece(part_id="p2", length_mm=1000, start_mm=5006),
+        PlacedPiece(part_id="p1", length_mm=2000, start_mm=Decimal(0)),
+        PlacedPiece(part_id="p1", length_mm=2000, start_mm=Decimal(2003)),
+        PlacedPiece(part_id="p2", length_mm=1000, start_mm=Decimal(5006)),
     )
     assert "capacity" in _codes(_with_bar(VALID.bars[0], pieces=pieces))
 

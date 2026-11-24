@@ -1,5 +1,7 @@
 """Vlastnosti reduceru: žádná výjimka a zakázku mění jen potvrzení návrhu (R1)."""
 
+from decimal import Decimal
+
 from hypothesis import given
 from hypothesis import strategies as st
 
@@ -33,7 +35,10 @@ def _proposal(length: int | None) -> ChangeProposal:
         parts=(PartDraft(id="p1", name="díl", length_mm=length, quantity=2),),
         stock=(StockLengthDraft(id="s1", length_mm=6000),),
         parameters=ParametersDraft(
-            kerf_mm=3, trim_mm=0, min_remnant_mm=0, objective=Objective.FEWEST_BARS
+            kerf_mm=Decimal(3),
+            trim_mm=Decimal(0),
+            min_remnant_mm=0,
+            objective=Objective.FEWEST_BARS,
         ),
     )
 

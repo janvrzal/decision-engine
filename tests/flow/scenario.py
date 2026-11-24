@@ -45,7 +45,9 @@ def shelf_proposal(
             PartDraft(id="p2", name="polička", length_mm=shelf_length, quantity=8),
         ),
         stock=(StockLengthDraft(id="s1", length_mm=6000, price=price),),
-        parameters=ParametersDraft(kerf_mm=3, trim_mm=0, min_remnant_mm=300, objective=objective),
+        parameters=ParametersDraft(
+            kerf_mm=Decimal(3), trim_mm=Decimal(0), min_remnant_mm=300, objective=objective
+        ),
         unconfirmed=frozenset({("parameters", "kerf_mm")}),
     )
 

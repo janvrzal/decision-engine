@@ -7,6 +7,7 @@ prázdný seznam znamená platný plán.
 
 from collections import Counter
 from dataclasses import dataclass
+from decimal import Decimal
 
 from decision_engine.core.model.calculation import Bar, CalculationResult, SolutionStatus
 from decision_engine.core.model.cutting_1d import Project
@@ -91,7 +92,7 @@ def _check_metrics(project: Project, result: CalculationResult) -> list[Violatio
     metrics = result.metrics
     parts = sum(p.length_mm for bar in result.bars for p in bar.pieces)
     consumed = sum(bar.length_mm for bar in result.bars)
-    remnants: list[int] = []
+    remnants: list[Decimal] = []
     for bar in result.bars:
         if not bar.pieces:
             continue
@@ -104,7 +105,7 @@ def _check_metrics(project: Project, result: CalculationResult) -> list[Violatio
         "bars_used": len(result.bars),
         "parts_length_mm": parts,
         "consumed_length_mm": consumed,
-        "remnant_length_mm": sum(remnants),
+        "remnant_length_mm": sum(remnants, Decimal(0)),
         "remnant_count": len(remnants),
         "waste_length_mm": consumed - parts - sum(remnants),
     }

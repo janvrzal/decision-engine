@@ -2,7 +2,7 @@
 	import Pencil from '@lucide/svelte/icons/pencil';
 	import RefreshCw from '@lucide/svelte/icons/refresh-cw';
 	import type { ResultView, UserEvent } from '#lib/api/types.js';
-	import { formatLength, formatPercent } from '#lib/format.js';
+	import { formatLength, formatMillimeters, formatPercent } from '#lib/format.js';
 	import MetricCard from '../MetricCard.svelte';
 	import SolutionStatusBadge from '../SolutionStatusBadge.svelte';
 	import Alert from '../ui/Alert.svelte';
@@ -37,8 +37,8 @@
 	let highlighted = $state<string | null>(null);
 	let breakdownOpen = $state(false);
 
-	function number(value: number): string {
-		return new Intl.NumberFormat('cs-CZ').format(value);
+	function number(value: number | string): string {
+		return formatMillimeters(value);
 	}
 </script>
 

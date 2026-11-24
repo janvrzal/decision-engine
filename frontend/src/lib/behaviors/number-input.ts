@@ -1,4 +1,4 @@
-import { formatAmount, formatInteger } from '../format.js';
+import { formatAmount, formatInteger, formatMillimeters } from '../format.js';
 
 /**
  * Převod textu z buňky na číslo (komponenty.md, NumberUnitInput): přijímá čárku i tečku
@@ -38,6 +38,28 @@ export function parseLength(text: string): ParsedLength {
 	return { ok: true, value: rounded, converted: factor !== 1 };
 }
 
+/**
+ * Jemná délka v mm s nejvýš jedním desetinným místem (prořez, ořez; ADR-0011) jako
+ * řetězec `Decimal` pro API: „2,5“ → `2.5`, „0,25 cm“ → `2.5`.
+ */
+export function parseFineLength(text: string): Parsed<string> {
+	const clean = text.replace(SPACES, '').replace(',', '.').toLowerCase();
+	if (clean === '') return { ok: true, value: null };
+	const match = /^(\d+(?:\.\d+)?)([a-z]*)$/.exec(clean);
+	if (!match) return { ok: false, message: 'Zadejte délku číslem, např. 3 nebo 2,5.' };
+	const [, number, unit] = match;
+	const factor = unit === '' ? 1 : UNIT_MM[unit];
+	if (factor === undefined) return { ok: false, message: 'Zadejte délku v mm nebo cm.' };
+	const tenths = Number(number) * factor * 10;
+	const rounded = Math.round(tenths);
+	if (Math.abs(tenths - rounded) > 1e-6) {
+		return { ok: false, message: 'Délka smí mít nejvýš 1 desetinné místo (mm).' };
+	}
+	const whole = Math.trunc(rounded / 10);
+	const fraction = rounded % 10;
+	return { ok: true, value: fraction === 0 ? String(whole) : `${whole}.${fraction}` };
+}
+
 /** Částka jako řetězec `Decimal` pro API (`1234.5`), aby se neztratila přesnost. */
 export function parseMoney(text: string): Parsed<string> {
 	const clean = text.replace(SPACES, '').replace(',', '.');
@@ -54,6 +76,11 @@ export function parseMoney(text: string): Parsed<string> {
  */
 export function integerText(value: number | null): string {
 	return value === null ? '' : formatInteger(value);
+}
+
+/** Jemná délka pro buňku: `2,5`, `3`, `1 000`. */
+export function fineText(value: string | null): string {
+	return value === null ? '' : formatMillimeters(value);
 }
 
 export function moneyText(value: string | null): string {

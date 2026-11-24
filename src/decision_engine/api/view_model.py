@@ -87,6 +87,14 @@ class IntCell(_View):
     error: str | None
 
 
+class DecimalCell(_View):
+    """Délka v mm s nejvýš jedním desetinným místem (prořez, ořez; ADR-0011)."""
+
+    value: Decimal | None
+    unconfirmed: bool
+    error: str | None
+
+
 class MoneyCell(_View):
     value: Decimal | None
     unconfirmed: bool
@@ -107,8 +115,8 @@ class StockRow(_View):
 
 
 class ParametersView(_View):
-    kerf_mm: IntCell
-    trim_mm: IntCell
+    kerf_mm: DecimalCell
+    trim_mm: DecimalCell
     min_remnant_mm: IntCell
     time_limit_s: IntCell
 
@@ -157,9 +165,9 @@ class MetricsView(_View):
     """Počet spotřebovaných tyčí podle délky, od nejdelší."""
     parts_length_mm: int
     consumed_length_mm: int
-    remnant_length_mm: int
+    remnant_length_mm: Decimal
     remnant_count: int
-    waste_length_mm: int
+    waste_length_mm: Decimal
     yield_ratio: float
 
 
@@ -167,7 +175,7 @@ class PieceView(_View):
     part_id: str
     name: str
     length_mm: int
-    start_mm: int
+    start_mm: Decimal
 
 
 class BarView(_View):
@@ -175,10 +183,10 @@ class BarView(_View):
     """Čísla tyčí se stejným řezáním (stejné číslování jako v SVG)."""
     length_mm: int
     pieces: tuple[PieceView, ...]
-    cuts_mm: tuple[int, ...]
+    cuts_mm: tuple[Decimal, ...]
     """Polohy řezů od začátku tyče."""
     tail: Literal["none", "remnant", "waste"]
-    tail_length_mm: int
+    tail_length_mm: Decimal
 
 
 class UnplacedView(_View):

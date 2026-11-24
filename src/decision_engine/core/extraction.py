@@ -15,13 +15,14 @@ from decision_engine.core.model.proposal import (
     ParametersDraft,
     PartDraft,
     StockLengthDraft,
+    default_objective,
 )
 
 DEFAULT_STOCK_LENGTH_MM = 6000
 """Nabídnutá skladová délka, když zadání žádnou neuvádí (UC-01 A2)."""
 DEFAULT_MIN_REMNANT_MM = 300
 """Výchozí minimální délka využitelného zbytku (spec UC-01, plan-rezani.md)."""
-DEFAULT_TRIM_MM = 0
+DEFAULT_TRIM_MM = Decimal(0)
 """Zarovnávací ořez je volitelný; bez zmínky v zadání se nepoužije."""
 DEFAULT_PROJECT_NAME = "Nová zakázka"
 """Název, když ho extrakce nenajde (mapa obrazovek, Hlavička zakázky)."""
@@ -56,8 +57,12 @@ class ExtractionOutput(_Output):
     material: str | None = Field(None, description="materiál nebo profil, např. jekl 40×40×2")
     parts: tuple[ExtractedPart, ...] = ()
     stock: tuple[ExtractedStock, ...] = ()
-    kerf_mm: int | None = Field(None, description="prořez v milimetrech, jen pokud je uveden")
-    trim_mm: int | None = Field(None, description="zarovnávací ořez v mm, jen pokud je uveden")
+    kerf_mm: Decimal | None = Field(
+        None, description="prořez v milimetrech (smí mít desetiny), jen pokud je uveden"
+    )
+    trim_mm: Decimal | None = Field(
+        None, description="zarovnávací ořez v mm (smí mít desetiny), jen pokud je uveden"
+    )
     min_remnant_mm: int | None = Field(None, description="minimální využitelný zbytek v mm")
     objective: Objective | None = Field(None, description="cíl, jen pokud ho uživatel řekl")
     reply: str = Field("", description="jedna až dvě věty pro uživatele česky")
@@ -155,9 +160,7 @@ def _parameters(
         defaulted.add("min_remnant_mm")
     objective = output.objective
     if objective is None:
-        # Spec UC-01: nejnižší cena, jsou-li ceny všech délek, jinak nejméně materiálu.
-        all_priced = all(item.price is not None for item in stock)
-        objective = Objective.CHEAPEST if all_priced else Objective.LEAST_MATERIAL
+        objective = default_objective(stock)
         defaulted.add("objective")
     # Prořez nemá ve specifikaci výchozí hodnotu: chybí-li, uživatel ho doplní.
     return (

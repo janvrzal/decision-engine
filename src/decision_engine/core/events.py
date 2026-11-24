@@ -90,6 +90,9 @@ class ProposalEdited(_Event):
     parts: Annotated[tuple[PartDraft, ...], Field(max_length=MAX_PARTS)]
     stock: Annotated[tuple[StockLengthDraft, ...], Field(max_length=MAX_STOCK)]
     parameters: ParametersDraft
+    confirmed: Annotated[tuple[str, ...], Field(max_length=MAX_PARTS * 3)] = ()
+    """Buňky, které uživatel v této úpravě sám vyplnil (`parts.0.length_mm`, `objective`);
+    ručně zadaná hodnota je potvrzená, i když se rovná výchozí (R6)."""
 
 
 class ProposalConfirmed(_Event):

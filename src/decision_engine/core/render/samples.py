@@ -44,7 +44,9 @@ SAMPLES: dict[str, Project] = {
         "jekly-a-pricky",
         [("jekl", 2000, 10), ("příčka", 1500, 5)],
         [(6000, "420")],
-        Parameters(kerf_mm=3, trim_mm=0, min_remnant_mm=300, objective=Objective.CHEAPEST),
+        Parameters(
+            kerf_mm=Decimal(3), trim_mm=Decimal(0), min_remnant_mm=300, objective=Objective.CHEAPEST
+        ),
     ),
     "regal-vice-delek": _project(
         "regal-vice-delek",
@@ -60,13 +62,23 @@ SAMPLES: dict[str, Project] = {
             ("distanční díl", 90, 6),
         ],
         [(6000, "420"), (3000, "230")],
-        Parameters(kerf_mm=3, trim_mm=10, min_remnant_mm=500, objective=Objective.LEAST_MATERIAL),
+        Parameters(
+            kerf_mm=Decimal(3),
+            trim_mm=Decimal(10),
+            min_remnant_mm=500,
+            objective=Objective.LEAST_MATERIAL,
+        ),
     ),
     "castecny": _project(
         "castecny",
         [("nosník", 6500, 1), ("sloupek", 2400, 3)],
         [(6000, "420")],
-        Parameters(kerf_mm=3, trim_mm=0, min_remnant_mm=300, objective=Objective.FEWEST_BARS),
+        Parameters(
+            kerf_mm=Decimal(3),
+            trim_mm=Decimal(0),
+            min_remnant_mm=300,
+            objective=Objective.FEWEST_BARS,
+        ),
     ),
 }
 """Jedna délka se zbytky; více délek s ořezem, odpadem a 9 typy dílů; částečný plán."""

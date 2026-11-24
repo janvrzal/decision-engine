@@ -201,3 +201,13 @@ def test_prilis_mnoho_kusu_v_zakazce_je_chyba(project_data: dict[str, Any]) -> N
     error = errors[("problem", "parts")]
     assert error.code == "too_many_pieces"
     assert f"nejvýš 5{NBSP}000" in error.message
+
+
+def test_prorez_s_desetinou_projde_a_se_dvema_ne(project_data: dict[str, Any]) -> None:
+    _set(project_data, ("parameters", "kerf_mm"), "2.5")
+    assert isinstance(parse_project(project_data), Ok)
+
+    _set(project_data, ("parameters", "kerf_mm"), "2.55")
+    error = _by_path(_errors(project_data))[("parameters", "kerf_mm")]
+    assert error.code == "too_precise"
+    assert error.message == "Délka smí mít nejvýš 1 desetinné místo (mm)."

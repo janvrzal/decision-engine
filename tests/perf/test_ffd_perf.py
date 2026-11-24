@@ -41,7 +41,9 @@ def test_sto_kusu_do_deseti_sekund(objective: Objective) -> None:
                 StockLength(id="s2", length_mm=4000, price=Decimal("290")),
             ),
         ),
-        parameters=Parameters(kerf_mm=3, trim_mm=5, min_remnant_mm=300, objective=objective),
+        parameters=Parameters(
+            kerf_mm=Decimal(3), trim_mm=Decimal(5), min_remnant_mm=300, objective=objective
+        ),
     )
 
     start = time.perf_counter()
@@ -74,7 +76,7 @@ def test_nejvetsi_povolena_zakazka_do_limitu() -> None:
             ),
         ),
         parameters=Parameters(
-            kerf_mm=3, trim_mm=5, min_remnant_mm=300, objective=Objective.CHEAPEST
+            kerf_mm=Decimal(3), trim_mm=Decimal(5), min_remnant_mm=300, objective=Objective.CHEAPEST
         ),
     )
 

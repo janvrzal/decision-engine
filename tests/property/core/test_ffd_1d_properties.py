@@ -22,7 +22,8 @@ from decision_engine.core.validation.check_cutting_1d import check_cutting_1d
 @st.composite
 def projects(draw: st.DrawFn) -> Project:
     stock_lengths = draw(st.lists(st.integers(500, 12_000), min_size=1, max_size=3, unique=True))
-    trim = draw(st.integers(0, min(50, min(stock_lengths) - 1)))
+    # Prořez i ořez smějí mít desetiny mm (ADR-0011).
+    trim = Decimal(draw(st.integers(0, min(500, (min(stock_lengths) - 1) * 10)))) / 10
     parts = tuple(
         Part(
             id=f"p{i}",
@@ -44,7 +45,7 @@ def projects(draw: st.DrawFn) -> Project:
         revision=0,
         problem=Problem(material=None, parts=parts, stock=stock),
         parameters=Parameters(
-            kerf_mm=draw(st.integers(0, 6)),
+            kerf_mm=Decimal(draw(st.integers(0, 60))) / 10,
             trim_mm=trim,
             min_remnant_mm=draw(st.integers(0, 1000)),
             objective=draw(st.sampled_from(Objective)),

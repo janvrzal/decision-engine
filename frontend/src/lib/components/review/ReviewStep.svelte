@@ -74,6 +74,21 @@
 		});
 	});
 
+	/** Buňky, do kterých uživatel od posledního odeslání psal: potvrdí je i beze změny (R6). */
+	let typed: string[] = [];
+
+	function markTyped(key: string) {
+		if (!typed.includes(key)) typed.push(key);
+	}
+
+	function trackTyping(event: Event) {
+		if (!(event.target instanceof Node) || !section?.contains(event.target)) return;
+		const key = (event.target as HTMLElement | null)
+			?.closest('[data-cell]')
+			?.getAttribute('data-cell');
+		if (key) markTyped(key);
+	}
+
 	function commit() {
 		touched = true;
 		// Potvrzená buňka se ukáže ve formátu cs-CZ (`12 500`); během psaní se text nemění.
@@ -87,11 +102,26 @@
 		}
 		localErrors = {};
 		if (result.conversions.length > 0) conversion = `Převedeno: ${result.conversions.join(', ')}.`;
-		const serialized = JSON.stringify(result.event);
-		if (serialized === lastSent || busy) return;
-		lastSent = serialized;
+		// Stejný obsah se znovu neposílá, ledaže uživatel do buňky psal (potvrzení hodnoty).
+		const content = JSON.stringify(result.event);
+		if ((content === lastSent && typed.length === 0) || busy) return;
+		const event = { ...result.event, confirmed: [...typed] };
+		lastSent = content;
 		sentDraft = snapshot;
-		onsend(result.event);
+		typed = [];
+		onsend(event);
+	}
+
+	function confirm() {
+		onsend({ type: 'ProposalConfirmed' });
+	}
+
+	/** Ctrl/Cmd+Enter odešle rozepsanou buňku a spustí výpočet (zkušený uživatel). */
+	function shortcut(event: KeyboardEvent) {
+		if (event.key !== 'Enter' || !(event.ctrlKey || event.metaKey)) return;
+		event.preventDefault();
+		commit();
+		if (!busy) confirm();
 	}
 
 	function cellState(cell: IntCell | MoneyCell | TextCell | undefined, key: CellKey): CellState {
@@ -111,6 +141,8 @@
 		busy ? 'Počkejte na dokončení.' : (proposal.confirm_disabled_reason ?? undefined)
 	);
 </script>
+
+<svelte:window oninput={trackTyping} onkeydown={shortcut} />
 
 <section bind:this={section} class="flex flex-col gap-6" aria-labelledby="review-title">
 	<div class="flex flex-col gap-1">
@@ -162,6 +194,7 @@
 			<CellInput
 				bind:value={draft.material}
 				label="Materiál"
+				data-cell="material"
 				placeholder="např. jekl 40×40×2"
 				oncommit={commit}
 			/>
@@ -263,6 +296,7 @@
 			}))}
 			onchange={(value: Objective) => {
 				draft.objective = value;
+				markTyped('objective');
 				commit();
 			}}
 		/>
@@ -282,8 +316,9 @@
 		{/if}
 		<Button
 			variant="primary"
-			onclick={() => onsend({ type: 'ProposalConfirmed' })}
+			onclick={confirm}
 			disabledReason={confirmReason}
+			aria-keyshortcuts="Control+Enter Meta+Enter"
 		>
 			<Calculator size={16} strokeWidth={1.5} aria-hidden="true" />
 			Potvrdit a vypočítat

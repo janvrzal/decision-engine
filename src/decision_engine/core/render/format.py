@@ -1,15 +1,24 @@
 """Formát čísel `cs-CZ` pro texty generované backendem (SVG, PDF), viz obsah.md."""
 
+from decimal import Decimal
+
 NBSP = "\u00a0"
 
 
-def number(value: int) -> str:
-    """Celé číslo s nezlomitelnou mezerou jako oddělovačem tisíců: `4 003`."""
+def number(value: int | Decimal) -> str:
+    """Číslo s nezlomitelnou mezerou jako oddělovačem tisíců a desetinnou čárkou: `4 003,5`.
+
+    Celé hodnoty (i `Decimal("3.0")`) jsou bez desetinné části.
+    """
     sign = "-" if value < 0 else ""
-    return sign + f"{abs(value):,}".replace(",", NBSP)
+    magnitude = abs(value)
+    if isinstance(magnitude, Decimal) and magnitude != magnitude.to_integral_value():
+        whole, fraction = f"{magnitude:,.1f}".split(".")
+        return sign + whole.replace(",", NBSP) + "," + fraction
+    return sign + f"{int(magnitude):,}".replace(",", NBSP)
 
 
-def millimeters(value: int) -> str:
+def millimeters(value: int | Decimal) -> str:
     """Délka s jednotkou: `6 000 mm`."""
     return f"{number(value)}{NBSP}mm"
 

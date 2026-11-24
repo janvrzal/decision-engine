@@ -20,8 +20,8 @@ const PROPOSAL: ProposalView = {
 	parts: [{ id: 'p1', name: cell('noha'), length_mm: cell(1800), quantity: cell(4) }],
 	stock: [{ id: 's1', length_mm: cell(6000, true), price: cell('320.50') }],
 	parameters: {
-		kerf_mm: cell(3),
-		trim_mm: cell(0, true),
+		kerf_mm: cell('3'),
+		trim_mm: cell('0', true),
 		min_remnant_mm: cell(300, true),
 		time_limit_s: cell(10)
 	},
@@ -50,13 +50,36 @@ describe('koncept kontrolní tabulky', () => {
 				parts: [{ id: 'p1', name: 'noha', length_mm: 1800, quantity: 4 }],
 				stock: [{ id: 's1', length_mm: 6000, price: '320.50' }],
 				parameters: {
-					kerf_mm: 3,
-					trim_mm: 0,
+					kerf_mm: '3',
+					trim_mm: '0',
 					min_remnant_mm: 300,
 					time_limit_s: 10,
 					objective: 'cheapest'
-				}
+				},
+				confirmed: []
 			}
+		});
+	});
+
+	it('prořez v desetinách mm a v cm se převede na řetězec Decimal', () => {
+		const draft = draftFromProposal(PROPOSAL);
+		draft.kerf_mm = '2,5';
+		draft.trim_mm = '0,5 cm';
+
+		const result = draftToEvent(draft);
+
+		expect(result.ok && result.event.parameters).toMatchObject({ kerf_mm: '2.5', trim_mm: '5' });
+	});
+
+	it('prořez se dvěma desetinnými místy je chyba buňky', () => {
+		const draft = draftFromProposal(PROPOSAL);
+		draft.kerf_mm = '2,55';
+
+		const result = draftToEvent(draft);
+
+		expect(result).toEqual({
+			ok: false,
+			errors: { 'parameters.kerf_mm': 'Délka smí mít nejvýš 1 desetinné místo (mm).' }
 		});
 	});
 

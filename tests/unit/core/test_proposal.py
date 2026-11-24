@@ -25,7 +25,10 @@ def _proposal(**changes: object) -> ChangeProposal:
         parts=(PartDraft(id="p1", name="noha", length_mm=1800, quantity=4),),
         stock=(StockLengthDraft(id="s1", length_mm=6000, price=None),),
         parameters=ParametersDraft(
-            kerf_mm=3, trim_mm=0, min_remnant_mm=300, objective=Objective.LEAST_MATERIAL
+            kerf_mm=Decimal(3),
+            trim_mm=Decimal(0),
+            min_remnant_mm=300,
+            objective=Objective.LEAST_MATERIAL,
         ),
     )
     return proposal.model_copy(update=changes)
@@ -67,7 +70,9 @@ def test_chybejici_nazev_zakazky() -> None:
 
 
 def test_chybejici_cil_optimalizace() -> None:
-    proposal = _proposal(parameters=ParametersDraft(kerf_mm=3, trim_mm=0, min_remnant_mm=0))
+    proposal = _proposal(
+        parameters=ParametersDraft(kerf_mm=Decimal(3), trim_mm=Decimal(0), min_remnant_mm=0)
+    )
 
     (error,) = _errors(proposal)
 

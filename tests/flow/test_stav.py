@@ -90,8 +90,8 @@ PLAN_INPUTS: dict[str, Change] = {
         }
     ),
     "cena při nejnižší ceně": lambda p: _stock(p, price=Decimal("350.00")),
-    "prořez": lambda p: _parameter(p, kerf_mm=4),
-    "zarovnávací ořez": lambda p: _parameter(p, trim_mm=10),
+    "prořez": lambda p: _parameter(p, kerf_mm=Decimal(4)),
+    "zarovnávací ořez": lambda p: _parameter(p, trim_mm=Decimal(10)),
     "minimální zbytek": lambda p: _parameter(p, min_remnant_mm=500),
     "časový limit": lambda p: _parameter(p, time_limit_s=3),
     "cíl": lambda p: _parameter(p, objective=Objective.FEWEST_BARS),
@@ -174,7 +174,7 @@ def test_zahodit_zmeny_vrati_posledni_potvrzenou_revizi() -> None:
     before = _planned()
     state = _editing(before, lambda p: _part(p, length_mm=1900))
     assert state.proposal is not None
-    state, _ = run([_edit(_parameter(state.proposal, kerf_mm=5))], state)
+    state, _ = run([_edit(_parameter(state.proposal, kerf_mm=Decimal(5)))], state)
 
     state, effects = run([ProposalRejected()], state)
 

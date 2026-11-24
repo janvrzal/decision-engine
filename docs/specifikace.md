@@ -4,7 +4,7 @@
 **Datum:** 24. 11. 2026  
 **Stav:** Specifikace budoucího chování; tento dokument nepopisuje dokončenou implementaci.
 
-**Změny oproti 0.6.0:** Horní meze velikosti úlohy a dodržení časového limitu (kap. 8).
+**Změny oproti 0.6.0:** Horní meze velikosti úlohy a dodržení časového limitu (kap. 8). Prořez a ořez v desetinách mm, odvozování výchozího cíle a potvrzení ručně zapsané hodnoty (UC-01, ADR-0011).
 
 ## 1. Produkt a jeho účel
 
@@ -138,7 +138,9 @@ Změna vstupů plánu nebo čekající návrh změny označí původní plán ja
 
 Výchozí cíl je „nejnižší cena“, pokud jsou zadané ceny všech skladových délek, jinak „nejméně materiálu“. Výchozí volba je viditelně označena jako nepotvrzená. Zvolený cíl je součástí zakázky a ovlivňuje štítek „optimální“ (kap. 8).
 
-**Účtování prořezu:** Každý řez spotřebuje šířku prořezu. Kapacitní podmínka tyče délky *L* s díly *l₁…lₙ* je Σ lᵢ + n·k ≤ L + k, kde *k* je prořez. Poslední řez tedy nepočítáme, pokud za posledním dílem nezůstane žádný materiál. Volitelný zarovnávací ořez začátku tyče se odečte od *L*.
+**Účtování prořezu:** Každý řez spotřebuje šířku prořezu. Kapacitní podmínka tyče délky *L* s díly *l₁…lₙ* je Σ lᵢ + n·k ≤ L + k, kde *k* je prořez. Poslední řez tedy nepočítáme, pokud za posledním dílem nezůstane žádný materiál. Volitelný zarovnávací ořez začátku tyče se odečte od *L*. Prořez a ořez smějí mít jedno desetinné místo v mm (např. 2,5 mm, ADR-0011); polohy řezů a zbytky pak mají také desetiny.
+
+**Výchozí cíl a potvrzení hodnot:** Dokud uživatel cíl optimalizace sám nezvolí, odvozuje se znovu při každé úpravě: „Nejnižší cena“, mají-li cenu všechny skladové délky, jinak „Nejméně materiálu“. Hodnota, kterou uživatel do buňky sám napíše, je potvrzená, i když se rovná výchozí (R6). Všechna délková pole přijímají mm, cm i m; prořez a ořez mm a cm.
 
 **Zbytky:** Část tyče, která zbude po posledním dílu, je *využitelný zbytek*, pokud dosahuje alespoň uživatelem zadané minimální délky (parametr; výchozí hodnota je označená jako nepotvrzená). Jinak jde o *odpad*.
 
@@ -381,7 +383,7 @@ Výsledek výpočtu nese číslo revize, ze které vznikl. Plán je **neaktuáln
 
 ### Soubor zakázky
 
-Uložení zakázky vytvoří soubor `<název>.decision.json` s potvrzenou revizí: verze formátu, typ úlohy, název, díly, skladové délky s cenami a parametry včetně cíle optimalizace. Ceny jsou zapsané jako text, aby se neztratila přesnost. Soubor neobsahuje API klíče, historii dialogu ani výsledek výpočtu; rozpracovaný návrh změny se neukládá. Načtení nevolá žádné API a soubor se nestane zakázkou hned: vznikne z něj návrh, který uživatel zkontroluje a potvrdí (R1). Neznámý obsah, jiná verze formátu nebo chybějící díly či skladové délky ukáží srozumitelnou chybu a aktuální zakázka zůstane beze změny; jednotlivé neplatné hodnoty (např. záporná délka) se načtou a označí v kontrolní tabulce. Vstupy kalkulace přibudou s další verzí formátu.
+Uložení zakázky vytvoří soubor `<název>.decision.json` s potvrzenou revizí: verze formátu, typ úlohy, název, díly, skladové délky s cenami a parametry včetně cíle optimalizace. Ceny, prořez a ořez jsou zapsané jako text, aby se neztratila přesnost; starší soubor s prořezem jako celým číslem se načte beze změny (ADR-0011). Soubor neobsahuje API klíče, historii dialogu ani výsledek výpočtu; rozpracovaný návrh změny se neukládá. Načtení nevolá žádné API a soubor se nestane zakázkou hned: vznikne z něj návrh, který uživatel zkontroluje a potvrdí (R1). Neznámý obsah, jiná verze formátu nebo chybějící díly či skladové délky ukáží srozumitelnou chybu a aktuální zakázka zůstane beze změny; jednotlivé neplatné hodnoty (např. záporná délka nebo text místo čísla) se načtou a označí v kontrolní tabulce; hodnota nečekaného typu se načte jako prázdná s hláškou „V souboru byla neplatná hodnota, doplňte ji.“. Neplatná zůstane, dokud ji uživatel nevyplní. Vstupy kalkulace přibudou s další verzí formátu.
 
 Zakázka má **neuložené změny**, když se vstupy potvrzené revize liší od naposledy uloženého nebo načteného souboru, nebo když čeká návrh změny s prací (návrh od AI či ze souboru; ruční návrh jen tehdy, když se od otevření změnil). Jde o odvozenou vlastnost; uložení zaznamená až stažení souboru. Nová zakázka i načtení souboru začínají s prázdným kontextem (prázdný dialog, žádný výsledek). Má-li aktuální zakázka neuložené změny, aplikace se nejdřív zeptá, zda ji uložit, zahodit, nebo akci zrušit; u načtení až poté, co soubor projde ověřením.
 

@@ -4,6 +4,7 @@ from collections.abc import Mapping
 from decimal import Decimal
 
 from decision_engine.api.view_model import (
+    DecimalCell,
     FieldErrorView,
     IntCell,
     MoneyCell,
@@ -56,6 +57,11 @@ class _Cells:
             value=value, unconfirmed=path in self._unconfirmed, error=self._errors.get(path)
         )
 
+    def decimal(self, path: FieldPath, value: Decimal | None) -> DecimalCell:
+        return DecimalCell(
+            value=value, unconfirmed=path in self._unconfirmed, error=self._errors.get(path)
+        )
+
     def money(self, path: FieldPath, value: Decimal | None) -> MoneyCell:
         return MoneyCell(
             value=value, unconfirmed=path in self._unconfirmed, error=self._errors.get(path)
@@ -91,8 +97,8 @@ def build_proposal(proposal: ChangeProposal, session_id: str) -> ProposalView:
             for i, stock in enumerate(proposal.stock)
         ),
         parameters=ParametersView(
-            kerf_mm=cells.int(("parameters", "kerf_mm"), params.kerf_mm),
-            trim_mm=cells.int(("parameters", "trim_mm"), params.trim_mm),
+            kerf_mm=cells.decimal(("parameters", "kerf_mm"), params.kerf_mm),
+            trim_mm=cells.decimal(("parameters", "trim_mm"), params.trim_mm),
             min_remnant_mm=cells.int(("parameters", "min_remnant_mm"), params.min_remnant_mm),
             time_limit_s=cells.int(("parameters", "time_limit_s"), params.time_limit_s),
         ),

@@ -1,5 +1,7 @@
 """Ručně spočítané příklady FFD 1D (skill `overeni-solveru`). Každý výsledek projde validátorem."""
 
+from decimal import Decimal
+
 import pytest
 from solver_cases import project_1d
 
@@ -15,7 +17,7 @@ def _solve(project: Project) -> CalculationResult:
     return result
 
 
-def _layout(result: CalculationResult) -> list[list[tuple[str, int]]]:
+def _layout(result: CalculationResult) -> list[list[tuple[str, Decimal]]]:
     """Tyče jako seznam (díl, poloha začátku)."""
     return [[(p.part_id, p.start_mm) for p in bar.pieces] for bar in result.bars]
 

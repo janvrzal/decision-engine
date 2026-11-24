@@ -148,10 +148,12 @@ def _field_error(detail: ErrorDetails) -> FieldError:
 def _code_and_message(detail: ErrorDetails, path: tuple[str | int, ...]) -> tuple[str, str]:
     kind = detail["type"]
     context = detail.get("ctx", {})
+    in_mm = bool(path) and str(path[-1]).endswith("_mm")
+    if kind == "decimal_max_places" and in_mm:
+        return "too_precise", "Délka smí mít nejvýš 1 desetinné místo (mm)."
     if kind in _SIMPLE:
         return _SIMPLE[kind]
     if kind in _NOT_INTEGER:
-        in_mm = bool(path) and str(path[-1]).endswith("_mm")
         message = "Zadejte celé číslo v milimetrech." if in_mm else "Zadejte celé číslo."
         return "not_integer", message
     if kind == "greater_than":

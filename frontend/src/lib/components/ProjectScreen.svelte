@@ -38,10 +38,15 @@
 	$effect(() => {
 		if (wide.current) chatSheetOpen = false;
 	});
-	// Když backend posune krok (nový návrh, výsledek), zobrazí se nový krok.
+	// Když backend posune krok (nový návrh, výsledek), zobrazí se nový krok. Nový view model
+	// se stejným krokem (odpověď na úpravu buňky) volbu uživatele nepřepíše.
+	let backendStep: StepView['id'] | null = null;
 	$effect(() => {
-		void view.project.step;
-		shownStep = null;
+		const current = view.project.step;
+		if (current !== backendStep) {
+			backendStep = current;
+			shownStep = null;
+		}
 	});
 
 	let solving = $derived(session.pending?.kind === 'solving');

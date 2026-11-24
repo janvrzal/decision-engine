@@ -37,8 +37,8 @@ class StockLengthDraft(_Frozen):
 
 
 class ParametersDraft(_Frozen):
-    kerf_mm: StrictInt | None = None
-    trim_mm: StrictInt | None = None
+    kerf_mm: Decimal | None = None
+    trim_mm: Decimal | None = None
     min_remnant_mm: StrictInt | None = None
     objective: Objective | None = None
     time_limit_s: StrictInt | None = None
@@ -60,6 +60,13 @@ class ChangeProposal(_Frozen):
     """Odkud návrh je: extrakce z textu, ruční zadání nebo úprava (UC-13), soubor (UC-06)."""
     file_errors: frozenset[FieldPath] = frozenset()
     """Pole, jejichž hodnota v načteném souboru měla nečekaný tvar (E2); načetla se prázdná."""
+
+
+def default_objective(stock: tuple[StockLengthDraft, ...]) -> Objective:
+    """Výchozí cíl (UC-01): nejnižší cena, mají-li cenu všechny délky; jinak nejméně materiálu."""
+    if stock and all(item.price is not None for item in stock):
+        return Objective.CHEAPEST
+    return Objective.LEAST_MATERIAL
 
 
 def proposal_from_project(project: Project) -> ChangeProposal:

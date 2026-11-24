@@ -1,6 +1,6 @@
 # ADR-0002: Délky v celých milimetrech, peníze v Decimal
 
-**Stav:** přijato  
+**Stav:** přijato; bod o desetinách milimetru nahrazen ADR-0011 (prořez a ořez)  
 **Datum:** 2026-11-23  
 **Souvisí se:** specifikace UC-01, UC-04
 

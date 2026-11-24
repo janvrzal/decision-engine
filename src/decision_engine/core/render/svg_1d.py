@@ -85,9 +85,10 @@ def _group(project: Project, group: BarGroup, x0: float, y: float, scale: float)
         f'height="{BAR_HEIGHT}" rx="2" fill="{C["plan-bar"]}" stroke="{C["border-strong"]}"/>',
     ]
     if params.trim_mm:
-        out.append(_waste(x0, y, params.trim_mm * scale, f"ořez {millimeters(params.trim_mm)}"))
+        trim = float(params.trim_mm) * scale
+        out.append(_waste(x0, y, trim, f"ořez {millimeters(params.trim_mm)}"))
     for piece in bar.pieces:
-        x = x0 + piece.start_mm * scale
+        x = x0 + float(piece.start_mm) * scale
         width = piece.length_mm * scale
         name = names.get(piece.part_id, piece.part_id)
         tooltip = f"{name} {millimeters(piece.length_mm)}"
@@ -120,7 +121,7 @@ def _cuts(bar: Bar, x0: float, y: float, scale: float) -> list[str]:
         end = piece.start_mm + piece.length_mm
         if end >= bar.length_mm:
             continue
-        x = x0 + end * scale
+        x = x0 + float(end) * scale
         # Popisek do první řady, kde nepřekryje předchozí; jinak jen tooltip (poloha je
         # i v popisu SVG a v rozpisu po tyčích).
         row = next(
@@ -159,7 +160,7 @@ def _tail(bar: Bar, params: Parameters, x0: float, y: float, scale: float) -> li
     if kind == "none":
         return []
     start = bar.length_mm - length
-    x, width = x0 + start * scale, length * scale
+    x, width = x0 + float(start) * scale, float(length) * scale
     if kind == "waste":
         return [_waste(x, y, width, f"odpad {millimeters(length)}")]
     label = f"zbytek {number(length)}"

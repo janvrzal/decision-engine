@@ -124,14 +124,14 @@ export interface components {
 			/** Pieces */
 			pieces: components['schemas']['PieceView'][];
 			/** Cuts Mm */
-			cuts_mm: number[];
+			cuts_mm: string[];
 			/**
 			 * Tail
 			 * @enum {string}
 			 */
 			tail: 'none' | 'remnant' | 'waste';
 			/** Tail Length Mm */
-			tail_length_mm: number;
+			tail_length_mm: string;
 		};
 		/** BarsByLength */
 		BarsByLength: {
@@ -146,6 +146,18 @@ export interface components {
 			id: string;
 			/** Label */
 			label: string;
+		};
+		/**
+		 * DecimalCell
+		 * @description Délka v mm s nejvýš jedním desetinným místem (prořez, ořez; ADR-0011).
+		 */
+		DecimalCell: {
+			/** Value */
+			value: string | null;
+			/** Unconfirmed */
+			unconfirmed: boolean;
+			/** Error */
+			error: string | null;
 		};
 		/**
 		 * EditRequested
@@ -249,11 +261,11 @@ export interface components {
 			/** Consumed Length Mm */
 			consumed_length_mm: number;
 			/** Remnant Length Mm */
-			remnant_length_mm: number;
+			remnant_length_mm: string;
 			/** Remnant Count */
 			remnant_count: number;
 			/** Waste Length Mm */
-			waste_length_mm: number;
+			waste_length_mm: string;
 			/** Yield Ratio */
 			yield_ratio: number;
 		};
@@ -304,9 +316,9 @@ export interface components {
 		/** ParametersDraft */
 		ParametersDraft: {
 			/** Kerf Mm */
-			kerf_mm?: number | null;
+			kerf_mm?: number | string | null;
 			/** Trim Mm */
-			trim_mm?: number | null;
+			trim_mm?: number | string | null;
 			/** Min Remnant Mm */
 			min_remnant_mm?: number | null;
 			objective?: components['schemas']['Objective'] | null;
@@ -315,8 +327,8 @@ export interface components {
 		};
 		/** ParametersView */
 		ParametersView: {
-			kerf_mm: components['schemas']['IntCell'];
-			trim_mm: components['schemas']['IntCell'];
+			kerf_mm: components['schemas']['DecimalCell'];
+			trim_mm: components['schemas']['DecimalCell'];
 			min_remnant_mm: components['schemas']['IntCell'];
 			time_limit_s: components['schemas']['IntCell'];
 		};
@@ -358,7 +370,7 @@ export interface components {
 			/** Length Mm */
 			length_mm: number;
 			/** Start Mm */
-			start_mm: number;
+			start_mm: string;
 		};
 		/**
 		 * ProjectImported
@@ -449,6 +461,11 @@ export interface components {
 			/** Stock */
 			stock: components['schemas']['StockLengthDraft'][];
 			parameters: components['schemas']['ParametersDraft'];
+			/**
+			 * Confirmed
+			 * @default []
+			 */
+			confirmed: string[];
 		};
 		/**
 		 * ProposalRejected

@@ -197,6 +197,7 @@ def _proposal_edited(state: AppState, event: ProposalEdited) -> Transition:
         parts=event.parts,
         stock=event.stock,
         parameters=event.parameters,
+        confirmed=event.confirmed,
     )
     return state.model_copy(update={"proposal": proposal, "proposal_errors": ()}), ()
 
