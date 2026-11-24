@@ -38,6 +38,18 @@ describe('zobrazení v buňce', () => {
 		expect(moneyText(null)).toBe('');
 		expect(moneyText('320.50')).toBe('320,50');
 	});
+
+	it('čísla mají oddělovač tisíců cs-CZ a vrátí se parsováním beze změny', () => {
+		expect(integerText(1800)).toBe('1\u00a0800');
+		expect(integerText(12500)).toBe('12\u00a0500');
+		expect(integerText(0)).toBe('0');
+		expect(integerText(-1800)).toBe('-1\u00a0800');
+		expect(moneyText('1234.5')).toBe('1\u00a0234,50');
+		expect(moneyText('320')).toBe('320,00');
+		expect(moneyText('123456789012.34')).toBe('123\u00a0456\u00a0789\u00a0012,34');
+		expect(parseInteger(integerText(12500))).toEqual({ ok: true, value: 12500 });
+		expect(parseMoney(moneyText('1234.5'))).toEqual({ ok: true, value: '1234.50' });
+	});
 });
 
 describe('parseLength', () => {

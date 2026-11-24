@@ -1,3 +1,5 @@
+import { formatAmount, formatInteger } from '../format.js';
+
 /**
  * Převod textu z buňky na číslo (komponenty.md, NumberUnitInput): přijímá čárku i tečku
  * a mezery jako oddělovač tisíců. Prázdné pole je `null` (chybějící hodnota).
@@ -46,11 +48,14 @@ export function parseMoney(text: string): Parsed<string> {
 	return { ok: true, value: clean };
 }
 
-/** Hodnota pro zobrazení v buňce (bez jednotky; tu ukazuje pole). */
+/**
+ * Hodnota pro zobrazení v buňce ve formátu `cs-CZ` (`1 800`, `1 234,50`), bez jednotky;
+ * tu ukazuje pole. Parsování výše oddělovač tisíců i čárku přijímá zpět.
+ */
 export function integerText(value: number | null): string {
-	return value === null ? '' : String(value);
+	return value === null ? '' : formatInteger(value);
 }
 
 export function moneyText(value: string | null): string {
-	return value === null ? '' : value.replace('.', ',');
+	return value === null ? '' : formatAmount(value);
 }

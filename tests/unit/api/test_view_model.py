@@ -3,7 +3,7 @@
 import pytest
 
 from decision_engine.api.view_builder import build_view_model
-from decision_engine.api.view_proposal import confirm_disabled_reason, field_label
+from decision_engine.api.view_proposal import confirm_disabled_reason, field_label, field_target
 from decision_engine.core.errors import FieldPath
 from decision_engine.core.state import Message, PendingOperation, initial_state
 
@@ -21,6 +21,25 @@ from decision_engine.core.state import Message, PendingOperation, initial_state
 )
 def test_citelne_umisteni_chyby(path: FieldPath, label: str) -> None:
     assert field_label(path) == label
+
+
+@pytest.mark.parametrize(
+    ("path", "target"),
+    [
+        (("problem", "parts", 1, "length_mm"), "parts.1.length_mm"),
+        (("problem", "stock", 0, "price"), "stock.0.price"),
+        (("problem", "parts", 2, "id"), "parts.2.name"),
+        (("problem", "stock", 0, "id"), "stock.0.length_mm"),
+        (("problem", "stock"), "stock"),
+        (("parameters", "kerf_mm"), "parameters.kerf_mm"),
+        (("parameters", "objective"), "parameters.objective"),
+        (("name",), "name"),
+        (("parameters", "neznamy"), None),
+        ((), None),
+    ],
+)
+def test_odkaz_chyby_na_pole(path: FieldPath, target: str | None) -> None:
+    assert field_target(path) == target
 
 
 @pytest.mark.parametrize(

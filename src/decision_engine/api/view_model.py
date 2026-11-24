@@ -120,6 +120,8 @@ class FieldErrorView(_View):
     field: str
     """Čitelné umístění chyby („Díl 2, délka“)."""
     message: str
+    target: str | None
+    """Klíč pole ve formuláři (`parts.1.length_mm`), na které vede odkaz v souhrnu chyb."""
 
 
 class ProposalView(_View):

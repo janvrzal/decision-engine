@@ -6,7 +6,8 @@ import {
 	draftToEvent,
 	keepEditsSince,
 	mergeDraft,
-	nextRowId
+	nextRowId,
+	normalizeDraft
 } from './proposal-draft';
 
 const cell = <T>(value: T, unconfirmed = false) => ({ value, unconfirmed, error: null });
@@ -140,5 +141,32 @@ describe('keepEditsSince', () => {
 		const merged = keepEditsSince(structuredClone(sent), current, sent);
 
 		expect(merged.parts.map((row) => row.id)).toEqual(['p2']);
+	});
+});
+
+describe('normalizeDraft', () => {
+	it('platná čísla převede na cs-CZ, neplatný text nechá k opravě', () => {
+		const draft = draftFromProposal(PROPOSAL);
+		draft.parts[0].length_mm = '1,5 m';
+		draft.parts[0].quantity = '12a';
+		draft.stock[0].length_mm = '12500';
+		draft.stock[0].price = '1234,5';
+		draft.kerf_mm = '';
+
+		const normalized = normalizeDraft(draft);
+
+		expect(normalized.parts[0].length_mm).toBe('1\u00a0500');
+		expect(normalized.parts[0].quantity).toBe('12a');
+		expect(normalized.stock[0].length_mm).toBe('12\u00a0500');
+		expect(normalized.stock[0].price).toBe('1\u00a0234,50');
+		expect(normalized.kerf_mm).toBe('');
+		expect(normalized.name).toBe('Regál');
+	});
+
+	it('návrh od backendu se zobrazí s oddělovačem tisíců', () => {
+		const draft = draftFromProposal(PROPOSAL);
+		expect(draft.parts[0].length_mm).toBe('1\u00a0800');
+		expect(draft.stock[0].length_mm).toBe('6\u00a0000');
+		expect(normalizeDraft(draft)).toEqual(draft);
 	});
 });

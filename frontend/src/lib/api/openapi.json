@@ -328,10 +328,21 @@
 					"message": {
 						"type": "string",
 						"title": "Message"
+					},
+					"target": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Target"
 					}
 				},
 				"type": "object",
-				"required": ["field", "message"],
+				"required": ["field", "message", "target"],
 				"title": "FieldErrorView"
 			},
 			"FileCheckRequest": {

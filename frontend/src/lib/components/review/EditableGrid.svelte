@@ -14,6 +14,7 @@
 	 */
 	let {
 		caption,
+		name,
 		columns,
 		rows = $bindable(),
 		cell,
@@ -25,6 +26,8 @@
 		onremove
 	}: {
 		caption: string;
+		/** Klíč tabulky pro odkazy ze souhrnu chyb (`parts`, buňky `parts.0.length_mm`). */
+		name: string;
 		columns: GridColumn[];
 		rows: Row[];
 		cell: (row: number, key: string) => CellState;
@@ -82,7 +85,7 @@
 	}
 </script>
 
-<div class="flex flex-col gap-2">
+<div class="flex flex-col gap-2" data-cell={name}>
 	<table bind:this={table} class="w-full border-collapse">
 		<caption class="pb-2 text-left text-heading text-ink">{caption}</caption>
 		<thead>
@@ -118,6 +121,7 @@
 								readonly={disabled}
 								data-row={r}
 								data-col={c}
+								data-cell="{name}.{r}.{column.key}"
 								onfocus={() => (original = read(r, column.key))}
 								onkeydown={(event: KeyboardEvent) => onkeydown(event, r, c)}
 								{oncommit}
