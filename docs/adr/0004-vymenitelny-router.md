@@ -1,6 +1,6 @@
 # ADR-0004: Vyměnitelný router (Jev, Layo, LLM, ruční výběr)
 
-**Stav:** přijato; umístění portu upraveno v ADR-0006 (porty jsou v `app/`)  
+**Stav:** přijato; implementace `LayoRouter` nahrazena ADR-0012; umístění portu upraveno v ADR-0006 (porty jsou v `app/`)  
 **Datum:** 2026-11-23  
 **Souvisí se:** specifikace kap. 6, UC-07, kap. 14
 

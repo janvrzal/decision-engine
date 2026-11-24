@@ -190,12 +190,10 @@ flowchart TD
     P -->|"ano"| O2
     O -->|"ToolSelected*"| H["Krok Kontrola údajů (UC-13)"]
     O2 -->|"ToolSelected*"| H
-    O -->|"RouterSwitched* (Layo)"| S
-    O2 -->|"RouterSwitched* (Layo)"| S
 ```
 
 - Text zprávy se po chybě vrátí do pole a nic se neztratí. Potvrzená zakázka a rozpracovaný návrh se nemění.
-- „Lokální rozpoznávání“ se nabízí, jen když je Layo dostupné. Pomáhá jen s výběrem nástroje. Extrakce potřebuje generativní model, takže po přepnutí na Layo aplikace otevře ruční Kontrolu údajů s předvoleným nástrojem.
+- Bez síťových služeb pomůže jen ruční cesta: výběr nástroje a ruční Kontrola údajů (Layo se nepoužívá, ADR-0012).
 - Chyba se zobrazuje jako zpráva v Panelu Dialog (ne jako toast), aby zůstala v historii a nesla akce.
 
 ---

@@ -221,7 +221,7 @@ Kroky scénářů uvádějí události (→ `Event`) a efekty (⇒ `Effect`) pod
    - *limit:* „Vyčerpaný limit služby AI, zkuste to za 2 minuty.“ → Ruční zadání / (pokud je dostupný) Použít lokální rozpoznávání
    - *neplatná odpověď:* „AI vrátila nepoužitelná data.“ → Zkusit znovu / Ruční zadání
 3. Text zprávy zůstane v poli, takže ho uživatel nemusí psát znovu.
-4. Uživatel zvolí jednu z akcí: → `RetryRequested`* / `ToolSelected` (ruční zadání, UC-13) / `RouterSwitched`* (Layo).
+4. Uživatel zvolí jednu z akcí: → `RetryRequested`* / `ToolSelected` (ruční zadání, UC-13).
 5. Výpočet, kalkulace a export fungují bez AI.
 
 **Alternativy**
@@ -327,7 +327,6 @@ Kroky scénářů uvádějí události (→ `Event`) a efekty (⇒ `Effect`) pod
 
 **Alternativy**
 
-- **A1 Layo je k dispozici.** Demo může místo připraveného routeru použít lokální Layo. Pruh to uvádí („rozpoznání úlohy: lokální model“).
 - **A2 Ukončení dema** → `NewProjectRequested` Návrat na úvodní obrazovku, demo data se zahodí.
 
 **Poznámka:** Demo se vždy označuje. Připravené odpovědi se nikdy nevydávají za živé volání modelu (spec. kap. 12).
@@ -344,15 +343,15 @@ Kroky scénářů uvádějí události (→ `Event`) a efekty (⇒ `Effect`) pod
 
 1. Uživatel otevře Vývojářský panel ikonou v hlavičce nebo klávesovou zkratkou. Panel se vysune vpravo a hlavní tok zůstává použitelný.
 2. Panel má záložky:
-   - **Router:** aktuální implementace, přepínač Jev / Layo / LLM / Ruční (jen dostupné) a poslední `RoutingDecision` (volba, pravděpodobnosti všech možností jako pruhy, confidence, práh, model, důvod záložního postupu).
+   - **Router:** aktuální implementace, přepínač Jev / LLM / Ruční (jen dostupné) a poslední `RoutingDecision` (volba, pravděpodobnosti všech možností jako pruhy, confidence, práh, model, důvod záložního postupu).
    - **AI volání:** časová osa volání (role, model, verze promptu, latence, tokeny, stav validace, odkaz na trace v Langfuse, pokud je zapnutý).
    - **Solver:** počet vzorů, dolní mez, stav CP-SAT, čas a časový limit.
    - **Stav:** číslo revize zakázky a skladu, čekající návrh, posledních N událostí reduceru.
-3. Uživatel přepne router na Layo. → `RouterSwitched`* Panel Dialog vloží systémovou poznámku „Rozpoznávání úlohy: lokální model“ a další zpráva použije Layo.
+3. Uživatel přepne router na Ruční. → `RouterSwitched`* Panel Dialog vloží systémovou poznámku „Rozpoznávání úlohy: ruční výběr nástroje“ a další zpráva jde rovnou do extrakce.
 
 **Alternativy**
 
-- **A1 Implementace nedostupná** (chybí klíč TypeSafe, Layo není nainstalované). Volba je neaktivní s důvodem.
+- **A1 Implementace nedostupná** (chybí klíč TypeSafe nebo LLM). Volba je neaktivní s důvodem.
 - **A2 Langfuse vypnutý.** Odkazy na trace chybí a v záložce AI volání je poznámka „trasování vypnuto, prompty ze záložní kopie“.
 
 **Pravidla:** Panel nikdy neukazuje klíče. Hlavní UI interní pojmy nepoužívá, panel ano.
@@ -490,7 +489,7 @@ Události ze specifikace (kap. 7) jsou bez hvězdičky. Ostatní jsou návrh toh
 
 | Efekt | Port / adaptér | Výsledná událost |
 |---|---|---|
-| `CallRouter` | Router (Jev / Layo / LLM) | `RoutingDecided`*, `AiFailed` |
+| `CallRouter` | Router (Jev / LLM / ruční) | `RoutingDecided`*, `AiFailed` |
 | `CallExtractor` (nová zakázka / změna) | Generativní LLM (Groq) | `ProposalReceived`, `ClarificationReceived`*, `AiFailed` |
 | `CallExplainer`* | Generativní LLM | `ExplanationReceived`*, `AiFailed` |
 | `RunSolver` | Registr schopností (v `app/`, mimo reducer kvůli času) | `SolveFinished`, `SolveFailed`* |

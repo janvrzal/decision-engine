@@ -4,7 +4,7 @@
 **Datum:** 24. 11. 2026  
 **Stav:** Specifikace budoucího chování; tento dokument nepopisuje dokončenou implementaci.
 
-**Změny oproti 0.6.0:** Horní meze velikosti úlohy a dodržení časového limitu (kap. 8). Prořez a ořez v desetinách mm, odvozování výchozího cíle a potvrzení ručně zapsané hodnoty (UC-01, ADR-0011). První etapa UC-04: orientační cena materiálu u výsledku. Dolní mez a štítek „Optimální“ (kap. 8).
+**Změny oproti 0.6.0:** Layo vyřazeno, router má implementace Jev, LLM a ruční (ADR-0012). Horní meze velikosti úlohy a dodržení časového limitu (kap. 8). Prořez a ořez v desetinách mm, odvozování výchozího cíle a potvrzení ručně zapsané hodnoty (UC-01, ADR-0011). První etapa UC-04: orientační cena materiálu u výsledku. Dolní mez a štítek „Optimální“ (kap. 8).
 
 ## 1. Produkt a jeho účel
 
@@ -219,7 +219,7 @@ Při zapnutém skladu se materiál ze skladu oceňuje evidovanou cenou skladové
 ### UC-07: Práce při výpadku AI
 
 1. Volání AI selže nebo je vyčerpána kvóta.
-2. Aplikace zachová rozepsané zadání a platná data a nabídne opakování, přepnutí na lokální router (Layo) či ruční vstup.
+2. Aplikace zachová rozepsané zadání a platná data a nabídne opakování či ruční vstup (výběr nástroje a kontrolní tabulka). Výpadek routeru nevadí: aplikace přejde na další dostupnou implementaci routeru (Jev → LLM → ruční).
 3. Uživatel dokončí výpočet a export bez vzdálené AI.
 
 **Úspěch:** Selhání routeru ani parseru nezablokuje funkční výpočetní moduly. Demo je dostupné i bez připojení k poskytovatelům AI.
@@ -278,9 +278,10 @@ Router je rozhraní s vyměnitelnými implementacemi. Volba je v nastavení a v�
 | Implementace | Popis | Role |
 |---|---|---|
 | `JevRouter` | TypeSafe Jev přes API, primitivum Choice; vrací volbu, pravděpodobnosti všech možností a confidence | Výchozí, pokud obstojí v evaluaci |
-| `LayoRouter` | Open-weight varianta Jev spouštěná lokálně (~0,5 GB RAM) | Offline provoz, demo a záloha při výpadku API |
 | `LlmRouter` | Generativní LLM se strukturovaným výstupem omezeným na stejnou množinu možností | Srovnávací varianta a záloha |
-| `ManualRouter` | Výběr nástroje uživatelem | Vždy dostupný |
+| `ManualRouter` | Bez klasifikace: zprávu předá jediné implementované schopnosti, nástroj si uživatel volí sám | Vždy dostupný; offline provoz a záloha při výpadku API |
+
+Offline provoz bez síťových služeb zajišťuje `ManualRouter`, ruční zadání a demo s připravenými odpověďmi. Lokální model Layo se nepoužívá: není veřejně dostupný (spike #7, ADR-0012).
 
 Všechny implementace vracejí stejný typ `RoutingDecision`. Stejná evaluační sada (kap. 9) se spouští na každé dostupné implementaci a výsledky se porovnávají v reportu.
 
@@ -304,7 +305,7 @@ Aplikace vzniká od nuly v novém repozitáři. Žádný kód z dřívějších 
 
 ```mermaid
 flowchart TD
-    U[Text nebo přímý výběr nástroje] --> R[Router: Jev / Layo / LLM / uživatel]
+    U[Text nebo přímý výběr nástroje] --> R[Router: Jev / LLM / ruční]
     R --> P[LLM: extrakce a návrh změn]
     P --> V[Validace a kontrola uživatelem]
     M[Ruční formulář] --> V
@@ -326,7 +327,7 @@ Diagram ukazuje tok dat. Řízení toku (kdo kdy co volá) popisuje část „Ap
 | Jádro (`core/`) | Datové objekty, validace, solvery, kalkulace, použití potvrzené změny na zakázku a na sklad, stav relace, události a reducer, vykreslení plánu do SVG | Čisté funkce bez I/O, času a náhody; neměnná data (Pydantic `frozen=True`, kolekce jako `tuple`); chyby se vracejí jako hodnoty, nevyhazují se |
 | Registr (`capabilities/`) | Schopnosti skládané z jádra | Jen jádro |
 | Aplikace (`app/`) | Případy užití, smyčka událostí a efektů, porty (`Protocol`) pro adaptéry | Žádná závislost na konkrétním poskytovateli ani na HTTP |
-| Adaptéry (`adapters/`) | Routery (Jev, Layo, LLM), generativní model (Groq), Langfuse, čtení a zápis JSON, úložiště skladu, PDF | Jediné místo se závislostí na konkrétním poskytovateli; ven vracejí jen validované objekty jádra nebo chybu |
+| Adaptéry (`adapters/`) | Routery (Jev, LLM, ruční), generativní model (Groq), Langfuse, čtení a zápis JSON, úložiště skladu, PDF | Jediné místo se závislostí na konkrétním poskytovateli; ven vracejí jen validované objekty jádra nebo chybu |
 | API (`api/`) | FastAPI: endpointy, serializace, sestavení závislostí, servírování frontendu | Žádná logika; převádí HTTP na události a stav na view model |
 | Frontend (`frontend/`) | SvelteKit (Svelte 5, TypeScript): zobrazení stavu, formuláře, plán | Nic nepočítá a nerozhoduje o přechodech stavu; posílá události a zobrazuje stav |
 
@@ -399,7 +400,7 @@ Sklad má vlastní revize a vlastní úložiště. Výsledek výpočtu se sklade
 | Frontend | SvelteKit (Svelte 5, TypeScript strict) jako SPA, Tailwind CSS s tokeny design systému, Bits UI s vlastním vzhledem; typovaný klient generovaný z OpenAPI | 0007, 0010 |
 | Optimalizace | Vlastní algoritmy (FFD, generování vzorů, batoh, 2D heuristika, validátory); LP a celočíselný výběr přes OR-Tools | 0003 |
 | Generativní LLM | Groq přes OpenAI-kompatibilní adaptér, vyměnitelný | 0008 |
-| Router | Jev / Layo / LLM / ruční výběr | 0004 |
+| Router | Jev / LLM / ruční výběr | 0004, 0012 |
 | Prompty a trasování | Langfuse (Cloud nebo Docker), záložní kopie promptů v repozitáři | 0009 |
 | PDF | HTML šablona + SVG plánu převedené na PDF na backendu (WeasyPrint) | — |
 | Úložiště | Zakázky jako JSON soubory, sklad v SQLite | — |
@@ -440,7 +441,7 @@ Pro demo sady do přibližně 100 kusů u 1D a 30 kusů u 2D je cílem výpočet
 
 | Oblast | Podmínka dokončení |
 |---|---|
-| Router | Na oddělené sadě alespoň 50 ručně označených českých zadání dosáhne výchozí implementace alespoň 90 % správných voleb včetně `unclear` a `unsupported`; report obsahuje chyby podle kategorií a srovnání všech dostupných implementací (Jev, Layo, LLM) |
+| Router | Na oddělené sadě alespoň 50 ručně označených českých zadání dosáhne výchozí implementace alespoň 90 % správných voleb včetně `unclear` a `unsupported`; report obsahuje chyby podle kategorií a srovnání všech dostupných implementací (Jev, LLM) |
 | Extrakce | Na alespoň 30 jednoznačných zadáních 1D dosáhne alespoň 90 % úplné shody kritických polí: rozměry, počty, jednotky a vstupní formáty (u rozšíření 2D samostatná sada) |
 | Neúplné vstupy | Připravené případy s chybějícími povinnými údaji neprojdou k výpočtu bez doplnění nebo výslovného potvrzení nabídnuté hodnoty |
 | Dialog | Nejméně 10 scénářů o třech a více uživatelských kolech ověří přidání, odebrání, změnu a nejasný odkaz bez ztráty ostatních dat |
@@ -482,10 +483,10 @@ Práce postupuje **svislými řezy**: každý milník propojí všechny vrstvy o
 
 | Milník | Obsah | Hotovo, když |
 |---|---|---|
-| M0 Základy | `uv.lock`, zelené CI, kostra FastAPI a SvelteKit, design tokeny, napojení Langfuse a Groq, ověření Jev/Layo na několika českých zadáních | Aplikace se spustí jedním příkazem a ukáže prázdnou obrazovku zakázky |
+| M0 Základy | `uv.lock`, zelené CI, kostra FastAPI a SvelteKit, design tokeny, napojení Langfuse a Groq, ověření Jev na několika českých zadáních | Aplikace se spustí jedním příkazem a ukáže prázdnou obrazovku zakázky |
 | M1 Chodicí kostra | Text → extrakce 1D (Groq) → tabulka → potvrzení → jednoduché FFD → SVG plán v UI; reducer a `app/` od začátku | Zadání z UC-01 projde celou cestou v UI |
 | M2 Zakázka a stav | Validace s chybami po polích, revize, neaktuální výsledek, ruční formulář, import/export JSON | UC-01, UC-06 a „Stav“ z kap. 9 |
-| M3 Dialog a router | Návrhy změn, doptávání, router (Jev/Layo/LLM/ruční), evaluace routeru a extrakce | UC-03, UC-05, UC-07 a kritéria AI z kap. 9 |
+| M3 Dialog a router | Návrhy změn, doptávání, router (Jev/LLM/ruční), evaluace routeru a extrakce | UC-03, UC-05, UC-07 a kritéria AI z kap. 9 |
 | M4 Solver do hloubky | Generování vzorů, tři cíle, dolní mez, štítky, validátor a property testy | Kritérium „1D solver“ |
 | M5 Kalkulace a PDF | Služba kalkulace, ceny a práce, PDF plánu a kalkulace | UC-04, kritéria „Kalkulace“ a „PDF“ |
 | M6 Vyladění UI | Revize všech stavů, přístupnost, end-to-end test, uživatelské zkoušky, demo režim | Všechny řádky „UI“ a „Použitelnost“ z kap. 9 |
@@ -501,12 +502,12 @@ Odevzdaná verze bez rozšíření (M0–M6, M8) pokrývá všechna požadovaná
 3. Vypočítat plán (se štítkem Optimální / Nejlepší nalezený) a doplnit vlastní ceny materiálu a práce.
 4. Napsat „Přidej dvě příčky po 850 mm“, potvrdit změnu a ukázat nový plán i cenu.
 5. Ukázat nejasné zadání a doptání místo nesouvisejícího výpočtu.
-6. Přepnout router (Jev / Layo / LLM) a ukázat srovnání z evaluace.
+6. Ukázat srovnání routerů (Jev / LLM) z evaluace a ruční router jako offline zálohu.
 7. *Pokud je hotové:* „Použij nejdřív zbytky ze skladu“ – plán se skladem a nákupem, zápis nových zbytků.
 8. *Pokud je hotové:* úloha na desky s omezením rotace a 2D výsledkem.
 9. Exportovat PDF a obnovit uloženou zakázku.
 
-K obhajobě bude připravený i offline demo režim (lokální Layo nebo připravená data). Připravená data budou označená a nebudou vydávána za živé volání modelu.
+K obhajobě bude připravený i offline demo režim (ruční router a připravená data). Připravená data budou označená a nebudou vydávána za živé volání modelu.
 
 ## 13. Další rozvoj po semestru
 
@@ -534,6 +535,6 @@ Stav ověřený 23. 11. 2026 z dokumentace TypeSafe:
 - Python SDK: balíček `typesafe-sdk`, Python 3.10+, klíč v proměnné `TYPESAFE_API_KEY`; API klíč a Playground v konzoli console.typesafe.ai.
 - Cena: 0,042 USD za milion vstupních tokenů, výstupní tokeny zdarma.
 - Kontext: 64k na požadavek, 32k na otázku.
-- **Neuvedeno v dokumentaci:** podpora češtiny, bezplatný tarif nebo zkušební kredit, konkrétní rate limity a model Layo. Údaje o Layo (open-weight varianta Jev, lokální běh, ~0,5 GB RAM) pocházejí od autora projektu a je třeba je ověřit při instalaci.
+- **Neuvedeno v dokumentaci:** podpora češtiny, bezplatný tarif nebo zkušební kredit a konkrétní rate limity. Češtinu ověřil spike #7. Lokální varianta Layo veřejně dostupná není, a proto ji aplikace nepoužívá (ADR-0012).
 
 Konkrétní model, dostupnost a ceny je nutné znovu ověřit při implementaci; nejsou pevnou součástí produktové specifikace.
