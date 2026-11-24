@@ -72,6 +72,23 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/api/project-files/check': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Ověřit soubor zakázky */
+		post: operations['check_file_api_project_files_check_post'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/api/health': {
 		parameters: {
 			query?: never;
@@ -147,6 +164,18 @@ export interface components {
 			field: string;
 			/** Message */
 			message: string;
+		};
+		/** FileCheckRequest */
+		FileCheckRequest: {
+			/** Content */
+			content: string;
+		};
+		/** FileCheckResponse */
+		FileCheckResponse: {
+			/** Ok */
+			ok: boolean;
+			/** Message */
+			message?: string | null;
 		};
 		/** HTTPValidationError */
 		HTTPValidationError: {
@@ -232,6 +261,19 @@ export interface components {
 			unconfirmed: boolean;
 			/** Error */
 			error: string | null;
+		};
+		/**
+		 * NewProjectRequested
+		 * @description Uživatel začíná novou zakázku; rozpracovaná se zahodí (UC-15).
+		 *
+		 *     Na neuložené změny se ptá UI předem, reducer už jen začne znovu.
+		 */
+		NewProjectRequested: {
+			/**
+			 * @description discriminator enum property added by openapi-typescript
+			 * @enum {string}
+			 */
+			type: 'NewProjectRequested';
 		};
 		/**
 		 * Objective
@@ -321,6 +363,19 @@ export interface components {
 			/** Content */
 			content: string;
 		};
+		/**
+		 * ProjectSaved
+		 * @description Uživatel si stáhl soubor zakázky v dané revizi (UC-06).
+		 */
+		ProjectSaved: {
+			/**
+			 * @description discriminator enum property added by openapi-typescript
+			 * @enum {string}
+			 */
+			type: 'ProjectSaved';
+			/** Revision */
+			revision: number;
+		};
 		/** ProjectView */
 		ProjectView: {
 			/** Name */
@@ -342,6 +397,10 @@ export interface components {
 			can_save: boolean;
 			/** Save Note */
 			save_note: string | null;
+			/** Unsaved Changes */
+			unsaved_changes: boolean;
+			/** Can Start New */
+			can_start_new: boolean;
 		};
 		/**
 		 * ProposalConfirmed
@@ -525,6 +584,8 @@ export interface components {
 			| components['schemas']['ToolSelected']
 			| components['schemas']['EditRequested']
 			| components['schemas']['ProjectImported']
+			| components['schemas']['ProjectSaved']
+			| components['schemas']['NewProjectRequested']
 			| components['schemas']['ProposalEdited']
 			| components['schemas']['ProposalConfirmed']
 			| components['schemas']['ProposalRejected']
@@ -701,6 +762,39 @@ export interface operations {
 					[name: string]: unknown;
 				};
 				content?: never;
+			};
+			/** @description Validation Error */
+			422: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['HTTPValidationError'];
+				};
+			};
+		};
+	};
+	check_file_api_project_files_check_post: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['FileCheckRequest'];
+			};
+		};
+		responses: {
+			/** @description Successful Response */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['FileCheckResponse'];
+				};
 			};
 			/** @description Validation Error */
 			422: {

@@ -126,6 +126,39 @@ def test_prilis_velky_soubor_odmitne_api() -> None:
     assert client.post(f"/api/sessions/{session}/events", json=event).status_code == 422
 
 
+def test_ulozeni_a_nova_zakazka_podle_neulozenych_zmen() -> None:
+    client = _client()
+    session = _planned(client)
+    assert client.get(f"/api/sessions/{session}").json()["project"]["unsaved_changes"] is True
+
+    response = client.get(f"/api/sessions/{session}/project")
+    revision = int(response.headers["x-project-revision"])
+    view = _send(client, session, {"type": "ProjectSaved", "revision": revision})
+    assert view["project"]["unsaved_changes"] is False
+    assert view["project"]["can_start_new"] is True
+
+    view = _send(client, session, {"type": "NewProjectRequested"})
+    assert view["project"]["step"] == "input"
+    assert view["project"]["has_content"] is False
+    assert view["session"]["id"] == session
+
+
+def test_overeni_souboru_bez_relace() -> None:
+    client = _client()
+    content = client.get(f"/api/sessions/{_planned(client)}/project").text
+
+    assert client.post("/api/project-files/check", json={"content": content}).json() == {
+        "ok": True,
+        "message": None,
+    }
+    assert client.post("/api/project-files/check", json={"content": "[]"}).json() == {
+        "ok": False,
+        "message": "Soubor není zakázka DecisionEngine.",
+    }
+    too_big = {"content": "x" * 1_000_001}
+    assert client.post("/api/project-files/check", json=too_big).status_code == 422
+
+
 @pytest.mark.parametrize(
     ("name", "expected"),
     [

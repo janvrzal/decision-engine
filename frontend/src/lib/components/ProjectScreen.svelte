@@ -9,6 +9,7 @@
 	import AppBar from './AppBar.svelte';
 	import ChatPanel from './ChatPanel.svelte';
 	import ChatRail from './ChatRail.svelte';
+	import DiscardProjectDialog from './DiscardProjectDialog.svelte';
 	import InputStep from './InputStep.svelte';
 	import ImportDialog from './ImportDialog.svelte';
 	import ProjectHeader from './ProjectHeader.svelte';
@@ -71,23 +72,96 @@
 	}
 
 	let importOpen = $state(false);
+	let checkError = $state<string | null>(null);
 	let saveError = $state<string | null>(null);
 	let saveReason = $derived(view.project.can_save ? undefined : 'Uložit jde potvrzená zakázka.');
+	let newReason = $derived(view.project.can_start_new ? undefined : 'Počkejte na dokončení.');
+
+	/** Uloží zakázku a dá backendu vědět, kterou revizi si uživatel stáhl. */
+	async function saveFile(): Promise<string | null> {
+		const result = await saveProject(api, view.session.id);
+		if (!result.ok) return result.message;
+		if (result.revision !== null)
+			await session.send({ type: 'ProjectSaved', revision: result.revision });
+		return null;
+	}
 
 	async function save() {
-		saveError = null;
-		const result = await saveProject(api, view.session.id);
-		if (!result.ok) saveError = result.message;
+		saveError = await saveFile();
+	}
+
+	// Dialog Zahodit rozpracovanou zakázku (UC-15): akce čeká, než uživatel rozhodne.
+	let discard = $state<{ label: string; run: () => Promise<void> } | null>(null);
+	let discardOpen = $state(false);
+	let discardBusy = $state(false);
+	let discardError = $state<string | null>(null);
+
+	function guarded(label: string, run: () => Promise<void>) {
+		if (!view.project.unsaved_changes) {
+			void run();
+			return;
+		}
+		discard = { label, run };
+		discardError = null;
+		discardOpen = true;
+	}
+
+	async function proceed(saveFirst: boolean) {
+		if (!discard) return;
+		discardBusy = true;
+		const error = saveFirst ? await saveFile() : null;
+		discardBusy = false;
+		if (error) {
+			discardError = error;
+			return;
+		}
+		discardOpen = false;
+		await discard.run();
+	}
+
+	function newProject() {
+		chatSheetOpen = false;
+		guarded('Zahodit zakázku', async () => {
+			saveError = null;
+			await session.send({ type: 'NewProjectRequested' });
+		});
 	}
 
 	function openImport() {
 		chatSheetOpen = false;
+		checkError = null;
 		importOpen = true;
 	}
 
-	async function importFile(content: string) {
+	async function sendImport(content: string) {
 		await session.send({ type: 'ProjectImported', content });
 		if (session.view && !session.view.import_error && !session.problem) importOpen = false;
+	}
+
+	/** Platnost souboru se ověří dřív, než se nabídne zahození rozpracované zakázky (F4). */
+	async function importFile(content: string) {
+		checkError = null;
+		if (!view.project.unsaved_changes) {
+			await sendImport(content);
+			return;
+		}
+		try {
+			const { data } = await api.POST('/api/project-files/check', { body: { content } });
+			if (!data) throw new Error('bez dat');
+			if (!data.ok) {
+				checkError = data.message ?? 'Soubor se nepodařilo načíst.';
+				return;
+			}
+		} catch {
+			checkError = 'Server neodpovídá, soubor se nenačetl.';
+			return;
+		}
+		importOpen = false;
+		guarded('Zahodit a načíst', async () => {
+			await session.send({ type: 'ProjectImported', content });
+			// Soubor prošel ověřením; kdyby ho backend přesto odmítl, chyba se ukáže v okně.
+			if (session.view?.import_error) importOpen = true;
+		});
 	}
 
 	let editReason = $derived(view.project.can_edit ? undefined : 'Počkejte na dokončení výpočtu.');
@@ -134,8 +208,11 @@
 		onopenchat={() => (chatSheetOpen = true)}
 		saveDisabledReason={saveReason}
 		saveNote={view.project.save_note}
+		unsaved={view.project.unsaved_changes}
+		newDisabledReason={newReason}
 		onsave={() => void save()}
 		onload={openImport}
+		onnew={newProject}
 	/>
 
 	<div class="flex min-h-0 flex-1">
@@ -232,8 +309,19 @@
 
 <ImportDialog
 	bind:open={importOpen}
-	hasContent={view.project.has_content}
 	busy={session.pending !== null}
-	error={view.import_error}
+	error={checkError ?? view.import_error}
 	onimport={importFile}
+/>
+
+<DiscardProjectDialog
+	bind:open={discardOpen}
+	name={view.project.name}
+	hasProject={view.project.can_save}
+	hasProposal={view.proposal !== null}
+	discardLabel={discard?.label ?? 'Zahodit zakázku'}
+	busy={discardBusy}
+	error={discardError}
+	onsave={() => void proceed(true)}
+	ondiscard={() => void proceed(false)}
 />

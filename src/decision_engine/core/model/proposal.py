@@ -76,6 +76,13 @@ def proposal_from_project(project: Project) -> ChangeProposal:
     )
 
 
+def inputs_fingerprint(proposal: ChangeProposal) -> ChangeProposal:
+    """Jen hodnoty vstupů návrhu, bez původu a označení; pro porovnání „změnilo se něco?“."""
+    return proposal.model_copy(
+        update={"base_revision": None, "origin": "manual", "unconfirmed": frozenset()}
+    )
+
+
 def confirm_proposal(
     proposal: ChangeProposal, project_id: str, revision: int
 ) -> Result[Project, tuple[FieldError, ...]]:

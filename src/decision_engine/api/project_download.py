@@ -10,6 +10,8 @@ from decision_engine.core.model.cutting_1d import Project
 from decision_engine.core.project_file import write_project_file
 
 SUFFIX = ".decision.json"
+REVISION_HEADER = "X-Project-Revision"
+"""Revize ve staženém souboru; frontend ji pošle zpět v `ProjectSaved`."""
 
 
 def file_name(project_name: str) -> str:
@@ -26,5 +28,8 @@ def project_file_response(project: Project) -> Response:
     return Response(
         content=write_project_file(project),
         media_type="application/json; charset=utf-8",
-        headers={"Content-Disposition": f"attachment; filename*=UTF-8''{quote(name)}"},
+        headers={
+            "Content-Disposition": f"attachment; filename*=UTF-8''{quote(name)}",
+            REVISION_HEADER: str(project.revision),
+        },
     )

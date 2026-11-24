@@ -60,9 +60,6 @@ test.describe('široká obrazovka 1440 px', () => {
 		await expect(
 			page.getByRole('button', { name: 'Uložit', exact: true })
 		).toHaveAccessibleDescription('Uložit jde potvrzená zakázka.');
-		await expect(
-			page.getByRole('button', { name: 'Nová zakázka', exact: true })
-		).toHaveAccessibleDescription('Tato akce zatím není k dispozici.');
 	});
 
 	test('přístupnost: axe bez závažných nálezů', async ({ page }) => {

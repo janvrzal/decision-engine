@@ -7,7 +7,6 @@ describe('ImportDialog', () => {
 	it('stará chyba z dřívějšího pokusu se při otevření neukáže', async () => {
 		await render(ImportDialog, {
 			open: true,
-			hasContent: false,
 			busy: false,
 			error: 'Soubor není zakázka DecisionEngine.',
 			onimport: vi.fn()
@@ -17,17 +16,15 @@ describe('ImportDialog', () => {
 		expect(document.body.textContent).not.toContain('Soubor není zakázka');
 	});
 
-	it('vybraný soubor přečte a pošle, rozpracovanou zakázku zmíní', async () => {
+	it('vybraný soubor přečte a pošle', async () => {
 		const onimport = vi.fn().mockResolvedValue(undefined);
 		await render(ImportDialog, {
 			open: true,
-			hasContent: true,
 			busy: false,
 			error: null,
 			onimport
 		});
 
-		await expect.element(page.getByText('Aktuální zakázka bude nahrazena')).toBeVisible();
 		const file = new File(['{"format_version": 1}'], 'regal.decision.json', {
 			type: 'application/json'
 		});
@@ -39,7 +36,6 @@ describe('ImportDialog', () => {
 	it('Esc okno zavře', async () => {
 		await render(ImportDialog, {
 			open: true,
-			hasContent: false,
 			busy: false,
 			error: null,
 			onimport: vi.fn()

@@ -17,7 +17,7 @@ Pravidla pro všechny komponenty:
 | `Button` | nativní `<button>` | `primary`, `secondary`, `ghost`, `danger`; výchozí, hover, fokus, stisk, neaktivní, načítání | V panelu nejvýš jeden `primary`. Neaktivní tlačítko má v tooltipu nebo pod sebou důvod („Nejdřív opravte 2 pole“). Neaktivní tlačítko má `aria-disabled` místo `disabled`, aby zůstalo v pořadí tabulátoru a důvod šel přečíst i z klávesnice. Načítání: po spodní hraně zametá linka 2 px v barvě textu (1,2 s), text i šířka zůstávají, `aria-busy`; při omezeném pohybu linka zmizí. |
 | `IconButton` | nativní `<button>` | `ghost`, `secondary`; velikost 32 a 24 px | Vždy `aria-label` a tooltip s názvem akce. |
 | `Chip` | nativní `<button>` | výchozí, vybraný | Ukázky zadání, rychlé úpravy a volby doptání v dialogu. Nikdy nenahrazuje hlavní akci. |
-| `Badge` | — | `neutral`, `info`, `success`, `warning`, `danger`, `proposal` | Krátký štítek (nový, sklad, nákup, Demo, Příklad). Styl `label`, výška 22 px, vždy text, volitelně ikona. |
+| `Badge` | — | `neutral`, `info`, `success`, `warning`, `danger`, `proposal` | Krátký štítek (nový, sklad, nákup, Demo, Příklad, „neuloženo“ v hlavičce zakázky jako `warning`). Styl `label`, výška 22 px, vždy text, volitelně ikona. |
 | `Kbd` | — | — | Klávesová zkratka v nápovědě („Esc“). |
 | `Icon` | — | 16 px | Ikony Lucide, viz výše. |
 | `Loader` | — | malý 44 × 12 px, velký 96 × 16 px | Indikátor práce místo spinneru: do malé tyče postupně padají díly v barvách plánu oddělené prořezem (cyklus 1,8 s). Vždy s textem; v tlačítku se nepoužívá. Text fáze AI má jemný přeliv. Při omezeném pohybu stojí se dvěma vloženými díly. |
@@ -54,8 +54,8 @@ Toasty se nepoužívají: chyby a potvrzení zůstávají v panelu nebo v histor
 
 | Komponenta | Chování | Varianty | Pravidla |
 |---|---|---|---|
-| `Modal` | Bits Dialog | šířka 520, 640, 720 px | Příklady, Načíst zakázku (`ImportDialog`: výběr souboru i přetažení, upozornění „Aktuální zakázka bude nahrazena“, chyba načtení jako `Alert danger` v okně), Zápis do skladu. Nadpis, obsah, patička s akcemi vpravo (hlavní akce poslední). Zavření ✕, Esc a klik mimo. |
-| `ConfirmDialog` | Bits AlertDialog | — | Zahození rozpracované zakázky nebo změn. Fokus na bezpečné akci („Zrušit“), destruktivní akce je `danger`. |
+| `Modal` | Bits Dialog | šířka 520, 640, 720 px | Příklady, Načíst zakázku (`ImportDialog`: výběr souboru i přetažení, chyba načtení jako `Alert danger` v okně), Zápis do skladu. Nadpis, obsah, patička s akcemi vpravo (hlavní akce poslední). Zavření ✕, Esc a klik mimo. |
+| `ConfirmDialog` | Bits AlertDialog | — | Zahození rozpracované zakázky nebo změn (`DiscardProjectDialog`: Zrušit · Zahodit zakázku / Zahodit a načíst · Uložit a pokračovat). Fokus na bezpečné akci („Zrušit“), destruktivní akce je `danger`. Klik mimo okno nezavře. |
 | `Sheet` | Bits Dialog | vlevo (dialog na střední šířce, 380 px), vpravo (vývojářský panel, 460 px) | Vysouvací panel přes obsah se `shadow-overlay`. |
 
 ## Data

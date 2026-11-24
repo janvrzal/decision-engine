@@ -1,10 +1,10 @@
 # DecisionEngine — specifikace cílové verze pro semestrální práci
 
-**Verze:** 0.5.0 — soubor zakázky  
-**Datum:** 23. 11. 2026  
+**Verze:** 0.6.0 — nová zakázka a neuložené změny  
+**Datum:** 24. 11. 2026  
 **Stav:** Specifikace budoucího chování; tento dokument nepopisuje dokončenou implementaci.
 
-**Změny oproti 0.4.3:** Popsán soubor zakázky pro uložení a načtení (kap. 7, Soubor zakázky): obsah, verze formátu a chování u neplatného souboru (UC-06).
+**Změny oproti 0.5.0:** Upřesněno, kdy má zakázka neuložené změny a co se stane při nové nebo načtené zakázce (kap. 7, Soubor zakázky; UC-15, UC-06 A1).
 
 ## 1. Produkt a jeho účel
 
@@ -382,6 +382,8 @@ Výsledek výpočtu nese číslo revize, ze které vznikl. Plán je **neaktuáln
 ### Soubor zakázky
 
 Uložení zakázky vytvoří soubor `<název>.decision.json` s potvrzenou revizí: verze formátu, typ úlohy, název, díly, skladové délky s cenami a parametry včetně cíle optimalizace. Ceny jsou zapsané jako text, aby se neztratila přesnost. Soubor neobsahuje API klíče, historii dialogu ani výsledek výpočtu; rozpracovaný návrh změny se neukládá. Načtení nevolá žádné API a soubor se nestane zakázkou hned: vznikne z něj návrh, který uživatel zkontroluje a potvrdí (R1). Neznámý obsah, jiná verze formátu nebo chybějící díly či skladové délky ukáží srozumitelnou chybu a aktuální zakázka zůstane beze změny; jednotlivé neplatné hodnoty (např. záporná délka) se načtou a označí v kontrolní tabulce. Vstupy kalkulace přibudou s další verzí formátu.
+
+Zakázka má **neuložené změny**, když se vstupy potvrzené revize liší od naposledy uloženého nebo načteného souboru, nebo když čeká návrh změny s prací (návrh od AI či ze souboru; ruční návrh jen tehdy, když se od otevření změnil). Jde o odvozenou vlastnost; uložení zaznamená až stažení souboru. Nová zakázka i načtení souboru začínají s prázdným kontextem (prázdný dialog, žádný výsledek). Má-li aktuální zakázka neuložené změny, aplikace se nejdřív zeptá, zda ji uložit, zahodit, nebo akci zrušit; u načtení až poté, co soubor projde ověřením.
 
 Sklad má vlastní revize a vlastní úložiště. Výsledek výpočtu se skladem nese i revizi skladu; změna skladu označí výsledek jako neaktuální.
 

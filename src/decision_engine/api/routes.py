@@ -16,7 +16,9 @@ from decision_engine.app.session import handle
 from decision_engine.core.events import (
     EditRequested,
     MessageSent,
+    NewProjectRequested,
     ProjectImported,
+    ProjectSaved,
     ProposalConfirmed,
     ProposalEdited,
     ProposalRejected,
@@ -30,6 +32,8 @@ type UserEvent = Annotated[
     | ToolSelected
     | EditRequested
     | ProjectImported
+    | ProjectSaved
+    | NewProjectRequested
     | ProposalEdited
     | ProposalConfirmed
     | ProposalRejected

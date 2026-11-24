@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fileNameFromDisposition } from './download';
+import { fileNameFromDisposition, revisionFromHeader } from './download';
 
 describe('fileNameFromDisposition', () => {
 	it.each([
@@ -10,5 +10,17 @@ describe('fileNameFromDisposition', () => {
 		["attachment; filename*=UTF-8''%E0%A4%A", 'zakazka.decision.json']
 	])('%s → %s', (header, name) => {
 		expect(fileNameFromDisposition(header)).toBe(name);
+	});
+});
+
+describe('revisionFromHeader', () => {
+	it.each([
+		['3', 3],
+		[' 0 ', 0],
+		[null, null],
+		['-1', null],
+		['tři', null]
+	])('%s → %s', (header, revision) => {
+		expect(revisionFromHeader(header)).toBe(revision);
 	});
 });
