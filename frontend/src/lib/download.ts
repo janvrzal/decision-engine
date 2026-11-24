@@ -45,7 +45,7 @@ export async function saveProject(client: Client, sessionId: string): Promise<Sa
 				ok: false,
 				message:
 					response.status === 409
-						? 'Uložit jde potvrzená zakázka.'
+						? 'Uložit půjde až potvrzenou zakázku. Nejdřív potvrďte údaje.'
 						: 'Zakázku se nepodařilo uložit. Zkuste to znovu.'
 			};
 		}
@@ -55,7 +55,8 @@ export async function saveProject(client: Client, sessionId: string): Promise<Sa
 		link.href = url;
 		link.download = fileName;
 		link.click();
-		URL.revokeObjectURL(url);
+		// Některé prohlížeče začnou stahovat až po návratu do smyčky událostí.
+		setTimeout(() => URL.revokeObjectURL(url), 0);
 		return {
 			ok: true,
 			fileName,

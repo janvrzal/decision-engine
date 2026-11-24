@@ -1,0 +1,36 @@
+{
+  "id": "extraction-test-31",
+  "input": "Ahoj, dělám pro kamaráda kovovou postel 200×160. Matrace stála 6 000 Kč, ale to sem nepatří. Rám: 2 podélníky po 2 040 mm, 3 příčky po 1 640 mm, 4 nohy po 350 mm. Jekl 40×40 prodávají po 6 m, 610 Kč za tyč. Řez 2 mm.",
+  "expected": {
+    "parts": [
+      {
+        "length_mm": 2040,
+        "quantity": 2
+      },
+      {
+        "length_mm": 1640,
+        "quantity": 3
+      },
+      {
+        "length_mm": 350,
+        "quantity": 4
+      }
+    ],
+    "stock": [
+      {
+        "length_mm": 6000,
+        "price": "610"
+      }
+    ],
+    "kerf_mm": 2,
+    "trim_mm": null,
+    "min_remnant_mm": null,
+    "objective": null
+  },
+  "tags": [
+    "balast",
+    "kontextove_cislo",
+    "cena_jineho"
+  ],
+  "author_note": "Cena matrace ani rozměr postele nejsou sklad ani díl."
+}

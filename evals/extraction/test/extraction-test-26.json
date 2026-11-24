@@ -1,0 +1,28 @@
+{
+  "id": "extraction-test-26",
+  "input": "Kotouč 3 mm, čelo tyče vždy zarovnám o 8 mm. Z tyčí 4 500 mm chci 10× 1 400 mm.",
+  "expected": {
+    "parts": [
+      {
+        "length_mm": 1400,
+        "quantity": 10
+      }
+    ],
+    "stock": [
+      {
+        "length_mm": 4500,
+        "price": null
+      }
+    ],
+    "kerf_mm": 3,
+    "trim_mm": 8,
+    "min_remnant_mm": null,
+    "objective": null
+  },
+  "tags": [
+    "orez",
+    "chybi_cena",
+    "neprima_formulace"
+  ],
+  "author_note": "Ořez čela uvedený slovesem."
+}

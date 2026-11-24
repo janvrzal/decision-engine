@@ -1,0 +1,32 @@
+{
+  "id": "extraction-test-18",
+  "input": "Kupuju šestimetrové trubky, kus za 375 korun. Potřebuju 7 kusů po 1 650 mm a 14 kusů po 330 mm.",
+  "expected": {
+    "parts": [
+      {
+        "length_mm": 1650,
+        "quantity": 7
+      },
+      {
+        "length_mm": 330,
+        "quantity": 14
+      }
+    ],
+    "stock": [
+      {
+        "length_mm": 6000,
+        "price": "375"
+      }
+    ],
+    "kerf_mm": null,
+    "trim_mm": null,
+    "min_remnant_mm": null,
+    "objective": null
+  },
+  "tags": [
+    "za_kus",
+    "neprima_formulace",
+    "chybi_prorez"
+  ],
+  "author_note": "Cena „kus za … korun“."
+}

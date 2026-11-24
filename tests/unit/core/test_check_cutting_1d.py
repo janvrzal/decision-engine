@@ -1,5 +1,6 @@
 """Validátor plánu 1D musí odhalit ručně pokažené výsledky."""
 
+from decimal import Decimal
 from typing import Any
 
 from solver_cases import project_1d
@@ -37,18 +38,18 @@ def test_chybejici_kus() -> None:
 
 def test_kusy_se_prekryvaji_kvuli_prorezu() -> None:
     pieces = (
-        PlacedPiece(part_id="p1", length_mm=2000, start_mm=0),
-        PlacedPiece(part_id="p1", length_mm=2000, start_mm=2001),
-        PlacedPiece(part_id="p2", length_mm=1000, start_mm=4004),
+        PlacedPiece(part_id="p1", length_mm=2000, start_mm=Decimal(0)),
+        PlacedPiece(part_id="p1", length_mm=2000, start_mm=Decimal(2001)),
+        PlacedPiece(part_id="p2", length_mm=1000, start_mm=Decimal(4004)),
     )
     assert "overlap" in _codes(_with_bar(VALID.bars[0], pieces=pieces))
 
 
 def test_prekrocena_kapacita() -> None:
     pieces = (
-        PlacedPiece(part_id="p1", length_mm=2000, start_mm=0),
-        PlacedPiece(part_id="p1", length_mm=2000, start_mm=2003),
-        PlacedPiece(part_id="p2", length_mm=1000, start_mm=5006),
+        PlacedPiece(part_id="p1", length_mm=2000, start_mm=Decimal(0)),
+        PlacedPiece(part_id="p1", length_mm=2000, start_mm=Decimal(2003)),
+        PlacedPiece(part_id="p2", length_mm=1000, start_mm=Decimal(5006)),
     )
     assert "capacity" in _codes(_with_bar(VALID.bars[0], pieces=pieces))
 
@@ -81,7 +82,19 @@ def test_zbytecne_neumisteny_kus() -> None:
 
 
 def test_optimalni_bez_dolni_meze() -> None:
+    lying = VALID.model_copy(update={"status": SolutionStatus.OPTIMAL, "lower_bound": None})
+    assert "label" in _codes(lying)
+
+
+def test_optimalni_nad_dolni_mezi_je_lez() -> None:
+    # Plán spotřebuje 6000 mm, mez je nižší: „Optimální“ by bylo nepravdivé (pravidlo 9).
+    assert VALID.lower_bound is not None
+    assert VALID.lower_bound < Decimal(6000)
     assert "label" in _codes(VALID.model_copy(update={"status": SolutionStatus.OPTIMAL}))
+
+
+def test_dolni_mez_nad_hodnotou_planu_je_chyba() -> None:
+    assert "bound" in _codes(VALID.model_copy(update={"lower_bound": Decimal(7000)}))
 
 
 def test_castecny_bez_neumistenych_kusu() -> None:

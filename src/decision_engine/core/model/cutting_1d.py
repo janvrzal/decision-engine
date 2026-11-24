@@ -1,7 +1,8 @@
 """Datové objekty zakázky řezání tyčí (spec kap. 5 UC-01, kap. 7 Hlavní datové objekty).
 
-Délky jsou `int` v milimetrech, peníze `Decimal` (ADR-0002). Modely jsou neměnné
-a kolekce jsou `tuple` (ADR-0001). Obsahují jen potvrzená data zakázky; výchozí
+Délky jsou `int` v milimetrech, peníze `Decimal` (ADR-0002). Prořez a zarovnávací ořez
+jsou `Decimal` s nejvýš jedním desetinným místem (ADR-0011): pila má prořez 1,6–2,5 mm.
+Modely jsou neměnné a kolekce jsou `tuple` (ADR-0001). Obsahují jen potvrzená data zakázky; výchozí
 a odhadnuté hodnoty patří do návrhu změny (`ChangeProposal`), dokud je uživatel nepotvrdí.
 """
 
@@ -11,16 +12,37 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
-type Millimeters = Annotated[int, Field(gt=0)]
+MAX_LENGTH_MM = 100_000
+"""Nejdelší délka, kterou aplikace přijme (100 m); delší je skoro jistě překlep."""
+MAX_QUANTITY = 10_000
+"""Nejvyšší počet kusů jednoho dílu."""
+MAX_PIECES = 5_000
+"""Nejvyšší počet kusů celé zakázky (spec kap. 8): výpočet tak zůstane v řádu sekund."""
+MAX_PRICE = Decimal("10000000")
+"""Nejvyšší cena jedné tyče v Kč."""
+MAX_TIME_LIMIT_S = 120
+"""Nejdelší časový limit výpočtu v sekundách."""
+MAX_PARTS = 500
+MAX_STOCK = 50
+
+type Millimeters = Annotated[int, Field(gt=0, le=MAX_LENGTH_MM)]
 """Kladná délka v celých milimetrech."""
 
-type NonNegativeMillimeters = Annotated[int, Field(ge=0)]
+type NonNegativeMillimeters = Annotated[int, Field(ge=0, le=MAX_LENGTH_MM)]
 """Nezáporná délka v celých milimetrech (prořez, ořez, minimální zbytek)."""
 
-type Money = Annotated[Decimal, Field(ge=0, decimal_places=2)]
+type FineMillimeters = Annotated[Decimal, Field(ge=0, le=MAX_LENGTH_MM, decimal_places=1)]
+"""Nezáporná délka v mm s nejvýš jedním desetinným místem (prořez, ořez; ADR-0011)."""
+
+type Money = Annotated[Decimal, Field(ge=0, le=MAX_PRICE, decimal_places=2)]
 """Nezáporná částka v Kč s nejvýš dvěma desetinnými místy."""
 
-type Text = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
+MAX_TEXT_CHARS = 200
+"""Nejdelší název zakázky, dílu nebo materiálu (vejde se do názvu souboru i plánu)."""
+
+type Text = Annotated[
+    str, StringConstraints(strip_whitespace=True, min_length=1, max_length=MAX_TEXT_CHARS)
+]
 """Neprázdný text bez okrajových mezer."""
 
 
@@ -46,7 +68,7 @@ class Part(_Frozen):
     """Stabilní identita dílu v zakázce (návrhy změn a solver na ni odkazují)."""
     name: Text
     length_mm: Millimeters
-    quantity: Annotated[int, Field(gt=0)]
+    quantity: Annotated[int, Field(gt=0, le=MAX_QUANTITY)]
 
 
 class StockLength(_Frozen):
@@ -62,21 +84,21 @@ class Problem(_Frozen):
     """Zadání úlohy: materiál, požadované díly a dostupné skladové délky."""
 
     material: Text | None
-    parts: Annotated[tuple[Part, ...], Field(min_length=1)]
-    stock: Annotated[tuple[StockLength, ...], Field(min_length=1)]
+    parts: Annotated[tuple[Part, ...], Field(min_length=1, max_length=MAX_PARTS)]
+    stock: Annotated[tuple[StockLength, ...], Field(min_length=1, max_length=MAX_STOCK)]
 
 
 class Parameters(_Frozen):
     """Parametry výpočtu (spec kap. 7)."""
 
-    kerf_mm: NonNegativeMillimeters
+    kerf_mm: FineMillimeters
     """Prořez: šířka materiálu, kterou odebere jeden řez."""
-    trim_mm: NonNegativeMillimeters
+    trim_mm: FineMillimeters
     """Zarovnávací ořez začátku tyče; odečte se od její délky."""
     min_remnant_mm: NonNegativeMillimeters
     """Minimální délka využitelného zbytku; kratší zbytek je odpad."""
     objective: Objective
-    time_limit_s: Annotated[int, Field(gt=0)] = 10
+    time_limit_s: Annotated[int, Field(gt=0, le=MAX_TIME_LIMIT_S)] = 10
     """Časový limit výpočtu v sekundách."""
 
 

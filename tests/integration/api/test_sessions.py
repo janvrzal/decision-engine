@@ -87,7 +87,9 @@ def test_uc01_cely_tok_pres_http() -> None:
     assert proposal["parameters"]["min_remnant_mm"] == {
         "value": 300,
         "unconfirmed": True,
+        "unconfirmed_note": "Výchozí hodnota, ověřte.",
         "error": None,
+        "previous": None,
     }
     assert proposal["stock"][0]["price"]["value"] == "420"
     assert proposal["can_confirm"] is True
@@ -118,7 +120,7 @@ def test_uc01_cely_tok_pres_http() -> None:
     assert result["svg"].startswith("<svg")
     assert result["metrics"]["bars_used"] == 5
     assert result["bars"][0]["numbers"] == [1, 2, 3, 4, 5]
-    assert result["bars"][0]["cuts_mm"] == [2000, 4003, 5506]
+    assert result["bars"][0]["cuts_mm"] == ["2000", "4003", "5506"]
     assert result["bars"][0]["tail"] == "remnant"
     assert view["pending_operation"] is None
 
@@ -156,7 +158,13 @@ def test_neplatny_navrh_nejde_potvrdit_a_rekne_proc() -> None:
     ]
     assert proposal["parts"][0]["length_mm"]["error"] == "Chybí hodnota."
     # Skladová délka chyběla → výchozí 6 000 mm jako nepotvrzená (UC-01 A2).
-    assert proposal["stock"][0]["length_mm"] == {"value": 6000, "unconfirmed": True, "error": None}
+    assert proposal["stock"][0]["length_mm"] == {
+        "value": 6000,
+        "unconfirmed": True,
+        "unconfirmed_note": "Výchozí hodnota, ověřte.",
+        "error": None,
+        "previous": None,
+    }
     cheapest = proposal["objective_options"][0]
     assert cheapest["value"] == "cheapest"
     assert cheapest["disabled_reason"] == "Chybí ceny skladových délek."
@@ -173,7 +181,7 @@ def test_vypadek_ai_je_cesky_a_data_zustanou() -> None:
     view = _send(client, session, {"type": "MessageSent", "text": ZADANI})
 
     assert view["messages"][-1]["kind"] == "error"
-    assert "vyčerpaný limit" in view["messages"][-1]["text"]
+    assert "moc požadavků najednou" in view["messages"][-1]["text"]
     assert view["proposal"] is None
     assert view["pending_operation"] is None
 

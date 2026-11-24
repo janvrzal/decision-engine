@@ -28,12 +28,19 @@ from decision_engine.core.state import (
     is_result_stale,
 )
 
+# Vzor „co se stalo + co udělat“ (docs/design-system/obsah.md).
 AI_ERROR_TEXT = {
-    "connection": "AI teď neodpovídá. Zkuste to znovu za chvíli.",
-    "rate_limit": "AI je teď přetížená (vyčerpaný limit). Zkuste to znovu za minutu.",
+    "connection": "AI teď neodpovídá. Zkuste to za chvíli znovu, nebo vyplňte údaje ručně.",
+    "rate_limit": (
+        "AI má teď moc požadavků najednou. Zkuste to za minutu znovu, nebo vyplňte údaje ručně."
+    ),
     "invalid_response": (
-        "AI vrátila odpověď, které aplikace nerozumí. Zkuste zadání napsat jinak "
-        "nebo to zkuste znovu."
+        "Ze zadání jsem nevyčetl díly k řezání. Uveďte díly s délkou a počtem a délku tyčí, "
+        "nebo údaje vyplňte ručně."
+    ),
+    "configuration": (
+        "AI není správně nastavená (neplatný klíč modelu). Zkontrolujte LLM_API_KEY v .env, "
+        "nebo vyplňte údaje ručně."
     ),
 }
 PENDING_LABEL = {
@@ -71,6 +78,7 @@ def build_view_model(state: AppState, *, extraction_available: bool) -> ViewMode
                 else None
             ),
             unsaved_changes=has_unsaved_changes(state),
+            unsaved_badge=state.project is not None and has_unsaved_changes(state),
             can_start_new=state.pending is None,
         ),
         pending_operation=(
@@ -79,7 +87,15 @@ def build_view_model(state: AppState, *, extraction_available: bool) -> ViewMode
             else None
         ),
         messages=tuple(_message(m) for m in state.messages),
-        proposal=build_proposal(state.proposal, state.session_id) if state.proposal else None,
+        proposal=(
+            build_proposal(
+                state.proposal,
+                state.session_id,
+                state.project if state.proposal.base_revision is not None else None,
+            )
+            if state.proposal
+            else None
+        ),
         result=build_result(state.result, stale=stale, proposal_pending=state.proposal is not None)
         if state.result
         else None,
@@ -111,4 +127,12 @@ def _message(message: Message) -> MessageView:
     text = message.text
     if message.kind == "error":
         text = AI_ERROR_TEXT.get(message.error_kind or "", AI_ERROR_TEXT["connection"])
-    return MessageView(id=message.id, role=message.role, kind=message.kind, text=text)
+    return MessageView(
+        id=message.id,
+        role=message.role,
+        kind=message.kind,
+        text=text,
+        retry_text=message.retry_text,
+        proposal=message.proposal,
+        offer_manual=message.offer_manual,
+    )

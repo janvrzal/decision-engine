@@ -1,0 +1,128 @@
+{
+  "id": "dialog-test-10",
+  "turns": [
+    {
+      "input": "Trubka 25×2: 12× 1 650 mm a 6× 420 mm, tyče 6 m za 380 Kč a 3 m za 210 Kč, prořez 2 mm, zarovnání čela 5 mm.",
+      "expected": {
+        "outcome": "supported",
+        "project": {
+          "material": "trubka 25×2",
+          "parts": [
+            {
+              "length_mm": 1650,
+              "quantity": 12
+            },
+            {
+              "length_mm": 420,
+              "quantity": 6
+            }
+          ],
+          "stock": [
+            {
+              "length_mm": 6000,
+              "price": "380"
+            },
+            {
+              "length_mm": 3000,
+              "price": "210"
+            }
+          ],
+          "kerf_mm": 2,
+          "trim_mm": 5,
+          "min_remnant_mm": null
+        }
+      }
+    },
+    {
+      "input": "Třímetrové vyřaď, už je nemají.",
+      "expected": {
+        "outcome": "supported",
+        "project": {
+          "material": "trubka 25×2",
+          "parts": [
+            {
+              "length_mm": 1650,
+              "quantity": 12
+            },
+            {
+              "length_mm": 420,
+              "quantity": 6
+            }
+          ],
+          "stock": [
+            {
+              "length_mm": 6000,
+              "price": "380"
+            }
+          ],
+          "kerf_mm": 2,
+          "trim_mm": 5,
+          "min_remnant_mm": null
+        }
+      }
+    },
+    {
+      "input": "A ta šestimetrová podražila na 415 Kč.",
+      "expected": {
+        "outcome": "supported",
+        "project": {
+          "material": "trubka 25×2",
+          "parts": [
+            {
+              "length_mm": 1650,
+              "quantity": 12
+            },
+            {
+              "length_mm": 420,
+              "quantity": 6
+            }
+          ],
+          "stock": [
+            {
+              "length_mm": 6000,
+              "price": "415"
+            }
+          ],
+          "kerf_mm": 2,
+          "trim_mm": 5,
+          "min_remnant_mm": null
+        }
+      }
+    },
+    {
+      "input": "Ještě to celé zdvojnásob.",
+      "expected": {
+        "outcome": "supported",
+        "project": {
+          "material": "trubka 25×2",
+          "parts": [
+            {
+              "length_mm": 1650,
+              "quantity": 24
+            },
+            {
+              "length_mm": 420,
+              "quantity": 12
+            }
+          ],
+          "stock": [
+            {
+              "length_mm": 6000,
+              "price": "415"
+            }
+          ],
+          "kerf_mm": 2,
+          "trim_mm": 5,
+          "min_remnant_mm": null
+        }
+      }
+    }
+  ],
+  "tags": [
+    "odebrani_skladu",
+    "zmena_ceny",
+    "hromadna_zmena",
+    "orez"
+  ],
+  "author_note": "Ořez z 1. kola musí přežít všechny změny. Materiál se porovnává sémanticky (stejný profil), ne doslovně."
+}

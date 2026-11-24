@@ -10,7 +10,20 @@
 	 * Stav nikdy jen barvou: aktivní krok má `aria-current`, hotový fajfku,
 	 * neaktuální ikonu a slovo. Pod 1280 px je název vidět jen u aktivního kroku.
 	 */
-	let { steps, onselect }: { steps: StepView[]; onselect?: (id: StepId) => void } = $props();
+	let {
+		steps,
+		current,
+		onselect
+	}: {
+		steps: StepView[];
+		/** Právě zobrazený krok; má `aria-current` i ve stavu „neaktuální“. */
+		current?: StepId;
+		onselect?: (id: StepId) => void;
+	} = $props();
+
+	function isCurrent(step: StepView): boolean {
+		return current === undefined ? step.state === 'active' : step.id === current;
+	}
 
 	const stateText = {
 		pending: 'čeká',
@@ -32,8 +45,13 @@
 				{#if clickable}
 					<button
 						type="button"
-						class="flex items-center gap-2 rounded-md px-1 py-1 hover:bg-surface-sunken"
+						class="flex items-center gap-2 rounded-md px-1 py-1 hover:bg-surface-sunken {isCurrent(
+							step
+						)
+							? 'bg-surface-sunken'
+							: ''}"
 						onclick={() => onselect?.(step.id)}
+						aria-current={isCurrent(step) ? 'step' : undefined}
 						data-state={step.state}
 					>
 						{@render content(step, index)}
@@ -41,7 +59,7 @@
 				{:else}
 					<span
 						class="flex items-center gap-2 px-1 py-1"
-						aria-current={step.state === 'active' ? 'step' : undefined}
+						aria-current={isCurrent(step) ? 'step' : undefined}
 						data-state={step.state}
 					>
 						{@render content(step, index)}
@@ -79,7 +97,9 @@
 			? 'font-semibold text-ink'
 			: step.state === 'unavailable'
 				? 'text-ink-subtle'
-				: 'text-ink-muted'} {step.state === 'active' ? '' : 'sr-only xl:not-sr-only'}"
+				: 'text-ink-muted'} {step.state === 'active' || isCurrent(step)
+			? ''
+			: 'sr-only xl:not-sr-only'}"
 	>
 		{step.label}
 		<span class="sr-only">({stateText[step.state]})</span>

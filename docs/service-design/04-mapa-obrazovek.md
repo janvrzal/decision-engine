@@ -136,7 +136,7 @@ Stavy jsou definované na úrovni panelů.
 
 ### Pruh demo režimu (`DemoBanner`)
 
-**Obsah:** „Demo: odpovědi AI jsou předem připravené, výpočty jsou skutečné.“ + Ukončit demo (`NewProjectRequested`*). Při zapnutém Layo: „rozpoznání úlohy: lokální model“. **Data:** `session.mode`, `session.ai.router_impl`. Nelze ho skrýt.
+**Obsah:** „Demo: odpovědi AI jsou předem připravené, výpočty jsou skutečné.“ + Ukončit demo (`NewProjectRequested`*). **Data:** `session.mode`, `session.ai.router_impl`. Nelze ho skrýt.
 
 ### Hlavička zakázky (`ProjectHeader`)
 

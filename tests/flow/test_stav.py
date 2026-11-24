@@ -7,6 +7,7 @@ from decimal import Decimal
 import pytest
 from scenario import run, shelf_proposal, solved
 
+from decision_engine.api.view_builder import build_view_model
 from decision_engine.core.events import (
     EditRequested,
     MessageSent,
@@ -89,8 +90,8 @@ PLAN_INPUTS: dict[str, Change] = {
         }
     ),
     "cena při nejnižší ceně": lambda p: _stock(p, price=Decimal("350.00")),
-    "prořez": lambda p: _parameter(p, kerf_mm=4),
-    "zarovnávací ořez": lambda p: _parameter(p, trim_mm=10),
+    "prořez": lambda p: _parameter(p, kerf_mm=Decimal(4)),
+    "zarovnávací ořez": lambda p: _parameter(p, trim_mm=Decimal(10)),
     "minimální zbytek": lambda p: _parameter(p, min_remnant_mm=500),
     "časový limit": lambda p: _parameter(p, time_limit_s=3),
     "cíl": lambda p: _parameter(p, objective=Objective.FEWEST_BARS),
@@ -173,7 +174,7 @@ def test_zahodit_zmeny_vrati_posledni_potvrzenou_revizi() -> None:
     before = _planned()
     state = _editing(before, lambda p: _part(p, length_mm=1900))
     assert state.proposal is not None
-    state, _ = run([_edit(_parameter(state.proposal, kerf_mm=5))], state)
+    state, _ = run([_edit(_parameter(state.proposal, kerf_mm=Decimal(5)))], state)
 
     state, effects = run([ProposalRejected()], state)
 
@@ -182,3 +183,44 @@ def test_zahodit_zmeny_vrati_posledni_potvrzenou_revizi() -> None:
     assert state.project == before.project
     assert state.result == before.result
     assert not is_result_stale(state)
+
+
+def test_otevrena_uprava_bez_zmeny_plan_nezneplatni_a_zmena_ano() -> None:
+    state, effects = run(
+        [
+            MessageSent(text="regál"),
+            ProposalReceived(proposal=shelf_proposal()),
+            ProposalConfirmed(),
+        ]
+    )
+    state, _ = run([solved(effects)], state)
+
+    opened, _ = run([EditRequested()], state)
+    assert not is_result_stale(opened)
+
+    proposal = opened.proposal
+    assert proposal is not None
+    longer = (proposal.parts[0].model_copy(update={"length_mm": 1900}), *proposal.parts[1:])
+    edited, _ = run(
+        [
+            ProposalEdited(
+                name=proposal.name,
+                material=proposal.material,
+                parts=longer,
+                stock=proposal.stock,
+                parameters=proposal.parameters,
+            )
+        ],
+        opened,
+    )
+    assert is_result_stale(edited)
+
+
+def test_stitek_neulozeno_jen_u_potvrzene_zakazky() -> None:
+    review, _ = run([MessageSent(text="regál"), ProposalReceived(proposal=shelf_proposal())])
+    in_review = build_view_model(review, extraction_available=True).project
+    assert in_review.unsaved_changes  # ochrana práce platí i pro návrh (UC-15)
+    assert not in_review.unsaved_badge  # štítek ale až u zakázky, kterou jde uložit
+
+    confirmed, _ = run([ProposalConfirmed()], review)
+    assert build_view_model(confirmed, extraction_available=True).project.unsaved_badge

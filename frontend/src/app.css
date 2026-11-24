@@ -1,3 +1,17 @@
 @import 'tailwindcss';
 /* Tokeny design systému: jediný zdroj pravdy je docs/design-system/tokens.css (ADR-0010). */
 @import '../../docs/design-system/tokens.css';
+
+/* Papír k pile (plan-rezani.md, PDF): A4 na výšku, jen plán, cena a rozpis. */
+@media print {
+	@page {
+		size: A4 portrait;
+		margin: 12mm;
+	}
+	svg[role='img'] {
+		break-inside: avoid;
+	}
+	tr {
+		break-inside: avoid;
+	}
+}

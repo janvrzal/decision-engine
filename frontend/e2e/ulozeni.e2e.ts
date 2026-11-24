@@ -56,7 +56,7 @@ test.describe('široká obrazovka 1440 px', () => {
 
 		// Nová relace: prázdná zakázka, načtení ze souboru z kroku Zadání.
 		await page.reload();
-		await page.getByRole('button', { name: 'Načíst zakázku' }).click();
+		await page.getByRole('button', { name: 'Načíst zakázku' }).first().click();
 		await loadDialog(page).getByLabel('Soubor zakázky', { exact: true }).last().setInputFiles(file);
 
 		await expect(loadDialog(page)).toBeHidden();
@@ -78,7 +78,7 @@ test.describe('široká obrazovka 1440 px', () => {
 	test('neplatný soubor ukáže chybu a zakázka zůstane', async ({ page }) => {
 		await plannedProject(page);
 
-		await page.getByRole('button', { name: 'Načíst', exact: true }).click();
+		await page.getByRole('button', { name: 'Načíst zakázku', exact: true }).click();
 		await loadDialog(page)
 			.getByLabel('Soubor zakázky', { exact: true })
 			.last()
@@ -111,7 +111,7 @@ test.describe('široká obrazovka 1440 px', () => {
 			parameters: { kerf_mm: 3, trim_mm: 0, min_remnant_mm: 300, objective: 'least_material' }
 		};
 		await page.goto('/project');
-		await page.getByRole('button', { name: 'Načíst zakázku' }).click();
+		await page.getByRole('button', { name: 'Načíst zakázku' }).first().click();
 		await loadDialog(page)
 			.getByLabel('Soubor zakázky', { exact: true })
 			.last()
@@ -132,11 +132,48 @@ test.describe('široká obrazovka 1440 px', () => {
 		);
 	});
 
+	test('duplicitní id a hodnota nečekaného typu stránku neshodí', async ({ page }) => {
+		const data = {
+			id: 'x',
+			name: 'Rám',
+			format_version: 1,
+			task_type: 'cutting_1d',
+			revision: 2,
+			problem: {
+				material: null,
+				parts: [
+					{ id: 'p1', name: 'příčka', length_mm: 'dlouhá', quantity: 2 },
+					{ id: 'p1', name: 'sloupek', length_mm: 1200, quantity: 4 }
+				],
+				stock: [{ id: 's1', length_mm: 6000, price: null }]
+			},
+			parameters: { kerf_mm: 3, trim_mm: 0, min_remnant_mm: 300, objective: 'least_material' }
+		};
+		await page.goto('/project');
+		await page.getByRole('button', { name: 'Načíst zakázku' }).first().click();
+		await loadDialog(page)
+			.getByLabel('Soubor zakázky', { exact: true })
+			.last()
+			.setInputFiles({
+				name: 'ram.decision.json',
+				mimeType: 'application/json',
+				buffer: Buffer.from(JSON.stringify(data))
+			});
+
+		await expect(page.getByRole('heading', { name: 'Kontrola údajů' })).toBeVisible();
+		await expect(page.getByRole('textbox', { name: 'Díl 2, Název' })).toHaveValue('sloupek');
+		await expect(
+			page.getByText('V souboru byla neplatná hodnota, doplňte ji.').first()
+		).toBeVisible();
+	});
+
 	test('bez potvrzené zakázky nejde uložit a důvod je u tlačítka', async ({ page }) => {
 		await page.goto('/project');
-		const save = page.getByRole('button', { name: 'Uložit', exact: true });
+		const save = page.getByRole('button', { name: 'Uložit zakázku', exact: true }).first();
 		await expect(save).toHaveAttribute('aria-disabled', 'true');
-		await expect(save).toHaveAccessibleDescription('Uložit jde potvrzená zakázka.');
+		await expect(save).toHaveAccessibleDescription(
+			'Uložit půjde až potvrzenou zakázku. Nejdřív potvrďte údaje.'
+		);
 	});
 });
 

@@ -42,7 +42,9 @@ class HealthResponse(BaseModel):
 def build_services() -> Services:
     """Sestavení závislostí z prostředí (composition root, ADR-0006)."""
     ai = build_ai_adapters()
-    ports = Ports(llm=ai.llm, prompts=ai.prompts, tracer=ai.tracer, solver=RegistrySolver())
+    ports = Ports(
+        llm=ai.llm, prompts=ai.prompts, tracer=ai.tracer, solver=RegistrySolver(), router=ai.router
+    )
     return Services(
         store=SessionStore(),
         ports=ports,

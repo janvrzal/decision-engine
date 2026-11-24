@@ -1,0 +1,33 @@
+{
+  "id": "extraction-test-02",
+  "input": "Ploché železo 40×6: 18 ks à 275 mm, 9 ks à 640 mm. Tyče 3 000 mm za 286 Kč, prořez 2,5 mm.",
+  "expected": {
+    "parts": [
+      {
+        "length_mm": 275,
+        "quantity": 18
+      },
+      {
+        "length_mm": 640,
+        "quantity": 9
+      }
+    ],
+    "stock": [
+      {
+        "length_mm": 3000,
+        "price": "286"
+      }
+    ],
+    "kerf_mm": 2.5,
+    "trim_mm": null,
+    "min_remnant_mm": null,
+    "objective": null
+  },
+  "tags": [
+    "jednotky_mm",
+    "prorez_desetinny",
+    "oddelovac_tisicu",
+    "ceny_kc"
+  ],
+  "author_note": "Prořez v desetinách mm zůstává desetinným číslem."
+}

@@ -6,6 +6,8 @@
 		MoneyCell,
 		Objective,
 		ProposalView,
+		RemovedPartView,
+		RemovedStockView,
 		TextCell,
 		UserEvent
 	} from '#lib/api/types.js';
@@ -19,11 +21,12 @@
 		type ParameterKey,
 		type ProposalDraft
 	} from '#lib/proposal-draft.js';
-	import Alert from '../ui/Alert.svelte';
 	import Button from '../ui/Button.svelte';
 	import Collapsible from '../ui/Collapsible.svelte';
 	import RadioCardGroup from '../ui/RadioCardGroup.svelte';
+	import { integerText, moneyText } from '#lib/behaviors/number-input.js';
 	import CellInput from './CellInput.svelte';
+	import ChangeSummary from './ChangeSummary.svelte';
 	import EditableGrid from './EditableGrid.svelte';
 	import type { CellState } from './grid-types.js';
 	import ValidationSummary from './ValidationSummary.svelte';
@@ -74,6 +77,21 @@
 		});
 	});
 
+	/** Buňky, do kterých uživatel od posledního odeslání psal: potvrdí je i beze změny (R6). */
+	let typed: string[] = [];
+
+	function markTyped(key: string) {
+		if (!typed.includes(key)) typed.push(key);
+	}
+
+	function trackTyping(event: Event) {
+		if (!(event.target instanceof Node) || !section?.contains(event.target)) return;
+		const key = (event.target as HTMLElement | null)
+			?.closest('[data-cell]')
+			?.getAttribute('data-cell');
+		if (key) markTyped(key);
+	}
+
 	function commit() {
 		touched = true;
 		// Potvrzená buňka se ukáže ve formátu cs-CZ (`12 500`); během psaní se text nemění.
@@ -87,24 +105,71 @@
 		}
 		localErrors = {};
 		if (result.conversions.length > 0) conversion = `Převedeno: ${result.conversions.join(', ')}.`;
-		const serialized = JSON.stringify(result.event);
-		if (serialized === lastSent || busy) return;
-		lastSent = serialized;
+		// Stejný obsah se znovu neposílá, ledaže uživatel do buňky psal (potvrzení hodnoty).
+		const content = JSON.stringify(result.event);
+		if ((content === lastSent && typed.length === 0) || busy) return;
+		const event = { ...result.event, confirmed: [...typed] };
+		lastSent = content;
 		sentDraft = snapshot;
-		onsend(result.event);
+		typed = [];
+		onsend(event);
+	}
+
+	/** Vrátí řádek, který návrh odebral (ChangeSummary „Vrátit“). */
+	function restorePart(row: RemovedPartView) {
+		draft.parts.push({
+			id: row.id,
+			name: row.name,
+			length_mm: integerText(row.length_mm),
+			quantity: integerText(row.quantity)
+		});
+		commit();
+	}
+
+	function restoreStock(row: RemovedStockView) {
+		draft.stock.push({
+			id: row.id,
+			length_mm: integerText(row.length_mm),
+			price: moneyText(row.price)
+		});
+		commit();
+	}
+
+	function confirm() {
+		onsend({ type: 'ProposalConfirmed' });
+	}
+
+	/** Ctrl/Cmd+Enter odešle rozepsanou buňku a spustí výpočet (zkušený uživatel). */
+	function shortcut(event: KeyboardEvent) {
+		if (event.key !== 'Enter' || !(event.ctrlKey || event.metaKey)) return;
+		event.preventDefault();
+		commit();
+		if (!busy) confirm();
 	}
 
 	function cellState(cell: IntCell | MoneyCell | TextCell | undefined, key: CellKey): CellState {
 		return {
 			unconfirmed: cell?.unconfirmed ?? false,
-			error: localErrors[key] ?? (isNewManual && !touched ? null : (cell?.error ?? null))
+			unconfirmedNote: cell?.unconfirmed_note ?? null,
+			error: localErrors[key] ?? (isNewManual && !touched ? null : (cell?.error ?? null)),
+			previous: cell?.previous ?? null
 		};
 	}
 
-	const PARAMETERS: { key: ParameterKey; label: string; unit: string }[] = [
-		{ key: 'kerf_mm', label: 'Prořez', unit: 'mm' },
-		{ key: 'trim_mm', label: 'Zarovnávací ořez', unit: 'mm' },
-		{ key: 'min_remnant_mm', label: 'Minimální využitelný zbytek', unit: 'mm' }
+	const PARAMETERS: { key: ParameterKey; label: string; unit: string; hint: string }[] = [
+		{ key: 'kerf_mm', label: 'Prořez', unit: 'mm', hint: 'Šířka řezu pily, např. 2,5 mm.' },
+		{
+			key: 'trim_mm',
+			label: 'Zarovnávací ořez',
+			unit: 'mm',
+			hint: 'Kolik se uřízne z čela tyče, než začne první díl.'
+		},
+		{
+			key: 'min_remnant_mm',
+			label: 'Minimální využitelný zbytek',
+			unit: 'mm',
+			hint: 'Kratší zbytek je odpad, delší si necháte.'
+		}
 	];
 
 	let confirmReason = $derived(
@@ -112,9 +177,11 @@
 	);
 </script>
 
+<svelte:window oninput={trackTyping} onkeydown={shortcut} />
+
 <section bind:this={section} class="flex flex-col gap-6" aria-labelledby="review-title">
 	<div class="flex flex-col gap-1">
-		<h2 id="review-title" class="text-title text-ink">Kontrola údajů</h2>
+		<h2 id="review-title" tabindex="-1" class="text-title text-ink">Kontrola údajů</h2>
 		<p class="text-body text-ink-muted">
 			{#if proposal.origin === 'ai'}
 				Zkontrolujte, co jsem ze zadání vyčetl. Hodnoty s otazníkem jsou výchozí nebo odhad AI —
@@ -130,10 +197,13 @@
 		</p>
 	</div>
 
-	{#if proposal.is_change}
-		<Alert variant="info" title="Úprava zakázky">
-			Změny se projeví až po potvrzení. Do té doby platí původní plán.
-		</Alert>
+	{#if proposal.changes}
+		<ChangeSummary
+			changes={proposal.changes}
+			{busy}
+			onrestorepart={restorePart}
+			onrestorestock={restoreStock}
+		/>
 	{/if}
 
 	{#if showErrors}
@@ -162,6 +232,8 @@
 			<CellInput
 				bind:value={draft.material}
 				label="Materiál"
+				data-cell="material"
+				previous={proposal.material.previous ?? null}
 				placeholder="např. jekl 40×40×2"
 				oncommit={commit}
 			/>
@@ -179,6 +251,7 @@
 		]}
 		cell={(r: number, key: string) =>
 			cellState(proposal.parts[r]?.[key as 'name' | 'length_mm' | 'quantity'], `parts.${r}.${key}`)}
+		added={(r: number) => proposal.parts[r]?.added ?? false}
 		rowLabel={(r: number) => `Díl ${r + 1}`}
 		addLabel="Přidat díl"
 		disabled={busy}
@@ -201,6 +274,7 @@
 		]}
 		cell={(r: number, key: string) =>
 			cellState(proposal.stock[r]?.[key as 'length_mm' | 'price'], `stock.${r}.${key}`)}
+		added={(r: number) => proposal.stock[r]?.added ?? false}
 		rowLabel={(r: number) => `Skladová délka ${r + 1}`}
 		addLabel="Přidat skladovou délku"
 		disabled={busy}
@@ -218,6 +292,7 @@
 			{#each PARAMETERS as parameter (parameter.key)}
 				<label class="flex flex-col gap-1">
 					<span class="text-small font-medium text-ink">{parameter.label}</span>
+					<span class="text-small text-ink-muted">{parameter.hint}</span>
 					<CellInput
 						bind:value={draft[parameter.key]}
 						label={parameter.label}
@@ -263,6 +338,7 @@
 			}))}
 			onchange={(value: Objective) => {
 				draft.objective = value;
+				markTyped('objective');
 				commit();
 			}}
 		/>
@@ -282,8 +358,9 @@
 		{/if}
 		<Button
 			variant="primary"
-			onclick={() => onsend({ type: 'ProposalConfirmed' })}
+			onclick={confirm}
 			disabledReason={confirmReason}
+			aria-keyshortcuts="Control+Enter Meta+Enter"
 		>
 			<Calculator size={16} strokeWidth={1.5} aria-hidden="true" />
 			Potvrdit a vypočítat

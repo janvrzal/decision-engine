@@ -16,8 +16,8 @@ def project_1d(
     parts: list[tuple[int, int]],
     stock: list[tuple[int, str | None]],
     *,
-    kerf: int = 0,
-    trim: int = 0,
+    kerf: int | Decimal = 0,
+    trim: int | Decimal = 0,
     min_remnant: int = 300,
     objective: Objective = Objective.LEAST_MATERIAL,
 ) -> Project:
@@ -44,6 +44,9 @@ def project_1d(
             ),
         ),
         parameters=Parameters(
-            kerf_mm=kerf, trim_mm=trim, min_remnant_mm=min_remnant, objective=objective
+            kerf_mm=Decimal(kerf),
+            trim_mm=Decimal(trim),
+            min_remnant_mm=min_remnant,
+            objective=objective,
         ),
     )

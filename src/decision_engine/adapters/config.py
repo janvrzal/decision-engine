@@ -2,6 +2,8 @@
 
 Bez klíčů Langfuse je trasování vypnuté a prompty se berou ze zálohy v `prompts/`.
 Bez klíče modelu extrakce vrací chybu připojení; aplikace i testy běží dál.
+Router (ADR-0012): Jev s klíčem TypeSafe, jinak LLM, jinak ruční; `ROUTER` volbu přepíše
+(`jev`, `llm`, `manual`) a `JEV_VARIANT` vybere variantu otázek Jev.
 """
 
 import os
@@ -13,12 +15,23 @@ from pathlib import Path
 from langfuse import Langfuse
 
 from decision_engine.adapters.file_prompts import FilePromptStore
+from decision_engine.adapters.jev_router import JevRouter
 from decision_engine.adapters.langfuse_prompts import LangfusePromptStore
 from decision_engine.adapters.langfuse_tracing import LangfuseTracer
 from decision_engine.adapters.llm_openai import OpenAICompatibleLlm
 from decision_engine.adapters.llm_replay import ReplayLlm
+from decision_engine.adapters.llm_router import LlmRouter
 from decision_engine.adapters.noop_tracing import NoopTracer
-from decision_engine.app.ports import ChatMessage, LlmClient, LlmError, Prompt, PromptStore
+from decision_engine.app.ports import (
+    ChatMessage,
+    LlmClient,
+    LlmError,
+    ManualRouter,
+    Prompt,
+    PromptStore,
+    Router,
+)
+from decision_engine.app.routing import FallbackRouter
 from decision_engine.core.result import Err, Result
 
 PROMPTS_DIR = Path(__file__).resolve().parents[3] / "prompts"
@@ -45,6 +58,7 @@ class AiAdapters:
     prompts: PromptStore
     tracer: NoopTracer | LangfuseTracer
     langfuse_enabled: bool
+    router: Router
 
 
 def build_ai_adapters(
@@ -70,15 +84,37 @@ def build_ai_adapters(
         )
 
     if langfuse is None:
+        router = build_router(env, llm, file_prompts)
         return AiAdapters(
-            llm=llm, prompts=file_prompts, tracer=NoopTracer(), langfuse_enabled=False
+            llm=llm,
+            prompts=file_prompts,
+            tracer=NoopTracer(),
+            langfuse_enabled=False,
+            router=router,
         )
+    prompts = LangfusePromptStore(langfuse, file_prompts)
     return AiAdapters(
         llm=llm,
-        prompts=LangfusePromptStore(langfuse, file_prompts),
+        prompts=prompts,
         tracer=LangfuseTracer(langfuse),
         langfuse_enabled=True,
+        router=build_router(env, llm, prompts),
     )
+
+
+def build_router(env: Mapping[str, str], llm: LlmClient, prompts: PromptStore) -> Router:
+    """Řetěz routerů se zálohou podle dostupných klíčů (ADR-0012)."""
+    available: dict[str, Router] = {}
+    if key := env.get("TYPESAFE_API_KEY", ""):
+        available["jev"] = JevRouter.create(key, env.get("JEV_VARIANT", ""))
+    if not isinstance(llm, UnavailableLlm):
+        available["llm"] = LlmRouter(llm, prompts)
+    wanted = env.get("ROUTER", "").strip().lower()
+    if wanted == "manual":
+        return ManualRouter()
+    order = [wanted, "jev", "llm"] if wanted in available else ["jev", "llm"]
+    chain = [available[name] for name in dict.fromkeys(order) if name in available]
+    return FallbackRouter(chain)
 
 
 def _langfuse_client(env: Mapping[str, str]) -> Langfuse | None:

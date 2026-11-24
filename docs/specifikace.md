@@ -1,10 +1,10 @@
 # DecisionEngine — specifikace cílové verze pro semestrální práci
 
-**Verze:** 0.6.0 — nová zakázka a neuložené změny  
+**Verze:** 0.7.0 — opravy po hromadné recenzi  
 **Datum:** 24. 11. 2026  
 **Stav:** Specifikace budoucího chování; tento dokument nepopisuje dokončenou implementaci.
 
-**Změny oproti 0.5.0:** Upřesněno, kdy má zakázka neuložené změny a co se stane při nové nebo načtené zakázce (kap. 7, Soubor zakázky; UC-15, UC-06 A1).
+**Změny oproti 0.6.0:** Layo vyřazeno, router má implementace Jev, LLM a ruční (ADR-0012). Horní meze velikosti úlohy a dodržení časového limitu (kap. 8). Prořez a ořez v desetinách mm, odvozování výchozího cíle a potvrzení ručně zapsané hodnoty (UC-01, ADR-0011). První etapa UC-04: orientační cena materiálu u výsledku. Dolní mez a štítek „Optimální“ (kap. 8). Souhrn změn u navazující úpravy (kap. 4).
 
 ## 1. Produkt a jeho účel
 
@@ -111,7 +111,7 @@ Uživatel vidí zvolený nástroj běžným názvem, například „Řezání ty
 - Viditelný stav plánu se štítkem „Optimální“, „Nejlepší nalezený“, „Částečný“ nebo „Bez řešení“ (žádný proveditelný plán). U nejlepšího nalezeného plánu se uvádí i vzdálenost od dolní meze, pokud je známá.
 - U každého řezu v plánu 1D je jeho poloha měřená od začátku tyče (vizuální jazyk plánu: `docs/design-system/plan-rezani.md`).
 - Kalkulace s uvedenými cenovými předpoklady a chybějícími položkami.
-- Akce „Upravit“, „Přepočítat“, „Uložit zakázku“ a „Stáhnout PDF“.
+- Akce „Upravit“, „Přepočítat“, „Uložit zakázku“ (v hlavičce) a „Vytisknout plán“; „Stáhnout PDF“ přibude s kalkulací (M5) a do té doby se nenabízí.
 
 Změna vstupů plánu nebo čekající návrh změny označí původní plán jako neaktuální (kap. 7, Stav zakázky). Změna vstupů kalkulace přepočítá jen kalkulaci. Export plánu je dostupný až pro plán odpovídající potvrzené verzi vstupů.
 
@@ -138,7 +138,9 @@ Změna vstupů plánu nebo čekající návrh změny označí původní plán ja
 
 Výchozí cíl je „nejnižší cena“, pokud jsou zadané ceny všech skladových délek, jinak „nejméně materiálu“. Výchozí volba je viditelně označena jako nepotvrzená. Zvolený cíl je součástí zakázky a ovlivňuje štítek „optimální“ (kap. 8).
 
-**Účtování prořezu:** Každý řez spotřebuje šířku prořezu. Kapacitní podmínka tyče délky *L* s díly *l₁…lₙ* je Σ lᵢ + n·k ≤ L + k, kde *k* je prořez. Poslední řez tedy nepočítáme, pokud za posledním dílem nezůstane žádný materiál. Volitelný zarovnávací ořez začátku tyče se odečte od *L*.
+**Účtování prořezu:** Každý řez spotřebuje šířku prořezu. Kapacitní podmínka tyče délky *L* s díly *l₁…lₙ* je Σ lᵢ + n·k ≤ L + k, kde *k* je prořez. Poslední řez tedy nepočítáme, pokud za posledním dílem nezůstane žádný materiál. Volitelný zarovnávací ořez začátku tyče se odečte od *L*. Prořez a ořez smějí mít jedno desetinné místo v mm (např. 2,5 mm, ADR-0011); polohy řezů a zbytky pak mají také desetiny.
+
+**Výchozí cíl a potvrzení hodnot:** Dokud uživatel cíl optimalizace sám nezvolí, odvozuje se znovu při každé úpravě: „Nejnižší cena“, mají-li cenu všechny skladové délky, jinak „Nejméně materiálu“. Hodnota, kterou uživatel do buňky sám napíše, je potvrzená, i když se rovná výchozí (R6). Všechna délková pole přijímají mm, cm i m; prořez a ořez mm a cm.
 
 **Zbytky:** Část tyče, která zbude po posledním dílu, je *využitelný zbytek*, pokud dosahuje alespoň uživatelem zadané minimální délky (parametr; výchozí hodnota je označená jako nepotvrzená). Jinak jde o *odpad*.
 
@@ -191,6 +193,8 @@ Přirážka znamená procento z nákladů, nikoli marži z prodejní ceny. Sazby
 
 Při zapnutém skladu se materiál ze skladu oceňuje evidovanou cenou skladové položky. Uživatel může zvolit, že se skladový materiál do kalkulace nezapočítá (například již zaplacené zbytky); tato volba se uvádí mezi cenovými předpoklady.
 
+**Dodání po etapách:** První etapa (M2/M5) ukazuje u výsledku orientační cenu materiálu: pro každou spotřebovanou skladovou délku počet tyčí, cenu za kus a součet, a celkovou částku. Chybí-li cena spotřebované délky, celková částka se neuvádí a UI řekne proč. Práce, paušální náklady, přirážka, DPH a export přibudou v další etapě.
+
 **Úspěch:** Každá částka je odvoditelná ze zobrazených vstupů a po změně plánu se materiálové náklady aktualizují.
 
 ### UC-05: Nejasné nebo nepodporované zadání
@@ -215,7 +219,7 @@ Při zapnutém skladu se materiál ze skladu oceňuje evidovanou cenou skladové
 ### UC-07: Práce při výpadku AI
 
 1. Volání AI selže nebo je vyčerpána kvóta.
-2. Aplikace zachová rozepsané zadání a platná data a nabídne opakování, přepnutí na lokální router (Layo) či ruční vstup.
+2. Aplikace zachová rozepsané zadání a platná data a nabídne opakování či ruční vstup (výběr nástroje a kontrolní tabulka). Výpadek routeru nevadí: aplikace přejde na další dostupnou implementaci routeru (Jev → LLM → ruční).
 3. Uživatel dokončí výpočet a export bez vzdálené AI.
 
 **Úspěch:** Selhání routeru ani parseru nezablokuje funkční výpočetní moduly. Demo je dostupné i bez připojení k poskytovatelům AI.
@@ -274,9 +278,10 @@ Router je rozhraní s vyměnitelnými implementacemi. Volba je v nastavení a v�
 | Implementace | Popis | Role |
 |---|---|---|
 | `JevRouter` | TypeSafe Jev přes API, primitivum Choice; vrací volbu, pravděpodobnosti všech možností a confidence | Výchozí, pokud obstojí v evaluaci |
-| `LayoRouter` | Open-weight varianta Jev spouštěná lokálně (~0,5 GB RAM) | Offline provoz, demo a záloha při výpadku API |
 | `LlmRouter` | Generativní LLM se strukturovaným výstupem omezeným na stejnou množinu možností | Srovnávací varianta a záloha |
-| `ManualRouter` | Výběr nástroje uživatelem | Vždy dostupný |
+| `ManualRouter` | Bez klasifikace: zprávu předá jediné implementované schopnosti, nástroj si uživatel volí sám | Vždy dostupný; offline provoz a záloha při výpadku API |
+
+Offline provoz bez síťových služeb zajišťuje `ManualRouter`, ruční zadání a demo s připravenými odpověďmi. Lokální model Layo se nepoužívá: není veřejně dostupný (spike #7, ADR-0012).
 
 Všechny implementace vracejí stejný typ `RoutingDecision`. Stejná evaluační sada (kap. 9) se spouští na každé dostupné implementaci a výsledky se porovnávají v reportu.
 
@@ -300,7 +305,7 @@ Aplikace vzniká od nuly v novém repozitáři. Žádný kód z dřívějších 
 
 ```mermaid
 flowchart TD
-    U[Text nebo přímý výběr nástroje] --> R[Router: Jev / Layo / LLM / uživatel]
+    U[Text nebo přímý výběr nástroje] --> R[Router: Jev / LLM / ruční]
     R --> P[LLM: extrakce a návrh změn]
     P --> V[Validace a kontrola uživatelem]
     M[Ruční formulář] --> V
@@ -322,7 +327,7 @@ Diagram ukazuje tok dat. Řízení toku (kdo kdy co volá) popisuje část „Ap
 | Jádro (`core/`) | Datové objekty, validace, solvery, kalkulace, použití potvrzené změny na zakázku a na sklad, stav relace, události a reducer, vykreslení plánu do SVG | Čisté funkce bez I/O, času a náhody; neměnná data (Pydantic `frozen=True`, kolekce jako `tuple`); chyby se vracejí jako hodnoty, nevyhazují se |
 | Registr (`capabilities/`) | Schopnosti skládané z jádra | Jen jádro |
 | Aplikace (`app/`) | Případy užití, smyčka událostí a efektů, porty (`Protocol`) pro adaptéry | Žádná závislost na konkrétním poskytovateli ani na HTTP |
-| Adaptéry (`adapters/`) | Routery (Jev, Layo, LLM), generativní model (Groq), Langfuse, čtení a zápis JSON, úložiště skladu, PDF | Jediné místo se závislostí na konkrétním poskytovateli; ven vracejí jen validované objekty jádra nebo chybu |
+| Adaptéry (`adapters/`) | Routery (Jev, LLM, ruční), generativní model (Groq), Langfuse, čtení a zápis JSON, úložiště skladu, PDF | Jediné místo se závislostí na konkrétním poskytovateli; ven vracejí jen validované objekty jádra nebo chybu |
 | API (`api/`) | FastAPI: endpointy, serializace, sestavení závislostí, servírování frontendu | Žádná logika; převádí HTTP na události a stav na view model |
 | Frontend (`frontend/`) | SvelteKit (Svelte 5, TypeScript): zobrazení stavu, formuláře, plán | Nic nepočítá a nerozhoduje o přechodech stavu; posílá události a zobrazuje stav |
 
@@ -381,7 +386,7 @@ Výsledek výpočtu nese číslo revize, ze které vznikl. Plán je **neaktuáln
 
 ### Soubor zakázky
 
-Uložení zakázky vytvoří soubor `<název>.decision.json` s potvrzenou revizí: verze formátu, typ úlohy, název, díly, skladové délky s cenami a parametry včetně cíle optimalizace. Ceny jsou zapsané jako text, aby se neztratila přesnost. Soubor neobsahuje API klíče, historii dialogu ani výsledek výpočtu; rozpracovaný návrh změny se neukládá. Načtení nevolá žádné API a soubor se nestane zakázkou hned: vznikne z něj návrh, který uživatel zkontroluje a potvrdí (R1). Neznámý obsah, jiná verze formátu nebo chybějící díly či skladové délky ukáží srozumitelnou chybu a aktuální zakázka zůstane beze změny; jednotlivé neplatné hodnoty (např. záporná délka) se načtou a označí v kontrolní tabulce. Vstupy kalkulace přibudou s další verzí formátu.
+Uložení zakázky vytvoří soubor `<název>.decision.json` s potvrzenou revizí: verze formátu, typ úlohy, název, díly, skladové délky s cenami a parametry včetně cíle optimalizace. Ceny, prořez a ořez jsou zapsané jako text, aby se neztratila přesnost; starší soubor s prořezem jako celým číslem se načte beze změny (ADR-0011). Soubor neobsahuje API klíče, historii dialogu ani výsledek výpočtu; rozpracovaný návrh změny se neukládá. Načtení nevolá žádné API a soubor se nestane zakázkou hned: vznikne z něj návrh, který uživatel zkontroluje a potvrdí (R1). Neznámý obsah, jiná verze formátu nebo chybějící díly či skladové délky ukáží srozumitelnou chybu a aktuální zakázka zůstane beze změny; jednotlivé neplatné hodnoty (např. záporná délka nebo text místo čísla) se načtou a označí v kontrolní tabulce; hodnota nečekaného typu se načte jako prázdná s hláškou „V souboru byla neplatná hodnota, doplňte ji.“. Neplatná zůstane, dokud ji uživatel nevyplní. Vstupy kalkulace přibudou s další verzí formátu.
 
 Zakázka má **neuložené změny**, když se vstupy potvrzené revize liší od naposledy uloženého nebo načteného souboru, nebo když čeká návrh změny s prací (návrh od AI či ze souboru; ruční návrh jen tehdy, když se od otevření změnil). Jde o odvozenou vlastnost; uložení zaznamená až stažení souboru. Nová zakázka i načtení souboru začínají s prázdným kontextem (prázdný dialog, žádný výsledek). Má-li aktuální zakázka neuložené změny, aplikace se nejdřív zeptá, zda ji uložit, zahodit, nebo akci zrušit; u načtení až poté, co soubor projde ověřením.
 
@@ -395,7 +400,7 @@ Sklad má vlastní revize a vlastní úložiště. Výsledek výpočtu se sklade
 | Frontend | SvelteKit (Svelte 5, TypeScript strict) jako SPA, Tailwind CSS s tokeny design systému, Bits UI s vlastním vzhledem; typovaný klient generovaný z OpenAPI | 0007, 0010 |
 | Optimalizace | Vlastní algoritmy (FFD, generování vzorů, batoh, 2D heuristika, validátory); LP a celočíselný výběr přes OR-Tools | 0003 |
 | Generativní LLM | Groq přes OpenAI-kompatibilní adaptér, vyměnitelný | 0008 |
-| Router | Jev / Layo / LLM / ruční výběr | 0004 |
+| Router | Jev / LLM / ruční výběr | 0004, 0012 |
 | Prompty a trasování | Langfuse (Cloud nebo Docker), záložní kopie promptů v repozitáři | 0009 |
 | PDF | HTML šablona + SVG plánu převedené na PDF na backendu (WeasyPrint) | — |
 | Úložiště | Zakázky jako JSON soubory, sklad v SQLite | — |
@@ -423,8 +428,9 @@ Sklad má vlastní revize a vlastní úložiště. Výsledek výpočtu se sklade
 - Opakování dočasně neúspěšných volání je omezené; aplikace neběží v nekonečné smyčce. (SDK TypeSafe ve výchozím stavu opakuje odpověď `429` podle `retry-after`; počet opakování se omezí.)
 - Cache AI odpovědí zahrnuje relevantní stav zakázky, model, implementaci routeru, název a verzi promptu a verzi extrakčního schématu.
 - Každé volání AI se trasuje do Langfuse (model, verze promptu, vstup, výstup, latence, tokeny, cena, chyba). Nedostupný Langfuse nesmí ovlivnit běh aplikace: prompty se vezmou ze záložní kopie a trasování se vypne.
-- Každý výpočet má časový limit (výchozí 10 s, nastavitelný). Po jeho dosažení se vrátí nejlepší platné řešení, pokud existuje; heuristika zaručuje, že nějaké platné řešení existuje vždy, když je úloha proveditelná bez omezení skladu.
-- Označení „optimální“ se používá pouze při prokázaném optimu pro deklarovaný model a **zvolený cíl** (UC-01) – u 1D na základě dolní meze z LP relaxace. Jinak UI uvádí štítek „Nejlepší nalezený“ a rozdíl od dolní meze.
+- Každý výpočet má časový limit (výchozí 10 s, nastavitelný do 120 s). Po jeho dosažení se vrátí nejlepší platné řešení, pokud existuje; heuristika zaručuje, že nějaké platné řešení existuje vždy, když je úloha proveditelná bez omezení skladu. Jádro čas nečte: dostane ho od aplikační vrstvy jako argument. FFD po vypršení limitu rozmístí zbylé kusy rychlým postupem, takže plán je dál úplný.
+- Velikost úlohy má horní meze, aby překlep (např. „40000“ místo „4“) nezablokoval relaci. Délka nejvýš 100 000 mm, počet kusů dílu nejvýš 10 000, celá zakázka nejvýš 5 000 kusů, 500 dílů a 50 skladových délek, cena tyče nejvýš 10 000 000 Kč, texty (název, materiál, díl) nejvýš 200 znaků, zpráva do dialogu nejvýš 4 000 znaků. Překročení je chyba pole s českou hláškou, ne pád.
+- Označení „optimální“ se používá pouze při prokázaném optimu pro deklarovaný model a **zvolený cíl** (UC-01) – u 1D na základě dolní meze z LP relaxace. Jinak UI uvádí štítek „Nejlepší nalezený“ a rozdíl od dolní meze. První dolní mez je spojitá relaxace kapacity (každý kus spotřebuje délku + prořez, tyč nabízí L − ořez + prořez; místo se pokryje skladovou délkou s nejlepším poměrem ceny cíle), zaokrouhlená nahoru na jednotku cíle; plán, který ji dosáhne, je „Optimální“. Nezávislý validátor odmítne „Optimální“, které mez nedosahuje.
 - Zachovává se identita dílů i při shodných rozměrech.
 - Schéma zaručuje tvar dat; správnost přepisu uživatelského zadání vyžaduje kontrolu a testování.
 - Vývojářská diagnostika ukazuje čas, použitý model, router a verzi promptu, stav validace, rozhodnutí routeru a u solveru počet vzorů, dolní mez a stav CP-SAT, bez tajných údajů.
@@ -435,7 +441,7 @@ Pro demo sady do přibližně 100 kusů u 1D a 30 kusů u 2D je cílem výpočet
 
 | Oblast | Podmínka dokončení |
 |---|---|
-| Router | Na oddělené sadě alespoň 50 ručně označených českých zadání dosáhne výchozí implementace alespoň 90 % správných voleb včetně `unclear` a `unsupported`; report obsahuje chyby podle kategorií a srovnání všech dostupných implementací (Jev, Layo, LLM) |
+| Router | Na oddělené sadě alespoň 50 ručně označených českých zadání dosáhne výchozí implementace alespoň 90 % správných voleb včetně `unclear` a `unsupported`; report obsahuje chyby podle kategorií a srovnání všech dostupných implementací (Jev, LLM) |
 | Extrakce | Na alespoň 30 jednoznačných zadáních 1D dosáhne alespoň 90 % úplné shody kritických polí: rozměry, počty, jednotky a vstupní formáty (u rozšíření 2D samostatná sada) |
 | Neúplné vstupy | Připravené případy s chybějícími povinnými údaji neprojdou k výpočtu bez doplnění nebo výslovného potvrzení nabídnuté hodnoty |
 | Dialog | Nejméně 10 scénářů o třech a více uživatelských kolech ověří přidání, odebrání, změnu a nejasný odkaz bez ztráty ostatních dat |
@@ -467,7 +473,7 @@ Projekt řeší téma 2 „Vytvoření středně složité aplikace“; plné zn
 | Propojení LLM s výpočtem nebo datovým zdrojem | 2 ze 4 | Výpočet nářezového plánu a kalkulace nad potvrzenými daty a vlastními cenami; u rozšíření i práce se skladem jako datovým zdrojem |
 | Multimodalita na vstupu | 2 ze 4 | Není součástí semestrální verze |
 
-Cílová aplikace tedy pokrývá tři ze čtyř volitelných kritérií (požadovány jsou dvě). Protože TypeSafe vymezuje Jev (System One) jako odlišnou kategorii od generativních LLM, splnění požadavků nestojí pouze na jeho klasifikaci. Hlavními doklady jsou generativní extrakce, kontextový dialog a propojení s výpočty.
+Cílová aplikace tedy pokrývá tři ze čtyř volitelných kritérií (požadovány jsou dvě); aktuální stav jednotlivých use casů uvádí README. Protože TypeSafe vymezuje Jev (System One) jako odlišnou kategorii od generativních LLM, splnění požadavků nestojí pouze na jeho klasifikaci. Hlavními doklady jsou generativní extrakce, kontextový dialog a propojení s výpočty.
 
 Projekt vzniká v novém repozitáři během semestru; celá historie repozitáře tedy dokládá práci provedenou v rámci předmětu.
 
@@ -477,10 +483,10 @@ Práce postupuje **svislými řezy**: každý milník propojí všechny vrstvy o
 
 | Milník | Obsah | Hotovo, když |
 |---|---|---|
-| M0 Základy | `uv.lock`, zelené CI, kostra FastAPI a SvelteKit, design tokeny, napojení Langfuse a Groq, ověření Jev/Layo na několika českých zadáních | Aplikace se spustí jedním příkazem a ukáže prázdnou obrazovku zakázky |
+| M0 Základy | `uv.lock`, zelené CI, kostra FastAPI a SvelteKit, design tokeny, napojení Langfuse a Groq, ověření Jev na několika českých zadáních | Aplikace se spustí jedním příkazem a ukáže prázdnou obrazovku zakázky |
 | M1 Chodicí kostra | Text → extrakce 1D (Groq) → tabulka → potvrzení → jednoduché FFD → SVG plán v UI; reducer a `app/` od začátku | Zadání z UC-01 projde celou cestou v UI |
 | M2 Zakázka a stav | Validace s chybami po polích, revize, neaktuální výsledek, ruční formulář, import/export JSON | UC-01, UC-06 a „Stav“ z kap. 9 |
-| M3 Dialog a router | Návrhy změn, doptávání, router (Jev/Layo/LLM/ruční), evaluace routeru a extrakce | UC-03, UC-05, UC-07 a kritéria AI z kap. 9 |
+| M3 Dialog a router | Návrhy změn, doptávání, router (Jev/LLM/ruční), evaluace routeru a extrakce | UC-03, UC-05, UC-07 a kritéria AI z kap. 9 |
 | M4 Solver do hloubky | Generování vzorů, tři cíle, dolní mez, štítky, validátor a property testy | Kritérium „1D solver“ |
 | M5 Kalkulace a PDF | Služba kalkulace, ceny a práce, PDF plánu a kalkulace | UC-04, kritéria „Kalkulace“ a „PDF“ |
 | M6 Vyladění UI | Revize všech stavů, přístupnost, end-to-end test, uživatelské zkoušky, demo režim | Všechny řádky „UI“ a „Použitelnost“ z kap. 9 |
@@ -496,12 +502,12 @@ Odevzdaná verze bez rozšíření (M0–M6, M8) pokrývá všechna požadovaná
 3. Vypočítat plán (se štítkem Optimální / Nejlepší nalezený) a doplnit vlastní ceny materiálu a práce.
 4. Napsat „Přidej dvě příčky po 850 mm“, potvrdit změnu a ukázat nový plán i cenu.
 5. Ukázat nejasné zadání a doptání místo nesouvisejícího výpočtu.
-6. Přepnout router (Jev / Layo / LLM) a ukázat srovnání z evaluace.
+6. Ukázat srovnání routerů (Jev / LLM) z evaluace a ruční router jako offline zálohu.
 7. *Pokud je hotové:* „Použij nejdřív zbytky ze skladu“ – plán se skladem a nákupem, zápis nových zbytků.
 8. *Pokud je hotové:* úloha na desky s omezením rotace a 2D výsledkem.
 9. Exportovat PDF a obnovit uloženou zakázku.
 
-K obhajobě bude připravený i offline demo režim (lokální Layo nebo připravená data). Připravená data budou označená a nebudou vydávána za živé volání modelu.
+K obhajobě bude připravený i offline demo režim (ruční router a připravená data). Připravená data budou označená a nebudou vydávána za živé volání modelu.
 
 ## 13. Další rozvoj po semestru
 
@@ -529,6 +535,6 @@ Stav ověřený 23. 11. 2026 z dokumentace TypeSafe:
 - Python SDK: balíček `typesafe-sdk`, Python 3.10+, klíč v proměnné `TYPESAFE_API_KEY`; API klíč a Playground v konzoli console.typesafe.ai.
 - Cena: 0,042 USD za milion vstupních tokenů, výstupní tokeny zdarma.
 - Kontext: 64k na požadavek, 32k na otázku.
-- **Neuvedeno v dokumentaci:** podpora češtiny, bezplatný tarif nebo zkušební kredit, konkrétní rate limity a model Layo. Údaje o Layo (open-weight varianta Jev, lokální běh, ~0,5 GB RAM) pocházejí od autora projektu a je třeba je ověřit při instalaci.
+- **Neuvedeno v dokumentaci:** podpora češtiny, bezplatný tarif nebo zkušební kredit a konkrétní rate limity. Češtinu ověřil spike #7. Lokální varianta Layo veřejně dostupná není, a proto ji aplikace nepoužívá (ADR-0012).
 
 Konkrétní model, dostupnost a ceny je nutné znovu ověřit při implementaci; nejsou pevnou součástí produktové specifikace.

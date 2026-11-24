@@ -55,6 +55,8 @@ class ProjectView(_View):
     """Upozornění k uložení, např. že rozpracovaný návrh nebude součástí souboru (UC-06 A2)."""
     unsaved_changes: bool
     """Zahozením by se ztratila práce: neuložená zakázka nebo rozpracovaný návrh (UC-15)."""
+    unsaved_badge: bool
+    """Ukázat štítek „neuloženo“: jen u potvrzené zakázky, kterou jde uložit."""
     can_start_new: bool
     """Novou zakázku lze začít (nic neběží)."""
 
@@ -69,28 +71,60 @@ class MessageView(_View):
     role: Literal["user", "assistant"]
     kind: Literal["text", "error"]
     text: str
+    retry_text: str | None = None
+    """U chyby AI zpráva, kterou „Zkusit znovu“ pošle znovu."""
+    proposal: bool = False
+    """Odpověď k návrhu změny, který ještě neplatí."""
+    offer_manual: bool = False
+    """Odpověď na nejasné nebo nepodporované zadání: nabídnout ruční zadání (UC-05)."""
 
 
 class TextCell(_View):
     value: str | None
     unconfirmed: bool
+    unconfirmed_note: str | None = None
+    """Proč je hodnota nepotvrzená: výchozí hodnota, odhad AI, nebo neplatná ze souboru."""
     error: str | None
+    previous: str | None = None
+    """Hodnota v potvrzené revizi, změnil-li ji návrh („původně 1 800 mm“)."""
 
 
 class IntCell(_View):
     value: int | None
     unconfirmed: bool
+    unconfirmed_note: str | None = None
+    """Proč je hodnota nepotvrzená: výchozí hodnota, odhad AI, nebo neplatná ze souboru."""
     error: str | None
+    previous: str | None = None
+    """Hodnota v potvrzené revizi, změnil-li ji návrh („původně 1 800 mm“)."""
+
+
+class DecimalCell(_View):
+    """Délka v mm s nejvýš jedním desetinným místem (prořez, ořez; ADR-0011)."""
+
+    value: Decimal | None
+    unconfirmed: bool
+    unconfirmed_note: str | None = None
+    """Proč je hodnota nepotvrzená: výchozí hodnota, odhad AI, nebo neplatná ze souboru."""
+    error: str | None
+    previous: str | None = None
+    """Hodnota v potvrzené revizi, změnil-li ji návrh („původně 1 800 mm“)."""
 
 
 class MoneyCell(_View):
     value: Decimal | None
     unconfirmed: bool
+    unconfirmed_note: str | None = None
+    """Proč je hodnota nepotvrzená: výchozí hodnota, odhad AI, nebo neplatná ze souboru."""
     error: str | None
+    previous: str | None = None
+    """Hodnota v potvrzené revizi, změnil-li ji návrh („původně 1 800 mm“)."""
 
 
 class PartRow(_View):
     id: str
+    added: bool = False
+    """Řádek, který v potvrzené revizi nebyl (nový z návrhu)."""
     name: TextCell
     length_mm: IntCell
     quantity: IntCell
@@ -98,13 +132,14 @@ class PartRow(_View):
 
 class StockRow(_View):
     id: str
+    added: bool = False
     length_mm: IntCell
     price: MoneyCell
 
 
 class ParametersView(_View):
-    kerf_mm: IntCell
-    trim_mm: IntCell
+    kerf_mm: DecimalCell
+    trim_mm: DecimalCell
     min_remnant_mm: IntCell
     time_limit_s: IntCell
 
@@ -124,9 +159,34 @@ class FieldErrorView(_View):
     """Klíč pole ve formuláři (`parts.1.length_mm`), na které vede odkaz v souhrnu chyb."""
 
 
+class RemovedPartView(_View):
+    id: str
+    name: str
+    length_mm: int
+    quantity: int
+
+
+class RemovedStockView(_View):
+    id: str
+    length_mm: int
+    price: Decimal | None
+
+
+class ChangesView(_View):
+    """Souhrn změn navazující úpravy (spec kap. 4, ChangeSummary)."""
+
+    base_revision: int
+    summary: tuple[str, ...]
+    """Změny česky po řádcích („Nový díl: příčka 850 mm × 4 ks“, „Prořez: 3 mm → 2,5 mm“)."""
+    removed_parts: tuple[RemovedPartView, ...]
+    removed_stock: tuple[RemovedStockView, ...]
+
+
 class ProposalView(_View):
     is_change: bool
     """Úprava existující zakázky (jinak nová zakázka)."""
+    changes: ChangesView | None = None
+    """Co se oproti potvrzené revizi změnilo; jen u úpravy zakázky."""
     origin: Literal["ai", "manual", "file"]
     """Návrh z extrakce AI, z ručního zadání či úpravy, nebo ze souboru."""
     name: TextCell
@@ -153,9 +213,11 @@ class MetricsView(_View):
     """Počet spotřebovaných tyčí podle délky, od nejdelší."""
     parts_length_mm: int
     consumed_length_mm: int
-    remnant_length_mm: int
+    remnant_length_mm: Decimal
     remnant_count: int
-    waste_length_mm: int
+    waste_length_mm: Decimal
+    cutting_loss_mm: Decimal
+    """Část odpadu, kterou spotřebují řezy a zarovnání čela (zbytek odpadu jsou odřezky)."""
     yield_ratio: float
 
 
@@ -163,7 +225,7 @@ class PieceView(_View):
     part_id: str
     name: str
     length_mm: int
-    start_mm: int
+    start_mm: Decimal
 
 
 class BarView(_View):
@@ -171,10 +233,10 @@ class BarView(_View):
     """Čísla tyčí se stejným řezáním (stejné číslování jako v SVG)."""
     length_mm: int
     pieces: tuple[PieceView, ...]
-    cuts_mm: tuple[int, ...]
+    cuts_mm: tuple[Decimal, ...]
     """Polohy řezů od začátku tyče."""
     tail: Literal["none", "remnant", "waste"]
-    tail_length_mm: int
+    tail_length_mm: Decimal
 
 
 class UnplacedView(_View):
@@ -185,13 +247,37 @@ class UnplacedView(_View):
     reason: str
 
 
+class CostLineView(_View):
+    stock_id: str
+    length_mm: int
+    count: int
+    unit_price: Decimal | None
+    total: Decimal | None
+
+
+class CostView(_View):
+    """Orientační cena materiálu (UC-04, první etapa)."""
+
+    lines: tuple[CostLineView, ...]
+    total: Decimal | None
+    """`None`: některé spotřebované skladové délce chybí cena (kalkulace je neúplná)."""
+    note: str | None
+    """Proč součet chybí, česky; `None` u úplné kalkulace."""
+
+
 class ResultView(_View):
+    project_name: str
+    """Název zakázky, ze které plán vznikl (tisk plánu k pile)."""
+    material: str | None
     status: SolutionStatus
     status_label: str
+    status_note: str | None
+    """Co štítek znamená: dosažená dolní mez, nebo o kolik je plán nad ní (spec kap. 8)."""
     stale: bool
     stale_reason: str | None
     svg: str
     metrics: MetricsView
+    cost: CostView
     bars: tuple[BarView, ...]
     unplaced: tuple[UnplacedView, ...]
 

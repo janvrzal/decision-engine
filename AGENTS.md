@@ -24,7 +24,7 @@ src/decision_engine/
                  stav relace, události, reducer, vykreslení plánu do SVG
   capabilities/  registr schopností
   app/           případy užití: smyčka událostí a efektů, porty (Protocol) pro adaptéry
-  adapters/      implementace portů: Groq/LLM, Jev, Layo, Langfuse, úložiště, PDF
+  adapters/      implementace portů: Groq/LLM, Jev (TypeSafe), Langfuse, úložiště, PDF
   api/           FastAPI: endpointy, serializace, sestavení závislostí, servírování frontendu
 frontend/        SvelteKit (Svelte 5, TypeScript) jako SPA
 tests/           unit/, property/, flow/, integration/, perf/
@@ -137,4 +137,3 @@ Zásady kvality jsou ve specifikaci (kap. 4) a kritéria v kap. 9. Postup a konv
 ## Otevřené otázky
 
 - Jev zvládá česká zadání (spike #7, ADR-0004); variantu otázek a prahy routeru určí měření na `router/test` v M3.
-- Layo není veřejně dostupné (dokumentace, API ani balíček); zda specifikaci upravit na offline provoz bez Layo (jen ruční výběr a demo data), rozhodne autor.

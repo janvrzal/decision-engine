@@ -2,7 +2,8 @@
 
 Uživatel pošle celý nový obsah návrhu. Hodnota, kterou změnil, je jeho vlastní, a proto
 přestane být nepotvrzená. Nezměněné nepotvrzené hodnoty zůstanou označené; řádky se
-sledují podle `id`, takže smazání nebo přesun řádku označení nepomíchá.
+sledují podle `id`, takže smazání nebo přesun řádku označení nepomíchá. Neplatná hodnota
+ze souboru zůstane označená, dokud ji uživatel nevyplní.
 """
 
 from decision_engine.core.errors import FieldPath
@@ -11,7 +12,10 @@ from decision_engine.core.model.proposal import (
     ParametersDraft,
     PartDraft,
     StockLengthDraft,
+    default_objective,
 )
+
+OBJECTIVE: FieldPath = ("parameters", "objective")
 
 
 def edit_proposal(
@@ -22,8 +26,13 @@ def edit_proposal(
     parts: tuple[PartDraft, ...],
     stock: tuple[StockLengthDraft, ...],
     parameters: ParametersDraft,
+    confirmed: tuple[str, ...] = (),
 ) -> ChangeProposal:
-    """Nový návrh s upraveným obsahem a přepočteným označením nepotvrzených hodnot."""
+    """Nový návrh s upraveným obsahem a přepočteným označením nepotvrzených hodnot.
+
+    `confirmed` jsou buňky, které uživatel sám vyplnil: jsou potvrzené, i když se jejich
+    hodnota nezměnila. Výchozí cíl, který uživatel nezvolil, se odvozuje z cen znovu.
+    """
     edited = proposal.model_copy(
         update={
             "name": name,
@@ -33,13 +42,52 @@ def edit_proposal(
             "parameters": parameters,
         }
     )
+    typed = {path for key in confirmed if (path := cell_path(key)) is not None}
     still = {
         moved
         for path in proposal.unconfirmed
         if (moved := _follow(path, proposal, edited)) is not None
         and _value(proposal, path) == _value(edited, moved)
+        and moved not in typed
     }
-    return edited.model_copy(update={"unconfirmed": frozenset(still)})
+    if OBJECTIVE in still:
+        # Výchozí cíl (UC-01): nejnižší cena, jsou-li ceny všech délek; jinak nejméně materiálu.
+        derived = edited.parameters.model_copy(update={"objective": default_objective(stock)})
+        edited = edited.model_copy(update={"parameters": derived})
+    still_broken = {
+        moved
+        for path in proposal.file_errors
+        if (moved := _follow(path, proposal, edited)) is not None and _value(edited, moved) is None
+    }
+    still_estimated = {
+        moved
+        for path in proposal.estimated
+        if (moved := _follow(path, proposal, edited)) is not None and moved in still
+    }
+    return edited.model_copy(
+        update={
+            "unconfirmed": frozenset(still),
+            "estimated": frozenset(still_estimated),
+            "file_errors": frozenset(still_broken),
+        }
+    )
+
+
+def cell_path(key: str) -> FieldPath | None:
+    """Cesta pole podle klíče buňky z UI (`parts.0.length_mm`, `parameters.kerf_mm`)."""
+    match key.split("."):
+        case ["parts" | "stock" as collection, index, field] if index.isdigit():
+            return ("problem", collection, int(index), field)
+        case ["parameters", field]:
+            return ("parameters", field)
+        case ["objective"]:
+            return OBJECTIVE
+        case ["name"]:
+            return ("name",)
+        case ["material"]:
+            return ("problem", "material")
+        case _:
+            return None
 
 
 def _follow(path: FieldPath, old: ChangeProposal, new: ChangeProposal) -> FieldPath | None:
@@ -65,6 +113,8 @@ def _value(proposal: ChangeProposal, path: FieldPath) -> object:
             return getattr(proposal.stock[index], field, None)
         case ("parameters", str(field)):
             return getattr(proposal.parameters, field, None)
+        case ("problem", "material"):
+            return proposal.material
         case (str(field),):
             return getattr(proposal, field, None)
         case _:

@@ -7,6 +7,7 @@ je využitelný zbytek (≥ minimální délka), nebo odpad.
 """
 
 from collections.abc import Sequence
+from decimal import Decimal
 from typing import Literal
 
 from decision_engine.core.model.calculation import PlacedPiece
@@ -15,7 +16,7 @@ from decision_engine.core.model.cutting_1d import Parameters
 type RemainderKind = Literal["none", "remnant", "waste"]
 
 
-def next_start(pieces: Sequence[PlacedPiece], parameters: Parameters) -> int:
+def next_start(pieces: Sequence[PlacedPiece], parameters: Parameters) -> Decimal:
     """Poloha, na které začne další kus."""
     if not pieces:
         return parameters.trim_mm
@@ -32,11 +33,11 @@ def fits(
 
 def remainder(
     bar_length_mm: int, pieces: Sequence[PlacedPiece], parameters: Parameters
-) -> tuple[RemainderKind, int]:
+) -> tuple[RemainderKind, Decimal]:
     """Druh a délka úseku za posledním kusem (bez prořezu, který ho oddělí)."""
     end = pieces[-1].start_mm + pieces[-1].length_mm if pieces else parameters.trim_mm
     rest = bar_length_mm - end
     if rest <= parameters.kerf_mm:
-        return "none", 0
+        return "none", Decimal(0)
     length = rest - parameters.kerf_mm
     return ("remnant" if length >= parameters.min_remnant_mm else "waste"), length

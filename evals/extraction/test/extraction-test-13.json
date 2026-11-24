@@ -1,0 +1,32 @@
+{
+  "id": "extraction-test-13",
+  "input": "Potřebuji nařzat 8 kuů po 1 350 mm a 3 ksy po 2 200 mm z jeklu 50x30, tyčě 6000 mm za 720 Kč, prořěz 3 mm.",
+  "expected": {
+    "parts": [
+      {
+        "length_mm": 1350,
+        "quantity": 8
+      },
+      {
+        "length_mm": 2200,
+        "quantity": 3
+      }
+    ],
+    "stock": [
+      {
+        "length_mm": 6000,
+        "price": "720"
+      }
+    ],
+    "kerf_mm": 3,
+    "trim_mm": null,
+    "min_remnant_mm": null,
+    "objective": null
+  },
+  "tags": [
+    "preklepy",
+    "jednotky_mm",
+    "oddelovac_tisicu"
+  ],
+  "author_note": "Překlepy v klíčových slovech."
+}

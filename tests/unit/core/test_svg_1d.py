@@ -38,7 +38,7 @@ def test_pristupnost_role_title_desc() -> None:
     assert root.get("role") == "img"
     assert root.get("aria-labelledby") == "plan-title plan-desc"
     title = root.findtext("svg:title", namespaces=NS)
-    assert title == _num("Nářezový plán: 5 tyčí po 6 000 mm, prořez 3 mm")
+    assert title == _num("Nářezový plán: jekl 40×40×2, 5 tyčí po 6 000 mm, prořez 3 mm")
     desc = root.findtext("svg:desc", namespaces=NS) or ""
     assert _num("řezy na 2 000, 4 003, 5 506") in desc
     assert _num("zbytek 491 mm") in desc
@@ -162,3 +162,19 @@ def test_snapshot(name: str) -> None:
     assert svg == path.read_text(encoding="utf-8"), (
         "SVG se změnilo; po kontrole spusťte UPDATE_SNAPSHOTS=1 uv run pytest"
     )
+
+
+def test_dlouhy_nazev_se_zkrati_a_cely_je_v_title() -> None:
+    long_name = "nosný sloupek pro regál do dílny s policemi na nářadí"
+    project = project_1d([(1500, 2)], [(6000, None)], kerf=3)
+    parts = (project.problem.parts[0].model_copy(update={"name": long_name}),)
+    project = project.model_copy(
+        update={"problem": project.problem.model_copy(update={"parts": parts})}
+    )
+
+    svg = render_svg(solve_ffd(project))
+
+    assert f"<title>{long_name} 1" in svg
+    labels = re.findall(r'font-size="13"[^>]*>([^<]*)</text>', svg)
+    assert any(label.endswith(_num("1 500")) and "…" in label for label in labels)
+    assert long_name not in labels

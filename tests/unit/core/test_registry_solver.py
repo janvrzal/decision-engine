@@ -1,5 +1,7 @@
 """RegistrySolver: skutečný plán projde, plán porušující invarianty se nesmí vrátit."""
 
+from collections.abc import Callable
+
 import pytest
 from solver_cases import project_1d
 
@@ -20,8 +22,9 @@ def test_plan_z_registru_projde_validatorem() -> None:
 
 
 def test_neplatny_plan_je_chyba_programu(monkeypatch: pytest.MonkeyPatch) -> None:
-    def broken(project: Project) -> CalculationResult:
-        return CUTTING_1D.solve(project).model_copy(update={"status": SolutionStatus.OPTIMAL})
+    def broken(project: Project, expired: Callable[[], bool]) -> CalculationResult:
+        result = CUTTING_1D.solve(project, expired)
+        return result.model_copy(update={"status": SolutionStatus.OPTIMAL})
 
     capability = Capability(id="cutting_1d", label="test", solve=broken, check=CUTTING_1D.check)
 

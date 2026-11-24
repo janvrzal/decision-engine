@@ -7,9 +7,10 @@ prázdný seznam znamená platný plán.
 
 from collections import Counter
 from dataclasses import dataclass
+from decimal import Decimal
 
 from decision_engine.core.model.calculation import Bar, CalculationResult, SolutionStatus
-from decision_engine.core.model.cutting_1d import Project
+from decision_engine.core.model.cutting_1d import Objective, Project
 
 YIELD_TOLERANCE = 1e-9
 
@@ -32,7 +33,7 @@ def check_cutting_1d(project: Project, result: CalculationResult) -> tuple[Viola
         violations += _check_bar(project, index, bar)
     violations += _check_pieces(project, result)
     violations += _check_metrics(project, result)
-    violations += _check_status(result)
+    violations += _check_status(project, result)
     return tuple(violations)
 
 
@@ -91,7 +92,7 @@ def _check_metrics(project: Project, result: CalculationResult) -> list[Violatio
     metrics = result.metrics
     parts = sum(p.length_mm for bar in result.bars for p in bar.pieces)
     consumed = sum(bar.length_mm for bar in result.bars)
-    remnants: list[int] = []
+    remnants: list[Decimal] = []
     for bar in result.bars:
         if not bar.pieces:
             continue
@@ -104,7 +105,7 @@ def _check_metrics(project: Project, result: CalculationResult) -> list[Violatio
         "bars_used": len(result.bars),
         "parts_length_mm": parts,
         "consumed_length_mm": consumed,
-        "remnant_length_mm": sum(remnants),
+        "remnant_length_mm": sum(remnants, Decimal(0)),
         "remnant_count": len(remnants),
         "waste_length_mm": consumed - parts - sum(remnants),
     }
@@ -121,10 +122,29 @@ def _check_metrics(project: Project, result: CalculationResult) -> list[Violatio
     return found
 
 
-def _check_status(result: CalculationResult) -> list[Violation]:
+def _objective(project: Project, result: CalculationResult) -> Decimal | None:
+    """Hodnota cíle plánu spočítaná nezávisle na solveru."""
+    if project.parameters.objective is Objective.FEWEST_BARS:
+        return Decimal(len(result.bars))
+    if project.parameters.objective is Objective.LEAST_MATERIAL:
+        return Decimal(sum(bar.length_mm for bar in result.bars))
+    prices = {stock.id: stock.price for stock in project.problem.stock}
+    used = [prices.get(bar.stock_id) for bar in result.bars]
+    return None if None in used else sum((p or Decimal(0) for p in used), Decimal(0))
+
+
+def _check_status(project: Project, result: CalculationResult) -> list[Violation]:
     found: list[Violation] = []
-    if result.status is SolutionStatus.OPTIMAL and result.lower_bound is None:
-        found.append(Violation("label", "„Optimální“ bez prokázané dolní meze (pravidlo 9)."))
+    if result.status is SolutionStatus.OPTIMAL:
+        value = _objective(project, result)
+        if result.lower_bound is None:
+            found.append(Violation("label", "„Optimální“ bez prokázané dolní meze (pravidlo 9)."))
+        elif value is None or value > result.lower_bound:
+            found.append(Violation("label", "„Optimální“, ale hodnota cíle nedosahuje dolní meze."))
+    if result.lower_bound is not None:
+        value = _objective(project, result)
+        if value is not None and value < result.lower_bound and not result.unplaced:
+            found.append(Violation("bound", "Dolní mez je vyšší než hodnota cíle plánu."))
     has_unplaced = bool(result.unplaced)
     if has_unplaced != (result.status in {SolutionStatus.PARTIAL, SolutionStatus.INFEASIBLE}):
         found.append(Violation("label", "Štítek neodpovídá neumístěným kusům."))

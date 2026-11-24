@@ -11,6 +11,7 @@ export type StepView = Schemas['StepView'];
 export type StepState = Schemas['StepState'];
 export type BarView = Schemas['BarView'];
 export type MetricsView = Schemas['MetricsView'];
+export type CostView = Schemas['CostView'];
 export type ObjectiveOption = Schemas['ObjectiveOption'];
 export type Objective = Schemas['Objective'];
 export type SolutionStatus = Schemas['SolutionStatus'];
@@ -31,3 +32,6 @@ export type UserEvent =
 	| Schemas['ProposalConfirmed']
 	| Schemas['ProposalRejected']
 	| Schemas['SolveRequested'];
+export type ChangesView = Schemas['ChangesView'];
+export type RemovedPartView = Schemas['RemovedPartView'];
+export type RemovedStockView = Schemas['RemovedStockView'];

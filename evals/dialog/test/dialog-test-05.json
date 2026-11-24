@@ -1,0 +1,135 @@
+{
+  "id": "dialog-test-05",
+  "turns": [
+    {
+      "input": "L profil 40×40×4: 4 kusy po 1 600 mm, 8 kusů po 700 mm a 16 kusů po 120 mm, tyče 6 m za 590 Kč, prořez 3 mm.",
+      "expected": {
+        "outcome": "supported",
+        "project": {
+          "material": "L profil 40×40×4",
+          "parts": [
+            {
+              "length_mm": 1600,
+              "quantity": 4
+            },
+            {
+              "length_mm": 700,
+              "quantity": 8
+            },
+            {
+              "length_mm": 120,
+              "quantity": 16
+            }
+          ],
+          "stock": [
+            {
+              "length_mm": 6000,
+              "price": "590"
+            }
+          ],
+          "kerf_mm": 3,
+          "trim_mm": null,
+          "min_remnant_mm": null
+        }
+      }
+    },
+    {
+      "input": "Odeber ty nejkratší kusy, nebudou potřeba.",
+      "expected": {
+        "outcome": "supported",
+        "project": {
+          "material": "L profil 40×40×4",
+          "parts": [
+            {
+              "length_mm": 1600,
+              "quantity": 4
+            },
+            {
+              "length_mm": 700,
+              "quantity": 8
+            }
+          ],
+          "stock": [
+            {
+              "length_mm": 6000,
+              "price": "590"
+            }
+          ],
+          "kerf_mm": 3,
+          "trim_mm": null,
+          "min_remnant_mm": null
+        }
+      }
+    },
+    {
+      "input": "Přidej 5 kusů po 1 050 mm.",
+      "expected": {
+        "outcome": "supported",
+        "project": {
+          "material": "L profil 40×40×4",
+          "parts": [
+            {
+              "length_mm": 1600,
+              "quantity": 4
+            },
+            {
+              "length_mm": 700,
+              "quantity": 8
+            },
+            {
+              "length_mm": 1050,
+              "quantity": 5
+            }
+          ],
+          "stock": [
+            {
+              "length_mm": 6000,
+              "price": "590"
+            }
+          ],
+          "kerf_mm": 3,
+          "trim_mm": null,
+          "min_remnant_mm": null
+        }
+      }
+    },
+    {
+      "input": "Zbytky kratší než 30 cm ber jako odpad.",
+      "expected": {
+        "outcome": "supported",
+        "project": {
+          "material": "L profil 40×40×4",
+          "parts": [
+            {
+              "length_mm": 1600,
+              "quantity": 4
+            },
+            {
+              "length_mm": 700,
+              "quantity": 8
+            },
+            {
+              "length_mm": 1050,
+              "quantity": 5
+            }
+          ],
+          "stock": [
+            {
+              "length_mm": 6000,
+              "price": "590"
+            }
+          ],
+          "kerf_mm": 3,
+          "trim_mm": null,
+          "min_remnant_mm": 300
+        }
+      }
+    }
+  ],
+  "tags": [
+    "odebrani",
+    "pridani",
+    "min_zbytek"
+  ],
+  "author_note": "Odebrání podle odkazu „nejkratší“. Materiál se porovnává sémanticky (stejný profil), ne doslovně."
+}

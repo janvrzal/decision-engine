@@ -124,14 +124,14 @@ export interface components {
 			/** Pieces */
 			pieces: components['schemas']['PieceView'][];
 			/** Cuts Mm */
-			cuts_mm: number[];
+			cuts_mm: string[];
 			/**
 			 * Tail
 			 * @enum {string}
 			 */
 			tail: 'none' | 'remnant' | 'waste';
 			/** Tail Length Mm */
-			tail_length_mm: number;
+			tail_length_mm: string;
 		};
 		/** BarsByLength */
 		BarsByLength: {
@@ -146,6 +146,61 @@ export interface components {
 			id: string;
 			/** Label */
 			label: string;
+		};
+		/**
+		 * ChangesView
+		 * @description Souhrn změn navazující úpravy (spec kap. 4, ChangeSummary).
+		 */
+		ChangesView: {
+			/** Base Revision */
+			base_revision: number;
+			/** Summary */
+			summary: string[];
+			/** Removed Parts */
+			removed_parts: components['schemas']['RemovedPartView'][];
+			/** Removed Stock */
+			removed_stock: components['schemas']['RemovedStockView'][];
+		};
+		/** CostLineView */
+		CostLineView: {
+			/** Stock Id */
+			stock_id: string;
+			/** Length Mm */
+			length_mm: number;
+			/** Count */
+			count: number;
+			/** Unit Price */
+			unit_price: string | null;
+			/** Total */
+			total: string | null;
+		};
+		/**
+		 * CostView
+		 * @description Orientační cena materiálu (UC-04, první etapa).
+		 */
+		CostView: {
+			/** Lines */
+			lines: components['schemas']['CostLineView'][];
+			/** Total */
+			total: string | null;
+			/** Note */
+			note: string | null;
+		};
+		/**
+		 * DecimalCell
+		 * @description Délka v mm s nejvýš jedním desetinným místem (prořez, ořez; ADR-0011).
+		 */
+		DecimalCell: {
+			/** Value */
+			value: string | null;
+			/** Unconfirmed */
+			unconfirmed: boolean;
+			/** Unconfirmed Note */
+			unconfirmed_note?: string | null;
+			/** Error */
+			error: string | null;
+			/** Previous */
+			previous?: string | null;
 		};
 		/**
 		 * EditRequested
@@ -203,8 +258,12 @@ export interface components {
 			value: number | null;
 			/** Unconfirmed */
 			unconfirmed: boolean;
+			/** Unconfirmed Note */
+			unconfirmed_note?: string | null;
 			/** Error */
 			error: string | null;
+			/** Previous */
+			previous?: string | null;
 		};
 		/**
 		 * MessageSent
@@ -235,6 +294,18 @@ export interface components {
 			kind: 'text' | 'error';
 			/** Text */
 			text: string;
+			/** Retry Text */
+			retry_text?: string | null;
+			/**
+			 * Proposal
+			 * @default false
+			 */
+			proposal: boolean;
+			/**
+			 * Offer Manual
+			 * @default false
+			 */
+			offer_manual: boolean;
 		};
 		/** MetricsView */
 		MetricsView: {
@@ -247,11 +318,13 @@ export interface components {
 			/** Consumed Length Mm */
 			consumed_length_mm: number;
 			/** Remnant Length Mm */
-			remnant_length_mm: number;
+			remnant_length_mm: string;
 			/** Remnant Count */
 			remnant_count: number;
 			/** Waste Length Mm */
-			waste_length_mm: number;
+			waste_length_mm: string;
+			/** Cutting Loss Mm */
+			cutting_loss_mm: string;
 			/** Yield Ratio */
 			yield_ratio: number;
 		};
@@ -261,14 +334,19 @@ export interface components {
 			value: string | null;
 			/** Unconfirmed */
 			unconfirmed: boolean;
+			/** Unconfirmed Note */
+			unconfirmed_note?: string | null;
 			/** Error */
 			error: string | null;
+			/** Previous */
+			previous?: string | null;
 		};
 		/**
 		 * NewProjectRequested
 		 * @description Uživatel začíná novou zakázku; rozpracovaná se zahodí (UC-15).
 		 *
-		 *     Na neuložené změny se ptá UI předem, reducer už jen začne znovu.
+		 *     Na neuložené změny se ptá UI předem. Reducer neuloženou práci zahodí jen
+		 *     s `discard_unsaved`: UI mohlo vycházet ze zastaralého stavu (druhá karta prohlížeče).
 		 */
 		NewProjectRequested: {
 			/**
@@ -276,6 +354,11 @@ export interface components {
 			 * @enum {string}
 			 */
 			type: 'NewProjectRequested';
+			/**
+			 * Discard Unsaved
+			 * @default false
+			 */
+			discard_unsaved: boolean;
 		};
 		/**
 		 * Objective
@@ -296,9 +379,9 @@ export interface components {
 		/** ParametersDraft */
 		ParametersDraft: {
 			/** Kerf Mm */
-			kerf_mm?: number | null;
+			kerf_mm?: number | string | null;
 			/** Trim Mm */
-			trim_mm?: number | null;
+			trim_mm?: number | string | null;
 			/** Min Remnant Mm */
 			min_remnant_mm?: number | null;
 			objective?: components['schemas']['Objective'] | null;
@@ -307,8 +390,8 @@ export interface components {
 		};
 		/** ParametersView */
 		ParametersView: {
-			kerf_mm: components['schemas']['IntCell'];
-			trim_mm: components['schemas']['IntCell'];
+			kerf_mm: components['schemas']['DecimalCell'];
+			trim_mm: components['schemas']['DecimalCell'];
 			min_remnant_mm: components['schemas']['IntCell'];
 			time_limit_s: components['schemas']['IntCell'];
 		};
@@ -327,6 +410,11 @@ export interface components {
 		PartRow: {
 			/** Id */
 			id: string;
+			/**
+			 * Added
+			 * @default false
+			 */
+			added: boolean;
 			name: components['schemas']['TextCell'];
 			length_mm: components['schemas']['IntCell'];
 			quantity: components['schemas']['IntCell'];
@@ -350,7 +438,7 @@ export interface components {
 			/** Length Mm */
 			length_mm: number;
 			/** Start Mm */
-			start_mm: number;
+			start_mm: string;
 		};
 		/**
 		 * ProjectImported
@@ -364,6 +452,11 @@ export interface components {
 			type: 'ProjectImported';
 			/** Content */
 			content: string;
+			/**
+			 * Discard Unsaved
+			 * @default false
+			 */
+			discard_unsaved: boolean;
 		};
 		/**
 		 * ProjectSaved
@@ -401,6 +494,8 @@ export interface components {
 			save_note: string | null;
 			/** Unsaved Changes */
 			unsaved_changes: boolean;
+			/** Unsaved Badge */
+			unsaved_badge: boolean;
 			/** Can Start New */
 			can_start_new: boolean;
 		};
@@ -434,6 +529,11 @@ export interface components {
 			/** Stock */
 			stock: components['schemas']['StockLengthDraft'][];
 			parameters: components['schemas']['ParametersDraft'];
+			/**
+			 * Confirmed
+			 * @default []
+			 */
+			confirmed: string[];
 		};
 		/**
 		 * ProposalRejected
@@ -450,6 +550,7 @@ export interface components {
 		ProposalView: {
 			/** Is Change */
 			is_change: boolean;
+			changes?: components['schemas']['ChangesView'] | null;
 			/**
 			 * Origin
 			 * @enum {string}
@@ -474,11 +575,37 @@ export interface components {
 			/** Confirm Disabled Reason */
 			confirm_disabled_reason: string | null;
 		};
+		/** RemovedPartView */
+		RemovedPartView: {
+			/** Id */
+			id: string;
+			/** Name */
+			name: string;
+			/** Length Mm */
+			length_mm: number;
+			/** Quantity */
+			quantity: number;
+		};
+		/** RemovedStockView */
+		RemovedStockView: {
+			/** Id */
+			id: string;
+			/** Length Mm */
+			length_mm: number;
+			/** Price */
+			price: string | null;
+		};
 		/** ResultView */
 		ResultView: {
+			/** Project Name */
+			project_name: string;
+			/** Material */
+			material: string | null;
 			status: components['schemas']['SolutionStatus'];
 			/** Status Label */
 			status_label: string;
+			/** Status Note */
+			status_note: string | null;
 			/** Stale */
 			stale: boolean;
 			/** Stale Reason */
@@ -486,6 +613,7 @@ export interface components {
 			/** Svg */
 			svg: string;
 			metrics: components['schemas']['MetricsView'];
+			cost: components['schemas']['CostView'];
 			/** Bars */
 			bars: components['schemas']['BarView'][];
 			/** Unplaced */
@@ -540,6 +668,11 @@ export interface components {
 		StockRow: {
 			/** Id */
 			id: string;
+			/**
+			 * Added
+			 * @default false
+			 */
+			added: boolean;
 			length_mm: components['schemas']['IntCell'];
 			price: components['schemas']['MoneyCell'];
 		};
@@ -549,8 +682,12 @@ export interface components {
 			value: string | null;
 			/** Unconfirmed */
 			unconfirmed: boolean;
+			/** Unconfirmed Note */
+			unconfirmed_note?: string | null;
 			/** Error */
 			error: string | null;
+			/** Previous */
+			previous?: string | null;
 		};
 		/**
 		 * ToolSelected

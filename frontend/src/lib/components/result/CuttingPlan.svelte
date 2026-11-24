@@ -3,8 +3,8 @@
 
 	/**
 	 * Měřítkový plán (komponenty.md, CuttingPlan1D). SVG generuje backend (`render_svg`,
-	 * texty escapované); frontend ho vloží a přidá zvýraznění dílu. Pod 560 px se plán
-	 * posouvá do strany ve vlastním kontejneru.
+	 * texty escapované); frontend ho vloží a přidá zvýraznění dílu. Pod 720 px se plán
+	 * posouvá do strany ve vlastním kontejneru, aby se popisky nezmenšily pod čitelnost.
 	 */
 	let {
 		svg,
@@ -20,10 +20,17 @@
 	});
 </script>
 
-<div class="overflow-x-auto" role="presentation">
+<!-- Posuvná oblast jde posunout i z klávesnice (WCAG 2.1.1, #59). -->
+<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+<div
+	class="overflow-x-auto print:overflow-visible"
+	role="region"
+	aria-label="Nářezový plán, posuvný"
+	tabindex="0"
+>
 	<div
 		bind:this={container}
-		class="min-w-140 transition-opacity duration-(--duration-base) ease-standard {dimmed
+		class="min-w-180 transition-opacity duration-(--duration-base) ease-standard {dimmed
 			? 'opacity-50'
 			: ''}"
 		onpointerover={(event) => {

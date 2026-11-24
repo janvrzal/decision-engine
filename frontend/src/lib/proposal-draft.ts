@@ -1,7 +1,9 @@
 import type { Objective, ProposalEdited, ProposalView } from './api/types.js';
 import {
+	fineText,
 	integerText,
 	moneyText,
+	parseFineLength,
 	parseInteger,
 	parseLength,
 	parseMoney
@@ -56,8 +58,8 @@ export function draftFromProposal(proposal: ProposalView): ProposalDraft {
 			length_mm: integerText(row.length_mm.value),
 			price: moneyText(row.price.value)
 		})),
-		kerf_mm: integerText(proposal.parameters.kerf_mm.value),
-		trim_mm: integerText(proposal.parameters.trim_mm.value),
+		kerf_mm: fineText(proposal.parameters.kerf_mm.value),
+		trim_mm: fineText(proposal.parameters.trim_mm.value),
 		min_remnant_mm: integerText(proposal.parameters.min_remnant_mm.value),
 		time_limit_s: integerText(proposal.parameters.time_limit_s.value),
 		objective: proposal.objective
@@ -177,6 +179,12 @@ export function draftToEvent(draft: ProposalDraft): DraftResult {
 		errors[key] = parsed.message;
 		return null;
 	};
+	const fine = (key: CellKey, text: string): string | null => {
+		const parsed = parseFineLength(text);
+		if (parsed.ok) return parsed.value;
+		errors[key] = parsed.message;
+		return null;
+	};
 	const text = (value: string): string | null => (value.trim() === '' ? null : value.trim());
 
 	const event: ProposalEdited = {
@@ -207,12 +215,13 @@ export function draftToEvent(draft: ProposalDraft): DraftResult {
 					]
 		),
 		parameters: {
-			kerf_mm: int('parameters.kerf_mm', draft.kerf_mm),
-			trim_mm: int('parameters.trim_mm', draft.trim_mm),
-			min_remnant_mm: int('parameters.min_remnant_mm', draft.min_remnant_mm),
+			kerf_mm: fine('parameters.kerf_mm', draft.kerf_mm),
+			trim_mm: fine('parameters.trim_mm', draft.trim_mm),
+			min_remnant_mm: length('parameters.min_remnant_mm', draft.min_remnant_mm),
 			time_limit_s: int('parameters.time_limit_s', draft.time_limit_s),
 			objective: draft.objective
-		}
+		},
+		confirmed: []
 	};
 	return Object.keys(errors).length > 0 ? { ok: false, errors } : { ok: true, event, conversions };
 }
@@ -235,6 +244,10 @@ export function normalizeDraft(draft: ProposalDraft): ProposalDraft {
 		const parsed = parseMoney(text);
 		return parsed.ok ? moneyText(parsed.value) : text;
 	};
+	const fineLength = (text: string) => {
+		const parsed = parseFineLength(text);
+		return parsed.ok ? fineText(parsed.value) : text;
+	};
 	return {
 		...draft,
 		parts: draft.parts.map((row) => ({
@@ -247,9 +260,9 @@ export function normalizeDraft(draft: ProposalDraft): ProposalDraft {
 			length_mm: length(row.length_mm),
 			price: money(row.price)
 		})),
-		kerf_mm: int(draft.kerf_mm),
-		trim_mm: int(draft.trim_mm),
-		min_remnant_mm: int(draft.min_remnant_mm),
+		kerf_mm: fineLength(draft.kerf_mm),
+		trim_mm: fineLength(draft.trim_mm),
+		min_remnant_mm: length(draft.min_remnant_mm),
 		time_limit_s: int(draft.time_limit_s)
 	};
 }

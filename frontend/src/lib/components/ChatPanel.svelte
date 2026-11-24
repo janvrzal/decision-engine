@@ -28,7 +28,8 @@
 		suggestions: ExamplePrompt[];
 		extractionAvailable: boolean;
 		onsend: (text: string) => void;
-		onretry: () => void;
+		/** Pošle znovu zprávu, kterou AI nezpracovala (`retry_text` chybové zprávy). */
+		onretry: (text: string) => void;
 		onmanual: () => void;
 		header?: Snippet;
 	} = $props();
@@ -45,7 +46,17 @@
 				? 'Počkejte, až se dokončí předchozí zpráva.'
 				: undefined
 	);
-	let lastIsError = $derived(messages.at(-1)?.kind === 'error');
+	let failedText = $derived.by(() => {
+		const last = messages.at(-1);
+		return last?.kind === 'error' ? (last.retry_text ?? null) : null;
+	});
+
+	/** Vrátí nezpracovanou zprávu do pole, aby ji šlo upravit a poslat znovu. */
+	function editFailed() {
+		if (failedText === null) return;
+		draft = failedText;
+		composer?.focus();
+	}
 
 	function pick(text: string) {
 		draft = text;
@@ -71,7 +82,7 @@
 	});
 </script>
 
-<section class="flex min-h-0 flex-1 flex-col" aria-label="Dialog">
+<section class="flex min-h-0 flex-1 flex-col" aria-label="Asistent">
 	{#if header}
 		{@render header()}
 	{/if}
@@ -92,14 +103,25 @@
 		{#each messages as message, index (message.id)}
 			<ChatMessageItem
 				{message}
-				onretry={index === messages.length - 1 ? onretry : undefined}
+				onretry={index === messages.length - 1 && message.retry_text
+					? () => onretry(message.retry_text ?? '')
+					: undefined}
 				onmanual={index === messages.length - 1 ? onmanual : undefined}
 				retryDisabledReason={pending ? 'Probíhá zpracování.' : undefined}
 			/>
 		{/each}
 		{#if pending?.kind === 'extraction'}
 			{#if pending.text}
-				<ChatMessageItem message={{ id: -1, role: 'user', kind: 'text', text: pending.text }} />
+				<ChatMessageItem
+					message={{
+						id: -1,
+						role: 'user',
+						kind: 'text',
+						text: pending.text,
+						proposal: false,
+						offer_manual: false
+					}}
+				/>
 			{/if}
 			<Loader label="Připravuji údaje ke kontrole…" />
 		{/if}
@@ -108,8 +130,17 @@
 		{/if}
 	</div>
 	<div class="border-t border-border p-4">
-		{#if lastIsError}
-			<p class="mb-2 text-small text-ink-muted">Zprávu můžete také upravit a poslat znovu.</p>
+		{#if failedText !== null && draft === ''}
+			<p class="mb-2 text-small text-ink-muted">
+				Zprávu můžete také
+				<button
+					type="button"
+					class="rounded-sm text-ink underline decoration-accent-text underline-offset-2 hover:no-underline"
+					onclick={editFailed}
+				>
+					upravit a poslat znovu
+				</button>.
+			</p>
 		{/if}
 		<ChatComposer bind:value={draft} bind:ref={composer} {sendDisabledReason} onsend={send} />
 	</div>

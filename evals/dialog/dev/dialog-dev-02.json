@@ -1,0 +1,74 @@
+{
+  "id": "dialog-dev-02",
+  "turns": [
+    {
+      "input": "Potřebuju rám: 2 kusy 1500 mm a 2 kusy 800 mm z jeklu 30x30, tyče mají 6 metrů.",
+      "expected": {
+        "outcome": "supported",
+        "project": {
+          "material": "jekl 30×30",
+          "parts": [
+            {
+              "length_mm": 1500,
+              "quantity": 2
+            },
+            {
+              "length_mm": 800,
+              "quantity": 2
+            }
+          ],
+          "stock": [
+            {
+              "length_mm": 6000,
+              "price": null
+            }
+          ],
+          "kerf_mm": null,
+          "trim_mm": null,
+          "min_remnant_mm": null
+        }
+      }
+    },
+    {
+      "input": "Prořez je 2,5 mm.",
+      "expected": {
+        "outcome": "supported",
+        "project": {
+          "material": "jekl 30×30",
+          "parts": [
+            {
+              "length_mm": 1500,
+              "quantity": 2
+            },
+            {
+              "length_mm": 800,
+              "quantity": 2
+            }
+          ],
+          "stock": [
+            {
+              "length_mm": 6000,
+              "price": null
+            }
+          ],
+          "kerf_mm": 2.5,
+          "trim_mm": null,
+          "min_remnant_mm": null
+        }
+      }
+    },
+    {
+      "input": "Naskládej mi ty rámy do dodávky.",
+      "expected": {
+        "outcome": "unsupported",
+        "project": null
+      }
+    }
+  ],
+  "tags": [
+    "desetinny_prorez",
+    "material_zustava",
+    "nepodporovane"
+  ],
+  "author_note": "Materiál z prvního kola musí zůstat i po změně prořezu."
+}

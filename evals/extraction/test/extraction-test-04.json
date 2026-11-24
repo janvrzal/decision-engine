@@ -1,0 +1,33 @@
+{
+  "id": "extraction-test-04",
+  "input": "Potřebuju patnáct kusů po osmdesáti centimetrech a tři kusy po dvou metrech. Tyče mají šest metrů a jedna stojí čtyři sta deset korun.",
+  "expected": {
+    "parts": [
+      {
+        "length_mm": 800,
+        "quantity": 15
+      },
+      {
+        "length_mm": 2000,
+        "quantity": 3
+      }
+    ],
+    "stock": [
+      {
+        "length_mm": 6000,
+        "price": "410"
+      }
+    ],
+    "kerf_mm": null,
+    "trim_mm": null,
+    "min_remnant_mm": null,
+    "objective": null
+  },
+  "tags": [
+    "slovni_cisla",
+    "jednotky_cm",
+    "jednotky_m",
+    "chybi_prorez"
+  ],
+  "author_note": "Všechna čísla slovy včetně ceny."
+}

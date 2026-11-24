@@ -39,9 +39,10 @@ from decision_engine.app.ports import ChatMessage, LlmError, Ports, Prompt
 from decision_engine.app.session import handle
 from decision_engine.app.solving import RegistrySolver
 from decision_engine.core.events import MessageSent
-from decision_engine.core.extraction import ExtractionOutput
+from decision_engine.core.extraction import ExtractionOutput, proposal_from_extraction
 from decision_engine.core.result import Err, Ok, Result
 from decision_engine.core.state import initial_state
+from eval_stats import interval, mcnemar
 
 ROOT = Path(__file__).resolve().parents[1]
 REPORTS_DIR = ROOT / "evals" / "reports"
@@ -275,6 +276,26 @@ def compare(expected: dict[str, Any], record: CaseRecord) -> list[str]:
     return errors
 
 
+def hallucinated(expected: dict[str, Any], output: ExtractionOutput | None) -> bool:
+    """Model vrátil hodnotu, kterou zadání neuvádí (očekávané `null` nebo prázdný sklad)."""
+    if output is None:
+        return False
+    if not expected["stock"] and output.stock:
+        return True
+    return any(
+        expected[name] is None and getattr(output, name) is not None
+        for name in ("kerf_mm", "trim_mm", "min_remnant_mm")
+    )
+
+
+def unflagged(errors: list[str], output: ExtractionOutput | None, message: str) -> bool:
+    """Chybná hodnota, kterou aplikace uživateli neoznačila jako odhad AI (pravidlo 8)."""
+    if output is None or not errors:
+        return False
+    proposal = proposal_from_extraction(output, None, message)
+    return not proposal.estimated
+
+
 def rate_limited(record: CaseRecord) -> bool:
     """Případ bez odpovědi kvůli limitu poskytovatele (neříká nic o kvalitě modelu)."""
     return bool(record.calls) and all(
@@ -330,13 +351,15 @@ def summarize(raw: dict[str, Any]) -> str:
         f"formát `{raw['response_format']}`, schéma `{raw['schema_version']}`. "
         "„Platné“ jsou počítané z případů, které dostaly odpověď (bez `api_rate_limit`).",
         "",
-        "| Model | Prompt | Úplná shoda | Platné bez opravy | Platné celkem | Cíl | "
+        "| Model | Prompt | Úplná shoda (95% interval) | Platné bez opravy | Platné celkem | Cíl | "
+        "Vymyšlená hodnota | Neoznačená chyba | "
         "Latence medián / p95 | Čas modelu medián | Tokeny vstup / výstup (reasoning) | "
         "Cena za běh |",
-        "|---|---|---|---|---|---|---|---|---|---|",
+        "|---|---|---|---|---|---|---|---|---|---|---|---|",
     ]
     failures: list[str] = []
     categories: dict[str, Counter[str]] = {}
+    correct_by_model: dict[str, dict[str, bool]] = {}
     for model, model_records in raw["results"].items():
         records = [_record(r) for r in model_records]
         n = len(records)
@@ -345,6 +368,8 @@ def summarize(raw: dict[str, Any]) -> str:
         any_valid = 0
         objective = 0
         answered = 0
+        invented = 0
+        silent = 0
         counter: Counter[str] = Counter()
         for record in records:
             case = cases[record.case_id]
@@ -356,6 +381,9 @@ def summarize(raw: dict[str, Any]) -> str:
             first_valid += bool(record.calls and record.calls[0].schema_valid)
             any_valid += output is not None
             objective += objective_ok(case["expected"], output)
+            invented += hallucinated(case["expected"], output)
+            silent += unflagged(errors, output, case["input"])
+            correct_by_model.setdefault(model, {})[record.case_id] = not errors
             if errors:
                 got = (
                     output.model_dump(
@@ -378,11 +406,13 @@ def summarize(raw: dict[str, Any]) -> str:
         versions = {(r.prompt_source, r.prompt_version) for r in records}
         prompt = ", ".join(f"{s} v{v}" for s, v in sorted(versions, key=str))
         lines.append(
-            f"| `{model}` | {prompt} | {exact}/{n} ({exact / n:.0%}) | {first_valid}/{answered} | "
-            f"{any_valid}/{answered} | {objective}/{n} | {statistics.median(latencies):.2f} / "
+            f"| `{model}` | {prompt} | {interval(exact, n)} | {first_valid}/{answered} | "
+            f"{any_valid}/{answered} | {objective}/{n} | {invented}/{n} | {silent}/{n} | "
+            f"{statistics.median(latencies):.2f} / "
             f"{_p95(latencies):.2f} s | {model_time} | {tokens_in} / {tokens_out} ({reasoning}) | "
             f"{cost:.4f} USD |"
         )
+    lines += ["", *paired(correct_by_model)]
     lines += ["", "Chyby podle kategorií (počet případů):", ""]
     all_categories = sorted({c for counter in categories.values() for c in counter})
     lines.append("| Kategorie | " + " | ".join(f"`{m}`" for m in categories) + " |")
@@ -392,6 +422,20 @@ def summarize(raw: dict[str, Any]) -> str:
         lines.append(f"| `{category}` | {counts} |")
     lines += ["", "Chybné případy:", "", *failures]
     return "\n".join(lines)
+
+
+def paired(correct: dict[str, dict[str, bool]]) -> list[str]:
+    """Párové srovnání modelů na stejných případech (přesný McNemarův test)."""
+    models = list(correct)
+    lines = ["Párové srovnání (McNemar, stejné případy):", ""]
+    for index, a in enumerate(models):
+        for b in models[index + 1 :]:
+            shared = correct[a].keys() & correct[b].keys()
+            only_a = sum(correct[a][c] and not correct[b][c] for c in shared)
+            only_b = sum(correct[b][c] and not correct[a][c] for c in shared)
+            p = mcnemar(only_a, only_b)
+            lines.append(f"- `{a}` × `{b}`: jen první {only_a}, jen druhý {only_b}, p = {p:.2f}")
+    return lines if len(models) > 1 else []
 
 
 def _load(path: Path) -> dict[str, Any]:

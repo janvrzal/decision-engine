@@ -1,5 +1,7 @@
 """Ručně spočítané příklady FFD 1D (skill `overeni-solveru`). Každý výsledek projde validátorem."""
 
+from decimal import Decimal
+
 import pytest
 from solver_cases import project_1d
 
@@ -15,7 +17,7 @@ def _solve(project: Project) -> CalculationResult:
     return result
 
 
-def _layout(result: CalculationResult) -> list[list[tuple[str, int]]]:
+def _layout(result: CalculationResult) -> list[list[tuple[str, Decimal]]]:
     """Tyče jako seznam (díl, poloha začátku)."""
     return [[(p.part_id, p.start_mm) for p in bar.pieces] for bar in result.bars]
 
@@ -128,8 +130,48 @@ def test_vypocet_je_deterministicky() -> None:
     assert solve_ffd(project) == solve_ffd(project)
 
 
-def test_nikdy_nevraci_optimalni_bez_dolni_meze() -> None:
+def test_plan_na_dolni_mezi_je_optimalni() -> None:
+    # 6 × 1000 mm přesně do jedné tyče 6000 mm: dolní mez 6000 mm je dosažená.
     result = _solve(project_1d([(1000, 6)], [(6000, None)]))
+
+    assert result.status is SolutionStatus.OPTIMAL
+    assert result.lower_bound == Decimal(6000)
+
+
+def test_plan_nad_dolni_mezi_je_nejlepsi_nalezeny_s_mezi() -> None:
+    # 3 × 3500 mm do tyčí 6000 mm: mez 2 tyče, ale do jedné tyče se vejde jen 1 kus.
+    project = project_1d([(3500, 3)], [(6000, None)], objective=Objective.FEWEST_BARS)
+
+    result = _solve(project)
+
+    assert result.status is SolutionStatus.BEST_FOUND
+    assert result.lower_bound == Decimal(2)
+    assert len(result.bars) == 3
+
+
+def test_cena_bez_ceny_neni_optimalni() -> None:
+    project = project_1d([(1000, 2)], [(6000, None)], objective=Objective.CHEAPEST)
+
+    result = _solve(project)
 
     assert result.status is SolutionStatus.BEST_FOUND
     assert result.lower_bound is None
+
+
+def test_po_vyprseni_limitu_je_plan_uplny_a_platny() -> None:
+    project = project_1d(
+        [(1800, 40), (1200, 80), (850, 40)], [(6000, "320"), (4000, "230")], kerf=3
+    )
+
+    result = solve_ffd(project, lambda: True)
+
+    assert check_cutting_1d(project, result) == ()
+    assert result.status is SolutionStatus.BEST_FOUND
+    placed = sum(len(bar.pieces) for bar in result.bars)
+    assert placed == 160
+
+
+def test_bez_vyprseni_limitu_je_vysledek_stejny_jako_bez_hodin() -> None:
+    project = project_1d([(1800, 4), (1200, 8)], [(6000, "320")], kerf=3)
+
+    assert solve_ffd(project, lambda: False) == solve_ffd(project)

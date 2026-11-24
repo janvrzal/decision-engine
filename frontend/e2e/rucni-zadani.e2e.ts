@@ -56,6 +56,22 @@ test.describe('široká obrazovka 1440 px', () => {
 		expect(await seriousA11yIssues(page)).toEqual([]);
 	});
 
+	test('prořez 2,5 mm a Ctrl+Enter spočítá plán s desetinnými polohami řezů', async ({ page }) => {
+		await page.goto('/project');
+		await page.getByRole('button', { name: 'Zadat ručně' }).click();
+		await fillCell(page, 'Díl 1, Název', 'příčka');
+		await fillCell(page, 'Díl 1, Délka', '1000');
+		await fillCell(page, 'Díl 1, Počet', '3');
+		await fillCell(page, 'Prořez', '2,5');
+		await expect(page.getByRole('textbox', { name: 'Prořez' })).toHaveValue('2,5');
+
+		await page.getByRole('textbox', { name: 'Prořez' }).press('Control+Enter');
+
+		await expect(page.getByRole('img', { name: /Nářezový plán: .*prořez 2,5/ })).toBeVisible();
+		await page.getByRole('button', { name: 'Rozpis po tyčích' }).click();
+		await expect(page.getByText('1\u00a0000\u00a0mm, 2\u00a0002,5\u00a0mm').first()).toBeVisible();
+	});
+
 	test('rychlé vyplňování buněk za sebou žádnou hodnotu neztratí', async ({ page }) => {
 		await page.goto('/project');
 		await page.getByRole('button', { name: 'Zadat ručně' }).click();
@@ -105,12 +121,13 @@ test.describe('široká obrazovka 1440 px', () => {
 
 	test('UC-07: z chyby AI vede ruční cesta do tabulky', async ({ page }) => {
 		await page.goto('/project');
-		const field = page.getByRole('textbox', { name: 'Zpráva' });
-		await field.fill('simuluj výpadek AI');
-		await field.press('Enter');
+		await page.getByRole('textbox', { name: 'Zadání zakázky' }).fill('simuluj výpadek AI');
+		await page.getByRole('button', { name: 'Zpracovat zadání' }).click();
 
-		const alert = page.getByRole('alert');
+		// Chyba je v dialogu i u hlavního pole kroku Zadání, kam uživatel psal.
+		const alert = page.getByRole('main').getByRole('alert');
 		await expect(alert).toContainText('AI teď neodpovídá');
+		await expect(page.getByRole('log').getByRole('alert')).toBeVisible();
 		await alert.getByRole('button', { name: 'Zadat ručně' }).click();
 
 		await expect(page.getByRole('heading', { name: 'Kontrola údajů' })).toBeVisible();

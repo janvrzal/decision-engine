@@ -147,7 +147,7 @@ Jobs to be done jsou psané ve tvaru **„Když …, chci …, abych …“**. K
 
 ## S2 — Vývojář a autor projektu
 
-**Kontext.** Student, který aplikaci staví. Ladí prompty v Langfuse, porovnává implementace routeru (Jev, Layo, LLM) a předvádí aplikaci u obhajoby.
+**Kontext.** Student, který aplikaci staví. Ladí prompty v Langfuse, porovnává implementace routeru (Jev, LLM, ruční) a předvádí aplikaci u obhajoby.
 
 **Cíl.** Vidět, proč aplikace rozhodla, jak rozhodla, a rychle přepnout implementaci routeru.
 

@@ -1,12 +1,16 @@
 """Načtení souboru zakázky přes reducer (UC-06): nová zakázka jako návrh, chyba nic nezmění."""
 
+import json
+
 import pytest
 from scenario import run, shelf_proposal, solved
 
+from decision_engine.api.view_proposal import FILE_ERROR_TEXT, build_proposal
 from decision_engine.core.events import (
     MessageSent,
     ProjectImported,
     ProposalConfirmed,
+    ProposalEdited,
     ProposalReceived,
     SolveRequested,
 )
@@ -39,7 +43,7 @@ def _saved() -> str:
 
 
 def test_nacteni_zacne_novou_zakazku_ke_kontrole_bez_vypoctu() -> None:
-    state, effects = run([ProjectImported(content=_saved())], _planned())
+    state, effects = run([ProjectImported(content=_saved(), discard_unsaved=True)], _planned())
 
     assert effects == ()
     assert current_step(state) is Step.REVIEW
@@ -78,3 +82,61 @@ def test_neplatny_soubor_nic_nezmeni_a_chybu_dalsi_akce_schova() -> None:
 def test_behem_vypoctu_se_soubor_nenacte() -> None:
     state, _ = run([MessageSent(text="regál")])
     assert run([ProjectImported(content=_saved())], state) == (state, ())
+
+
+def _broken_file() -> str:
+    data = json.loads(_saved())
+    data["problem"]["parts"][0]["length_mm"] = "dlouhý"
+    return json.dumps(data, ensure_ascii=False)
+
+
+def test_soubor_s_neplatnou_hodnotou_se_nacte_a_hodnotu_oznaci() -> None:
+    state, _ = run([ProjectImported(content=_broken_file())])
+
+    assert state.import_error is None
+    assert state.proposal is not None
+    path = ("problem", "parts", 0, "length_mm")
+    assert path in state.proposal.file_errors
+    assert state.messages[-1].text.startswith("Zakázka načtena, ale 1 hodnota měla")
+    view = build_proposal(state.proposal, state.session_id)
+    assert view.parts[0].length_mm.error == FILE_ERROR_TEXT
+    assert not view.can_confirm
+
+
+def test_doplnena_hodnota_ze_souboru_prestane_byt_oznacena() -> None:
+    state, _ = run([ProjectImported(content=_broken_file())])
+    assert state.proposal is not None
+    proposal = state.proposal
+    parts = (proposal.parts[0].model_copy(update={"length_mm": 1800}), *proposal.parts[1:])
+
+    state, _ = run(
+        [
+            ProposalEdited(
+                name=proposal.name,
+                material=proposal.material,
+                parts=parts,
+                stock=proposal.stock,
+                parameters=proposal.parameters,
+            )
+        ],
+        state,
+    )
+
+    assert state.proposal is not None
+    assert state.proposal.file_errors == frozenset()
+    assert build_proposal(state.proposal, state.session_id).can_confirm
+
+
+def test_platny_soubor_bez_potvrzeni_neulozenou_praci_nezahodi() -> None:
+    before = _planned()
+
+    state, _ = run([ProjectImported(content=_saved())], before)
+
+    assert state == before
+
+
+def test_neplatny_soubor_ukaze_chybu_i_s_neulozenou_praci() -> None:
+    state, _ = run([ProjectImported(content="nesmysl")], _planned())
+
+    assert state.import_error is not None
+    assert state.project is not None

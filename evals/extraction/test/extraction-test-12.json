@@ -1,0 +1,29 @@
+{
+  "id": "extraction-test-12",
+  "input": "Hlavně ať zbude co nejmíň materiálu nazmar. Latě 3 m: 24 kusů po 70 cm, prořez 3 mm.",
+  "expected": {
+    "parts": [
+      {
+        "length_mm": 700,
+        "quantity": 24
+      }
+    ],
+    "stock": [
+      {
+        "length_mm": 3000,
+        "price": null
+      }
+    ],
+    "kerf_mm": 3,
+    "trim_mm": null,
+    "min_remnant_mm": null,
+    "objective": "least_material"
+  },
+  "tags": [
+    "cil",
+    "jednotky_cm",
+    "chybi_cena",
+    "hovorove"
+  ],
+  "author_note": "Cíl nejméně materiálu (odpad)."
+}

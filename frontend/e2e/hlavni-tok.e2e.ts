@@ -14,10 +14,16 @@ async function seriousA11yIssues(page: Page) {
 	return results.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical');
 }
 
+/** Zpráva do asistenta; na prázdné obrazovce je jediným vstupem hlavní pole kroku Zadání. */
 async function sendMessage(page: Page, text: string) {
-	const field = page.getByRole('textbox', { name: 'Zpráva' });
-	await field.fill(text);
-	await field.press('Enter');
+	const chat = page.getByRole('textbox', { name: 'Zpráva' });
+	if (await chat.isVisible()) {
+		await chat.fill(text);
+		await chat.press('Enter');
+		return;
+	}
+	await page.getByRole('textbox', { name: 'Zadání zakázky' }).fill(text);
+	await page.getByRole('button', { name: 'Zpracovat zadání' }).click();
 }
 
 async function toReview(page: Page) {
@@ -59,10 +65,18 @@ test.describe('široká obrazovka 1440 px', () => {
 		await expect(page.locator('[data-status="best_found"]').first()).toContainText(
 			'Nejlepší nalezený'
 		);
+		// Štítek je vysvětlený: rozdíl od dolní meze pro zvolený cíl (spec kap. 8).
+		await expect(page.getByText(/Dolní mez je .*; plán je nejvýš o .* nad ní/)).toBeVisible();
 		const plan = page.getByRole('img', { name: /Nářezový plán: .* tyč/ });
 		await expect(plan).toBeVisible();
 		await expect(page.getByText('Spotřebované tyče')).toBeVisible();
 		await expect(page.getByText('Výtěžnost', { exact: true })).toBeVisible();
+		// Orientační cena materiálu: spotřebované tyče × cena za kus (UC-04, první etapa).
+		const cost = page.getByRole('region', { name: 'Cena materiálu (orientačně)' });
+		await expect(cost).toContainText(/\d[\d\u00a0]*,\d{2}\u00a0?Kč/);
+		await expect(
+			cost.getByRole('table', { name: 'Rozpis ceny podle skladových délek' })
+		).toBeVisible();
 		await expect(
 			page.getByRole('navigation', { name: 'Kroky zakázky' }).locator('[aria-current="step"]')
 		).toContainText('Plán a cena');
@@ -124,6 +138,13 @@ test.describe('široká obrazovka 1440 px', () => {
 
 		await expect(page.getByRole('heading', { name: 'Kontrola údajů' })).toBeVisible();
 		await expect(page.getByText('Úprava zakázky')).toBeVisible();
+		// Souhrn změn a zvýraznění nového řádku (spec kap. 4).
+		const summary = page.getByRole('region', { name: /Úprava zakázky: změny oproti verzi/ });
+		await expect(summary).toContainText('Nový díl: příčka 850');
+		await expect(page.getByRole('table', { name: 'Díly' }).getByText('nový')).toBeVisible();
+		await expect(page.getByText('Návrh · platí po potvrzení').last()).toBeVisible();
+		// Model materiál nezopakoval; z potvrzené revize zůstane (UC-03).
+		await expect(page.getByRole('textbox', { name: 'Materiál' })).toHaveValue('jekl 40×40×2');
 		await page.getByRole('button', { name: /Plán a cena/ }).click();
 		await expect(page.getByText(/Neaktuální:.*čekají nepotvrzené změny/)).toBeVisible();
 	});
@@ -164,6 +185,47 @@ test.describe('široká obrazovka 1440 px', () => {
 		await expect(length).toHaveValue('1\u00a0900');
 	});
 
+	test('tisk: papír k pile ukáže plán, cenu a celý rozpis bez ovládání', async ({ page }) => {
+		await toReview(page);
+		await page.getByRole('button', { name: 'Potvrdit a vypočítat' }).click();
+		await expect(page.getByRole('img', { name: /Nářezový plán: .* tyč/ })).toBeVisible();
+		// Nehotové PDF se nenabízí (AGENTS.md pravidlo 9); tisk ano.
+		await expect(page.getByRole('button', { name: 'Stáhnout PDF' })).toHaveCount(0);
+		await expect(page.getByRole('button', { name: 'Vytisknout plán' })).toBeVisible();
+
+		await page.emulateMedia({ media: 'print' });
+
+		await expect(page.getByRole('banner')).toBeHidden();
+		await expect(page.getByRole('button', { name: 'Uložit zakázku' })).toBeHidden();
+		await expect(page.getByText('Regál do dílny · jekl 40×40×2')).toBeVisible();
+		await expect(page.getByRole('table', { name: 'Rozpis po tyčích' })).toBeVisible();
+		await expect(page.getByRole('region', { name: 'Cena materiálu (orientačně)' })).toBeVisible();
+	});
+
+	test('klávesnice: po přechodu na krok je fokus na nadpisu a změna se oznámí', async ({
+		page
+	}) => {
+		await toReview(page);
+		await expect(page.getByRole('heading', { name: 'Kontrola údajů' })).toBeFocused();
+
+		const confirm = page.getByRole('button', { name: 'Potvrdit a vypočítat' });
+		await confirm.focus();
+		await page.keyboard.press('Enter');
+
+		await expect(page.getByRole('heading', { name: 'Nářezový plán' })).toBeFocused();
+		await expect(page.getByRole('status').filter({ hasText: 'Plán spočítán' })).toContainText(
+			/\d tyč.*výtěžnost/
+		);
+		// Skip link, landmarky a WCAG 2.2 AA.
+		await expect(page.getByRole('link', { name: 'Přeskočit na obsah' })).toBeAttached();
+		const wcag22 = await new AxeBuilder({ page })
+			.withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])
+			.analyze();
+		expect(
+			wcag22.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical')
+		).toEqual([]);
+	});
+
 	test('odkaz v souhrnu chyb přesune fokus na pole', async ({ page }) => {
 		await toReview(page);
 
@@ -192,13 +254,32 @@ test.describe('široká obrazovka 1440 px', () => {
 		await expect(price).toHaveValue('1\u00a0234,50');
 	});
 
+	test('UC-05: nejasné zadání se doptá, nepodporované vysvětlí a nabídne ruční zadání', async ({
+		page
+	}) => {
+		await page.goto('/project');
+
+		await sendMessage(page, 'Chci vyrobit skříň.');
+		const question = page.getByText('Z jakých dílů bude skříň?');
+		await expect(question.first()).toBeVisible();
+		// Nic se nepočítá ani nenavrhuje, jen doptání s nabídkou ruční cesty.
+		await expect(page.getByRole('heading', { name: 'Kontrola údajů' })).toHaveCount(0);
+		await expect(page.getByRole('button', { name: 'Zadat ručně' }).first()).toBeVisible();
+
+		await sendMessage(page, 'Naskládej bedny do dodávky.');
+		await expect(page.getByText('Tohle zatím neumím.').first()).toBeVisible();
+		expect(await seriousA11yIssues(page)).toEqual([]);
+	});
+
 	test('výpadek AI ukáže chybu s nabídkou zkusit znovu', async ({ page }) => {
 		await page.goto('/project');
 
 		await sendMessage(page, 'simuluj výpadek AI');
 
-		const alert = page.getByRole('alert');
+		// Chyba je v dialogu i u hlavního pole kroku Zadání, kam uživatel psal.
+		const alert = page.getByRole('main').getByRole('alert');
 		await expect(alert).toContainText('AI teď neodpovídá');
+		await expect(page.getByRole('log').getByRole('alert')).toBeVisible();
 		await expect(alert.getByRole('button', { name: 'Zkusit znovu' })).toBeVisible();
 	});
 });
@@ -208,7 +289,7 @@ test.describe('střední šířka 768 px', () => {
 
 	test('kontrola údajů a plán jsou použitelné a přístupné', async ({ page }) => {
 		await page.goto('/project');
-		await page.getByRole('button', { name: 'Dialog', exact: true }).click();
+		await page.getByRole('button', { name: 'Asistent', exact: true }).click();
 		await sendMessage(page, ZADANI);
 		await expect(page.getByRole('heading', { name: 'Kontrola údajů' })).toBeVisible();
 		expect(await seriousA11yIssues(page)).toEqual([]);
@@ -228,3 +309,25 @@ test.describe('střední šířka 768 px', () => {
 		expect(await seriousA11yIssues(page)).toEqual([]);
 	});
 });
+
+for (const width of [390, 320]) {
+	test.describe(`úzká obrazovka ${width} px`, () => {
+		test.use({ viewport: { width, height: 800 } });
+
+		test('kontrola údajů a plán bez vodorovného posuvu a přístupné', async ({ page }) => {
+			const scrollWidth = () => page.evaluate(() => document.documentElement.scrollWidth);
+			await page.goto('/project');
+			await page.getByRole('button', { name: 'Asistent', exact: true }).click();
+			await sendMessage(page, ZADANI);
+			await expect(page.getByRole('heading', { name: 'Kontrola údajů' })).toBeVisible();
+			expect(await scrollWidth()).toBeLessThanOrEqual(width);
+			expect(await seriousA11yIssues(page)).toEqual([]);
+
+			await page.getByRole('button', { name: 'Potvrdit a vypočítat' }).click();
+			await expect(page.getByRole('img', { name: /Nářezový plán: .* tyč/ })).toBeVisible();
+			await expect(page.getByRole('heading', { name: 'Regál do dílny', level: 1 })).toBeVisible();
+			expect(await scrollWidth()).toBeLessThanOrEqual(width);
+			expect(await seriousA11yIssues(page)).toEqual([]);
+		});
+	});
+}

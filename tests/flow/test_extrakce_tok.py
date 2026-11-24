@@ -60,7 +60,10 @@ def test_prompt_obsahuje_zadani_schema_a_prevod_na_mm() -> None:
     messages, attempt = llm.calls[0]
     assert attempt == 1
     assert messages[-1].role == "user"
-    assert messages[-1].content == ZADANI
+    # Zakázka jde do zprávy uživatele jako ohraničená data, za ní zadání (#54).
+    assert messages[-1].content.endswith(f"Zpráva uživatele:\n{ZADANI}")
+    assert "<zakazka>" in messages[-1].content
+    assert "<zakazka>\n" not in messages[0].content  # v systémové zprávě jen zmínka
     assert '"length_mm"' in messages[0].content  # JSON schéma je dosazené
     assert "{{" not in messages[0].content
 

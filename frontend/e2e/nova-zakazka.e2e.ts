@@ -100,7 +100,7 @@ test.describe('široká obrazovka 1440 px', () => {
 		await fillCell(page, 'Díl 1, Počet', '12');
 		await expect(page.getByText('neuloženo', { exact: true })).toBeVisible();
 
-		await page.getByRole('button', { name: 'Načíst', exact: true }).click();
+		await page.getByRole('button', { name: 'Načíst zakázku', exact: true }).click();
 		const load = page.getByRole('dialog', { name: 'Načíst zakázku' });
 		await load.getByLabel('Soubor zakázky', { exact: true }).last().setInputFiles(file);
 
@@ -113,7 +113,7 @@ test.describe('široká obrazovka 1440 px', () => {
 	test('neplatný soubor ukáže chybu a na zahození se neptá', async ({ page }) => {
 		await plannedProject(page);
 
-		await page.getByRole('button', { name: 'Načíst', exact: true }).click();
+		await page.getByRole('button', { name: 'Načíst zakázku', exact: true }).click();
 		const load = page.getByRole('dialog', { name: 'Načíst zakázku' });
 		await load
 			.getByLabel('Soubor zakázky', { exact: true })

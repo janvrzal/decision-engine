@@ -111,7 +111,7 @@ Kontrolní tabulka dílů a skladových délek v kroku Kontrola údajů. Chován
 - `ValidationSummary` (`Alert danger`, `review/ValidationSummary.svelte`): „Opravte 2 pole, než spustíte výpočet“ a seznam chyb jako odkazy, které přesunou fokus na pole. Pole nese `data-cell` s klíčem z view modelu (`target`: `parts.1.length_mm`, `parameters.objective`); u chyby celé tabulky dostane fokus první buňka, u cíle vybraná volba. Chyba bez pole ve formuláři zůstane textem. U prázdného ručního zadání se souhrn ani chyby buněk neukazují, dokud uživatel nezačne vyplňovat.
 - Převod jednotek v buňce délky („1,5 m“ → 1 500 mm) oznámí stavový řádek „Převedeno: 1,5 m = 1 500 mm.“ (`role=status`).
 - Krok Kontrola údajů bez návrhu (zakázka je potvrzená): `EmptyState` „Údaje jsou potvrzené“ s akcí „Upravit údaje“ (`primary`). Stejná akce (`secondary`) je v záhlaví kroku Plán a cena.
-- `ChangeSummary` (rámeček s přerušovaným okrajem `proposal`, podklad `proposal-bg`): „Změny oproti verzi 2“ a seznam změn („+ 2× příčka 850 mm“, „sloupek: 2 000 → 2 200 mm“). Akce „Potvrdit a vypočítat“ (`primary`) a „Zahodit změny“ (`ghost`) jsou v patičce kroku, ne ve shrnutí.
+- `ChangeSummary` (`review/ChangeSummary.svelte`, rámeček s přerušovaným okrajem `proposal`, podklad `proposal-bg`): „Úprava zakázky: změny oproti verzi 2“ a seznam změn, které skládá backend („Nový díl: příčka 850 mm × 4 ks“, „noha: délka 1 800 mm → 1 900 mm“, „Materiál: jekl 40×40×2 → prázdné“). Odebrané řádky jsou přeškrtnuté s akcí „Vrátit“. Změněná buňka má podklad `proposal-bg` a pod sebou „původně ~~1 800 mm~~“, nový řádek podklad `proposal-bg` a `Badge proposal` „nový“. Odpověď asistenta k návrhu má v dialogu přerušovaný okraj a štítek „Návrh · platí po potvrzení“. Akce „Potvrdit a vypočítat“ (`primary`) a „Zahodit změny“ (`ghost`) jsou v patičce kroku, ne ve shrnutí.
 
 ### `MetricCard`
 
@@ -131,11 +131,11 @@ Panel kalkulace: řádky Materiál, Práce, Další náklady (popis vlevo, čás
 
 ### `StaleBanner`
 
-Pruh přes celou šířku nad plánem na `stale-bg` s ikonou přepočtu: „Neaktuální: čekají nepotvrzené změny (+ 2× příčka 850 mm)“ a akce „Zkontrolovat změny“ nebo „Přepočítat“ (`primary`). Plán pod ním je ztlumený (průhlednost 50 %) a export PDF je neaktivní s důvodem v tooltipu.
+Pruh přes celou šířku nad plánem na `stale-bg` s ikonou přepočtu: „Neaktuální: čekají nepotvrzené změny (+ 2× příčka 850 mm)“ a akce „Zkontrolovat změny“ nebo „Přepočítat“ (`primary`). Plán pod ním je ztlumený (průhlednost 50 %), ztlumené jsou i metriky, cena a štítek kvality, a tisk plánu je neaktivní s důvodem v tooltipu.
 
 ### `ResultSummaryBar`
 
-Lišta připnutá dole v kroku Plán a cena: `SolutionStatusBadge`, souhrn („5 tyčí · výtěžnost 91,7 % · celkem 7 166,23 Kč“) a akce Uložit zakázku (`secondary`) a Stáhnout PDF (`primary`, jen u aktuálního výsledku). Varianty: počítá se, neúplná kalkulace, neaktuální (cena přeškrtnutá, akce „Zkontrolovat změny“), částečný („1 kus neumístěn“, akce „Upravit díly“), plán není spočítaný (akce „Vypočítat“).
+Lišta připnutá dole v kroku Plán a cena: `SolutionStatusBadge`, souhrn („5 tyčí · výtěžnost 91,7 % · celkem 7 166,23 Kč“) a akce Vytisknout plán (`primary`, jen u aktuálního výsledku). Uložit zakázku je jen v hlavičce zakázky, aby stejná akce nebyla na obrazovce dvakrát. Stáhnout PDF přibude s kalkulací (M5); do té doby se nenabízí. Tisk (`@media print`) dá papír k pile na A4: název a materiál, plán, cena materiálu a celý rozpis po tyčích bez ovládacích prvků. Varianty: počítá se, neúplná kalkulace, neaktuální (cena přeškrtnutá, akce „Zkontrolovat změny“), částečný („1 kus neumístěn“, akce „Upravit díly“), plán není spočítaný (akce „Vypočítat“).
 
 ### `ChatMessage`
 
@@ -161,7 +161,7 @@ Posouvání historie řídí `behaviors/message-scroller` (drží pozici při č
 
 ### Úvodní obrazovka
 
-- `HeroPrompt`: velké `TextArea` s ukázkou zadání v placeholderu, „Další ukázka“ (`ghost`) a „Pokračovat“ (`primary`).
+- `HeroPrompt`: velké `TextArea` s ukázkou zadání v placeholderu, „Další ukázka“ (`ghost`) a „Zpracovat zadání“ (`primary`). Na prázdné obrazovce je to jediné vstupní pole: panel Asistent je sbalený do lišty a ukáže se s první zprávou nebo po rozbalení. Chyba AI a doptání se ukážou i pod tímto polem.
 - `ToolCard`: karta nástroje (název, jedna věta) jako tlačítko; rozšíření jen když jsou implementovaná.
 - `ResumeCard`: rozpracovaná zakázka s krokem a akcí „Pokračovat v zakázce“.
 - `ExampleList`: seznam příkladů v modálním okně, šipky a Enter.

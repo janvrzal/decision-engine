@@ -20,7 +20,7 @@
 
 <Alert variant="danger" {title}>
 	<ul class="list-disc pl-4">
-		{#each errors as error (`${error.field}:${error.message}`)}
+		{#each errors as error, index (index)}
 			<li>
 				{#if error.target}
 					<a

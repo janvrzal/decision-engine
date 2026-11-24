@@ -6,14 +6,15 @@ adaptéry bez sítě, klíčů a Langfuse (AGENTS.md pravidlo 11).
 
 from collections.abc import Mapping, Sequence
 from contextlib import AbstractContextManager
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Literal, Protocol
 
 from pydantic import BaseModel, ConfigDict
 
 from decision_engine.core.model.calculation import CalculationResult
 from decision_engine.core.model.cutting_1d import Project
-from decision_engine.core.result import Result
+from decision_engine.core.result import Ok, Result
+from decision_engine.core.routing import RouteOutcome, RoutingDecision
 from decision_engine.core.state import AiErrorKind
 
 
@@ -87,6 +88,47 @@ class Solver(Protocol):
 
 
 @dataclass(frozen=True, slots=True)
+class RoutingRequest:
+    """Co router dostane: zpráva a rozpracovaná zakázka (`order_summary`)."""
+
+    message: str
+    order: Mapping[str, object]
+
+
+@dataclass(frozen=True, slots=True)
+class RoutingError:
+    """Router nerozhodl (výpadek API, chybí klíč, neplatná odpověď); nikdy ne „unclear“."""
+
+    router: str
+    detail: str
+
+
+class Router(Protocol):
+    """Rozpoznání úlohy ve zprávě (spec kap. 6, ADR-0004, ADR-0012)."""
+
+    name: str
+
+    def route(self, request: RoutingRequest) -> Result[RoutingDecision, RoutingError]: ...
+
+
+class ManualRouter:
+    """Router bez klasifikace: zpráva jde jediné implementované schopnosti (vždy dostupný).
+
+    Nástroj si uživatel volí sám (karta nástroje, „Zadat ručně“); tady jen pustí zprávu
+    do extrakce. Slouží jako poslední záloha a pro běh bez sítě.
+    """
+
+    name = "manual"
+
+    def route(self, request: RoutingRequest) -> Result[RoutingDecision, RoutingError]:
+        return Ok(
+            RoutingDecision(
+                outcome=RouteOutcome.SUPPORTED, capability="cutting_1d", router=self.name
+            )
+        )
+
+
+@dataclass(frozen=True, slots=True)
 class Ports:
     """Všechny adaptéry, které smyčka efektů potřebuje."""
 
@@ -94,3 +136,4 @@ class Ports:
     prompts: PromptStore
     tracer: Tracer
     solver: Solver
+    router: Router = field(default_factory=ManualRouter)

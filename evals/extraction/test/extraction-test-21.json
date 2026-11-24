@@ -1,0 +1,31 @@
+{
+  "id": "extraction-test-21",
+  "input": "Potřebuju 25× 0,85 m a 10× 0,3 m, tyče 3 m za 159 Kč, prořez 2 mm.",
+  "expected": {
+    "parts": [
+      {
+        "length_mm": 850,
+        "quantity": 25
+      },
+      {
+        "length_mm": 300,
+        "quantity": 10
+      }
+    ],
+    "stock": [
+      {
+        "length_mm": 3000,
+        "price": "159"
+      }
+    ],
+    "kerf_mm": 2,
+    "trim_mm": null,
+    "min_remnant_mm": null,
+    "objective": null
+  },
+  "tags": [
+    "jednotky_m",
+    "desetinna_carka"
+  ],
+  "author_note": "Zlomky metru."
+}

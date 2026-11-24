@@ -20,8 +20,6 @@ export const EXAMPLE_PROMPTS: ExamplePrompt[] = [
 	}
 ];
 
-export const NOT_AVAILABLE_REASON = 'Tato akce zatím není k dispozici.';
-
 export interface Tool {
 	id: string;
 	label: string;

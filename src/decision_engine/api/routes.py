@@ -94,7 +94,10 @@ def session_router(services: Services) -> APIRouter:
         if state.project is None:
             raise HTTPException(
                 status_code=409,
-                detail={"code": "no_project", "message": "Uložit jde potvrzená zakázka."},
+                detail={
+                    "code": "no_project",
+                    "message": "Uložit půjde až potvrzenou zakázku. Nejdřív potvrďte údaje.",
+                },
             )
         return project_file_response(state.project)
 
@@ -108,7 +111,8 @@ def session_router(services: Services) -> APIRouter:
     ) -> ViewModel:
         try:
             state = services.store.update(
-                session_id, lambda current: handle(current, event, services.ports)
+                session_id,
+                lambda current, publish: handle(current, event, services.ports, publish),
             )
         except SessionNotFoundError as error:
             raise _not_found() from error

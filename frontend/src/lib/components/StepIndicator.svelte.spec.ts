@@ -33,4 +33,13 @@ describe('StepIndicator', () => {
 
 		expect(onselect).toHaveBeenCalledWith('input');
 	});
+
+	it('zobrazený neaktuální krok má aria-current a zůstane neaktuální', async () => {
+		await render(StepIndicator, { steps, current: 'result' });
+
+		const current = () => document.querySelector('[aria-current="step"]')?.textContent ?? '';
+		await expect.poll(current).toContain('Plán a cena');
+		expect(current()).toContain('neaktuální');
+		expect(document.querySelectorAll('[aria-current="step"]')).toHaveLength(1);
+	});
 });

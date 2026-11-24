@@ -1,0 +1,116 @@
+{
+  "id": "dialog-test-08",
+  "turns": [
+    {
+      "input": "Z dřevěných latí 3 m za 89 Kč chci dvacet kusů po 60 cm.",
+      "expected": {
+        "outcome": "supported",
+        "project": {
+          "material": "dřevěná lať",
+          "parts": [
+            {
+              "length_mm": 600,
+              "quantity": 20
+            }
+          ],
+          "stock": [
+            {
+              "length_mm": 3000,
+              "price": "89"
+            }
+          ],
+          "kerf_mm": null,
+          "trim_mm": null,
+          "min_remnant_mm": null
+        }
+      }
+    },
+    {
+      "input": "Prořez pily je 2 mm.",
+      "expected": {
+        "outcome": "supported",
+        "project": {
+          "material": "dřevěná lať",
+          "parts": [
+            {
+              "length_mm": 600,
+              "quantity": 20
+            }
+          ],
+          "stock": [
+            {
+              "length_mm": 3000,
+              "price": "89"
+            }
+          ],
+          "kerf_mm": 2,
+          "trim_mm": null,
+          "min_remnant_mm": null
+        }
+      }
+    },
+    {
+      "input": "Přidej ještě deset kusů po 1,2 m.",
+      "expected": {
+        "outcome": "supported",
+        "project": {
+          "material": "dřevěná lať",
+          "parts": [
+            {
+              "length_mm": 600,
+              "quantity": 20
+            },
+            {
+              "length_mm": 1200,
+              "quantity": 10
+            }
+          ],
+          "stock": [
+            {
+              "length_mm": 3000,
+              "price": "89"
+            }
+          ],
+          "kerf_mm": 2,
+          "trim_mm": null,
+          "min_remnant_mm": null
+        }
+      }
+    },
+    {
+      "input": "Ty šedesáticentimetrové dej o pět víc.",
+      "expected": {
+        "outcome": "supported",
+        "project": {
+          "material": "dřevěná lať",
+          "parts": [
+            {
+              "length_mm": 600,
+              "quantity": 25
+            },
+            {
+              "length_mm": 1200,
+              "quantity": 10
+            }
+          ],
+          "stock": [
+            {
+              "length_mm": 3000,
+              "price": "89"
+            }
+          ],
+          "kerf_mm": 2,
+          "trim_mm": null,
+          "min_remnant_mm": null
+        }
+      }
+    }
+  ],
+  "tags": [
+    "doplneni_prorezu",
+    "slovni_cisla",
+    "jednotky_cm",
+    "relativni_zmena"
+  ],
+  "author_note": "Prořez chybí v 1. kole a doplní se později. Materiál se porovnává sémanticky (stejný profil), ne doslovně."
+}

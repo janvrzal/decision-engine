@@ -1,0 +1,136 @@
+{
+  "id": "dialog-test-01",
+  "turns": [
+    {
+      "input": "Potřebuju z jeklu 30×20 nařezat 8 kusů po 1 200 mm a 4 kusy po 600 mm, tyče 6 m za 450 Kč, prořez 3 mm.",
+      "expected": {
+        "outcome": "supported",
+        "project": {
+          "material": "jekl 30×20",
+          "parts": [
+            {
+              "length_mm": 1200,
+              "quantity": 8
+            },
+            {
+              "length_mm": 600,
+              "quantity": 4
+            }
+          ],
+          "stock": [
+            {
+              "length_mm": 6000,
+              "price": "450"
+            }
+          ],
+          "kerf_mm": 3,
+          "trim_mm": null,
+          "min_remnant_mm": null
+        }
+      }
+    },
+    {
+      "input": "Přidej ještě 2 kusy po 900 mm.",
+      "expected": {
+        "outcome": "supported",
+        "project": {
+          "material": "jekl 30×20",
+          "parts": [
+            {
+              "length_mm": 1200,
+              "quantity": 8
+            },
+            {
+              "length_mm": 600,
+              "quantity": 4
+            },
+            {
+              "length_mm": 900,
+              "quantity": 2
+            }
+          ],
+          "stock": [
+            {
+              "length_mm": 6000,
+              "price": "450"
+            }
+          ],
+          "kerf_mm": 3,
+          "trim_mm": null,
+          "min_remnant_mm": null
+        }
+      }
+    },
+    {
+      "input": "Těch dlouhých udělej 10.",
+      "expected": {
+        "outcome": "supported",
+        "project": {
+          "material": "jekl 30×20",
+          "parts": [
+            {
+              "length_mm": 1200,
+              "quantity": 10
+            },
+            {
+              "length_mm": 600,
+              "quantity": 4
+            },
+            {
+              "length_mm": 900,
+              "quantity": 2
+            }
+          ],
+          "stock": [
+            {
+              "length_mm": 6000,
+              "price": "450"
+            }
+          ],
+          "kerf_mm": 3,
+          "trim_mm": null,
+          "min_remnant_mm": null
+        }
+      }
+    },
+    {
+      "input": "Prořez je nakonec 2 mm.",
+      "expected": {
+        "outcome": "supported",
+        "project": {
+          "material": "jekl 30×20",
+          "parts": [
+            {
+              "length_mm": 1200,
+              "quantity": 10
+            },
+            {
+              "length_mm": 600,
+              "quantity": 4
+            },
+            {
+              "length_mm": 900,
+              "quantity": 2
+            }
+          ],
+          "stock": [
+            {
+              "length_mm": 6000,
+              "price": "450"
+            }
+          ],
+          "kerf_mm": 2,
+          "trim_mm": null,
+          "min_remnant_mm": null
+        }
+      }
+    }
+  ],
+  "tags": [
+    "pridani",
+    "zmena_poctu",
+    "zmena_prorezu",
+    "odkaz"
+  ],
+  "author_note": "Postupné změny; materiál a cena se nesmí ztratit. Materiál se porovnává sémanticky (stejný profil), ne doslovně."
+}

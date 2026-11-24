@@ -19,7 +19,7 @@
 </script>
 
 {#if message.kind === 'error'}
-	<Alert variant="danger" title="Zpráva se nezpracovala">
+	<Alert variant="danger" title="Zadání se nepodařilo zpracovat">
 		{message.text}
 		{#snippet actions()}
 			{#if onretry}
@@ -40,6 +40,30 @@
 	>
 		<span class="sr-only">Vy:</span>
 		{message.text}
+	</div>
+{:else if message.offer_manual}
+	<!-- Doptání nebo nepodporované zadání (UC-05): odpověď a nabídka ruční cesty. -->
+	<div class="mr-8 flex flex-col gap-2 rounded-md border border-border bg-surface-sunken px-3 py-2">
+		<p class="text-body text-ink">
+			<span class="sr-only">Asistent:</span>
+			{message.text}
+		</p>
+		{#if onmanual}
+			<div>
+				<Button variant="secondary" onclick={onmanual} disabledReason={retryDisabledReason}>
+					Zadat ručně
+				</Button>
+			</div>
+		{/if}
+	</div>
+{:else if message.proposal}
+	<!-- Odpověď k návrhu změny: přerušovaný okraj = ještě neplatí (komponenty.md). -->
+	<div class="mr-8 flex flex-col gap-1 rounded-md border border-dashed border-proposal px-3 py-2">
+		<span class="text-label font-medium text-proposal uppercase">Návrh · platí po potvrzení</span>
+		<p class="text-body text-ink">
+			<span class="sr-only">Asistent:</span>
+			{message.text}
+		</p>
 	</div>
 {:else}
 	<div class="mr-8 text-body text-ink">

@@ -22,12 +22,12 @@ Projekt DecisionEngine řeší **téma 2: Vytvoření středně složité aplika
 | Požadavek | Povinnost | Jak ho DecisionEngine splňuje | Kde ve specifikaci |
 |---|---|---|---|
 | Vlastní UI, pěkné a dobře použitelné | **povinné, hodnocené** | Webové UI (FastAPI + SvelteKit, ADR-0007); tři kroky zakázky, editovatelné tabulky, měřítkový plán, navržené stavy a chyby | kap. 4, 9 |
-| Strukturovaný výstup / function calling | 1 z 2+ | LLM extrakce do validovaného schématu; router vrací typovanou volbu | kap. 6, 7 |
-| Vícekolový dialog s pamětí / více LLM rolí | 1 z 2+ | Navazující změny zakázky nad potvrzenou revizí; router + extrakce + doptávání jako různé role | UC-03, kap. 6 |
-| Propojení LLM s datovým zdrojem | 1 z 2+ | Výpočet nářezového plánu a kalkulace; u rozšíření sklad jako vlastní data | UC-01, UC-04, UC-08 |
+| Strukturovaný výstup / function calling | 1 z 2+ | **Hotovo:** LLM extrakce do validovaného schématu (Pydantic, opravný pokus); LLM router vrací typovanou volbu | kap. 6, 7 |
+| Vícekolový dialog s pamětí / více LLM rolí | 1 z 2+ | **Hotovo:** navazující změny zakázky nad potvrzenou revizí se souhrnem změn; role router (doptávání) a extrakce | UC-03, UC-05, kap. 6 |
+| Propojení LLM s datovým zdrojem | 1 z 2+ | **Hotovo:** výpočet nářezového plánu a ceny materiálu nad potvrzenými daty; plná kalkulace a sklad jsou další etapy | UC-01, UC-04, UC-08 |
 | Multimodalita | nevyužito | Mimo rozsah semestru | kap. 3, 13 |
 
-Splněny jsou 3 ze 4 volitelných požadavků (stačí 2), takže výpadek jednoho z nich hodnocení neohrozí.
+Splněny jsou 3 ze 4 volitelných požadavků (stačí 2), takže výpadek jednoho z nich hodnocení neohrozí. Stav jednotlivých use casů je v [README](../README.md#stav); měření na testovacích sadách spouští autor ([evals/README.md](../evals/README.md)).
 
 ## Priority vyplývající ze zadání
 

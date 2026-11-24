@@ -1,0 +1,74 @@
+{
+  "id": "dialog-test-03",
+  "turns": [
+    {
+      "input": "Na regál z jeklu 25×25 chci 4 sloupky po 1 800 mm a 10 polic po 900 mm, tyče 6 m za 360 Kč, prořez 2 mm.",
+      "expected": {
+        "outcome": "supported",
+        "project": {
+          "material": "jekl 25×25",
+          "parts": [
+            {
+              "length_mm": 1800,
+              "quantity": 4
+            },
+            {
+              "length_mm": 900,
+              "quantity": 10
+            }
+          ],
+          "stock": [
+            {
+              "length_mm": 6000,
+              "price": "360"
+            }
+          ],
+          "kerf_mm": 2,
+          "trim_mm": null,
+          "min_remnant_mm": null
+        }
+      }
+    },
+    {
+      "input": "A z desky OSB 2 500×1 250 mi rozvrhni police.",
+      "expected": {
+        "outcome": "unsupported",
+        "project": null
+      }
+    },
+    {
+      "input": "Dobře, tak aspoň změň počet sloupků na 6.",
+      "expected": {
+        "outcome": "supported",
+        "project": {
+          "material": "jekl 25×25",
+          "parts": [
+            {
+              "length_mm": 1800,
+              "quantity": 6
+            },
+            {
+              "length_mm": 900,
+              "quantity": 10
+            }
+          ],
+          "stock": [
+            {
+              "length_mm": 6000,
+              "price": "360"
+            }
+          ],
+          "kerf_mm": 2,
+          "trim_mm": null,
+          "min_remnant_mm": null
+        }
+      }
+    }
+  ],
+  "tags": [
+    "unsupported_uprostred",
+    "2d",
+    "zmena_poctu"
+  ],
+  "author_note": "Nepodporovaný 2D požadavek uprostřed nesmí zakázku změnit. Materiál se porovnává sémanticky (stejný profil), ne doslovně."
+}

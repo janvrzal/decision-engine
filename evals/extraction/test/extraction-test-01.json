@@ -1,0 +1,33 @@
+{
+  "id": "extraction-test-01",
+  "input": "Na pergolu potřebuju 6 krokví po 3,2 m a 4 vaznice po 4,8 m z hranolu 100×120. Pila odebírá 4 mm, řezivo kupuju v délkách 5 m.",
+  "expected": {
+    "parts": [
+      {
+        "length_mm": 3200,
+        "quantity": 6
+      },
+      {
+        "length_mm": 4800,
+        "quantity": 4
+      }
+    ],
+    "stock": [
+      {
+        "length_mm": 5000,
+        "price": null
+      }
+    ],
+    "kerf_mm": 4,
+    "trim_mm": null,
+    "min_remnant_mm": null,
+    "objective": null
+  },
+  "tags": [
+    "jednotky_m",
+    "desetinna_carka",
+    "chybi_cena",
+    "neprima_formulace"
+  ],
+  "author_note": "Prořez popsaný jako „pila odebírá“; cena chybí."
+}

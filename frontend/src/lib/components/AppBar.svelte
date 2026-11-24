@@ -4,7 +4,9 @@
 	/** Horní lišta: logo a hlavní navigace. Sklad a vývojářský panel jen až budou hotové. */
 </script>
 
-<header class="flex h-12 shrink-0 items-center gap-6 border-b border-border bg-surface px-4">
+<header
+	class="flex h-12 shrink-0 items-center gap-6 border-b border-border bg-surface px-4 print:hidden"
+>
 	<a href={resolve('/')} class="flex items-center gap-2 rounded-sm text-heading text-ink">
 		<span class="flex h-4 w-6 items-stretch gap-px overflow-hidden rounded-sm" aria-hidden="true">
 			<span class="flex-3 bg-plan-part-1"></span>
@@ -14,7 +16,10 @@
 		</span>
 		DecisionEngine
 	</a>
-	<nav aria-label="Hlavní navigace">
+	<p class="hidden text-small text-ink-muted lg:block">
+		Ze zadání k nářezovému plánu a ceně zakázky.
+	</p>
+	<nav aria-label="Hlavní navigace" class="ml-auto lg:ml-0">
 		<ul class="flex items-center gap-1">
 			<li>
 				<a

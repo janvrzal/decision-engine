@@ -14,6 +14,15 @@ class _Effect(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
 
+class CallRouter(_Effect):
+    """Rozpoznej, o jakou úlohu ve zprávě jde (ADR-0012). Výsledek: `RouteDecided`."""
+
+    type: Literal["CallRouter"] = "CallRouter"
+    text: str
+    order: dict[str, object]
+    """Rozpracovaná zakázka pro router (`order_summary`)."""
+
+
 class CallExtractor(_Effect):
     """Převeď zprávu na návrh změny. Výsledek: `ProposalReceived` nebo `AiFailed`."""
 
@@ -30,4 +39,4 @@ class RunSolver(_Effect):
     project: Project
 
 
-type Effect = CallExtractor | RunSolver
+type Effect = CallRouter | CallExtractor | RunSolver

@@ -256,7 +256,7 @@
 					},
 					"cuts_mm": {
 						"items": {
-							"type": "integer"
+							"type": "string"
 						},
 						"type": "array",
 						"title": "Cuts Mm"
@@ -267,7 +267,7 @@
 						"title": "Tail"
 					},
 					"tail_length_mm": {
-						"type": "integer",
+						"type": "string",
 						"title": "Tail Length Mm"
 					}
 				},
@@ -304,6 +304,173 @@
 				"type": "object",
 				"required": ["id", "label"],
 				"title": "CapabilityView"
+			},
+			"ChangesView": {
+				"properties": {
+					"base_revision": {
+						"type": "integer",
+						"title": "Base Revision"
+					},
+					"summary": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array",
+						"title": "Summary"
+					},
+					"removed_parts": {
+						"items": {
+							"$ref": "#/components/schemas/RemovedPartView"
+						},
+						"type": "array",
+						"title": "Removed Parts"
+					},
+					"removed_stock": {
+						"items": {
+							"$ref": "#/components/schemas/RemovedStockView"
+						},
+						"type": "array",
+						"title": "Removed Stock"
+					}
+				},
+				"type": "object",
+				"required": ["base_revision", "summary", "removed_parts", "removed_stock"],
+				"title": "ChangesView",
+				"description": "Souhrn změn navazující úpravy (spec kap. 4, ChangeSummary)."
+			},
+			"CostLineView": {
+				"properties": {
+					"stock_id": {
+						"type": "string",
+						"title": "Stock Id"
+					},
+					"length_mm": {
+						"type": "integer",
+						"title": "Length Mm"
+					},
+					"count": {
+						"type": "integer",
+						"title": "Count"
+					},
+					"unit_price": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Unit Price"
+					},
+					"total": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Total"
+					}
+				},
+				"type": "object",
+				"required": ["stock_id", "length_mm", "count", "unit_price", "total"],
+				"title": "CostLineView"
+			},
+			"CostView": {
+				"properties": {
+					"lines": {
+						"items": {
+							"$ref": "#/components/schemas/CostLineView"
+						},
+						"type": "array",
+						"title": "Lines"
+					},
+					"total": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Total"
+					},
+					"note": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Note"
+					}
+				},
+				"type": "object",
+				"required": ["lines", "total", "note"],
+				"title": "CostView",
+				"description": "Orientační cena materiálu (UC-04, první etapa)."
+			},
+			"DecimalCell": {
+				"properties": {
+					"value": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Value"
+					},
+					"unconfirmed": {
+						"type": "boolean",
+						"title": "Unconfirmed"
+					},
+					"unconfirmed_note": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Unconfirmed Note"
+					},
+					"error": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Error"
+					},
+					"previous": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Previous"
+					}
+				},
+				"type": "object",
+				"required": ["value", "unconfirmed", "error"],
+				"title": "DecimalCell",
+				"description": "Délka v mm s nejvýš jedním desetinným místem (prořez, ořez; ADR-0011)."
 			},
 			"EditRequested": {
 				"properties": {
@@ -427,6 +594,17 @@
 						"type": "boolean",
 						"title": "Unconfirmed"
 					},
+					"unconfirmed_note": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Unconfirmed Note"
+					},
 					"error": {
 						"anyOf": [
 							{
@@ -437,6 +615,17 @@
 							}
 						],
 						"title": "Error"
+					},
+					"previous": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Previous"
 					}
 				},
 				"type": "object",
@@ -453,6 +642,7 @@
 					},
 					"text": {
 						"type": "string",
+						"maxLength": 4000,
 						"title": "Text"
 					}
 				},
@@ -481,6 +671,27 @@
 					"text": {
 						"type": "string",
 						"title": "Text"
+					},
+					"retry_text": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Retry Text"
+					},
+					"proposal": {
+						"type": "boolean",
+						"title": "Proposal",
+						"default": false
+					},
+					"offer_manual": {
+						"type": "boolean",
+						"title": "Offer Manual",
+						"default": false
 					}
 				},
 				"type": "object",
@@ -509,7 +720,7 @@
 						"title": "Consumed Length Mm"
 					},
 					"remnant_length_mm": {
-						"type": "integer",
+						"type": "string",
 						"title": "Remnant Length Mm"
 					},
 					"remnant_count": {
@@ -517,8 +728,12 @@
 						"title": "Remnant Count"
 					},
 					"waste_length_mm": {
-						"type": "integer",
+						"type": "string",
 						"title": "Waste Length Mm"
+					},
+					"cutting_loss_mm": {
+						"type": "string",
+						"title": "Cutting Loss Mm"
 					},
 					"yield_ratio": {
 						"type": "number",
@@ -534,6 +749,7 @@
 					"remnant_length_mm",
 					"remnant_count",
 					"waste_length_mm",
+					"cutting_loss_mm",
 					"yield_ratio"
 				],
 				"title": "MetricsView"
@@ -555,6 +771,17 @@
 						"type": "boolean",
 						"title": "Unconfirmed"
 					},
+					"unconfirmed_note": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Unconfirmed Note"
+					},
 					"error": {
 						"anyOf": [
 							{
@@ -565,6 +792,17 @@
 							}
 						],
 						"title": "Error"
+					},
+					"previous": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Previous"
 					}
 				},
 				"type": "object",
@@ -578,12 +816,17 @@
 						"const": "NewProjectRequested",
 						"title": "Type",
 						"default": "NewProjectRequested"
+					},
+					"discard_unsaved": {
+						"type": "boolean",
+						"title": "Discard Unsaved",
+						"default": false
 					}
 				},
 				"additionalProperties": false,
 				"type": "object",
 				"title": "NewProjectRequested",
-				"description": "Uživatel začíná novou zakázku; rozpracovaná se zahodí (UC-15).\n\nNa neuložené změny se ptá UI předem, reducer už jen začne znovu."
+				"description": "Uživatel začíná novou zakázku; rozpracovaná se zahodí (UC-15).\n\nNa neuložené změny se ptá UI předem. Reducer neuloženou práci zahodí jen\ns `discard_unsaved`: UI mohlo vycházet ze zastaralého stavu (druhá karta prohlížeče)."
 			},
 			"Objective": {
 				"type": "string",
@@ -625,7 +868,10 @@
 					"kerf_mm": {
 						"anyOf": [
 							{
-								"type": "integer"
+								"type": "number"
+							},
+							{
+								"type": "string"
 							},
 							{
 								"type": "null"
@@ -636,7 +882,10 @@
 					"trim_mm": {
 						"anyOf": [
 							{
-								"type": "integer"
+								"type": "number"
+							},
+							{
+								"type": "string"
 							},
 							{
 								"type": "null"
@@ -684,10 +933,10 @@
 			"ParametersView": {
 				"properties": {
 					"kerf_mm": {
-						"$ref": "#/components/schemas/IntCell"
+						"$ref": "#/components/schemas/DecimalCell"
 					},
 					"trim_mm": {
-						"$ref": "#/components/schemas/IntCell"
+						"$ref": "#/components/schemas/DecimalCell"
 					},
 					"min_remnant_mm": {
 						"$ref": "#/components/schemas/IntCell"
@@ -751,6 +1000,11 @@
 						"type": "string",
 						"title": "Id"
 					},
+					"added": {
+						"type": "boolean",
+						"title": "Added",
+						"default": false
+					},
 					"name": {
 						"$ref": "#/components/schemas/TextCell"
 					},
@@ -796,7 +1050,7 @@
 						"title": "Length Mm"
 					},
 					"start_mm": {
-						"type": "integer",
+						"type": "string",
 						"title": "Start Mm"
 					}
 				},
@@ -816,6 +1070,11 @@
 						"type": "string",
 						"maxLength": 1000000,
 						"title": "Content"
+					},
+					"discard_unsaved": {
+						"type": "boolean",
+						"title": "Discard Unsaved",
+						"default": false
 					}
 				},
 				"additionalProperties": false,
@@ -899,6 +1158,10 @@
 						"type": "boolean",
 						"title": "Unsaved Changes"
 					},
+					"unsaved_badge": {
+						"type": "boolean",
+						"title": "Unsaved Badge"
+					},
 					"can_start_new": {
 						"type": "boolean",
 						"title": "Can Start New"
@@ -915,6 +1178,7 @@
 					"can_save",
 					"save_note",
 					"unsaved_changes",
+					"unsaved_badge",
 					"can_start_new"
 				],
 				"title": "ProjectView"
@@ -968,6 +1232,7 @@
 							"$ref": "#/components/schemas/PartDraft"
 						},
 						"type": "array",
+						"maxItems": 500,
 						"title": "Parts"
 					},
 					"stock": {
@@ -975,10 +1240,20 @@
 							"$ref": "#/components/schemas/StockLengthDraft"
 						},
 						"type": "array",
+						"maxItems": 50,
 						"title": "Stock"
 					},
 					"parameters": {
 						"$ref": "#/components/schemas/ParametersDraft"
+					},
+					"confirmed": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array",
+						"maxItems": 1500,
+						"title": "Confirmed",
+						"default": []
 					}
 				},
 				"additionalProperties": false,
@@ -1006,6 +1281,16 @@
 					"is_change": {
 						"type": "boolean",
 						"title": "Is Change"
+					},
+					"changes": {
+						"anyOf": [
+							{
+								"$ref": "#/components/schemas/ChangesView"
+							},
+							{
+								"type": "null"
+							}
+						]
 					},
 					"origin": {
 						"type": "string",
@@ -1097,14 +1382,89 @@
 				],
 				"title": "ProposalView"
 			},
+			"RemovedPartView": {
+				"properties": {
+					"id": {
+						"type": "string",
+						"title": "Id"
+					},
+					"name": {
+						"type": "string",
+						"title": "Name"
+					},
+					"length_mm": {
+						"type": "integer",
+						"title": "Length Mm"
+					},
+					"quantity": {
+						"type": "integer",
+						"title": "Quantity"
+					}
+				},
+				"type": "object",
+				"required": ["id", "name", "length_mm", "quantity"],
+				"title": "RemovedPartView"
+			},
+			"RemovedStockView": {
+				"properties": {
+					"id": {
+						"type": "string",
+						"title": "Id"
+					},
+					"length_mm": {
+						"type": "integer",
+						"title": "Length Mm"
+					},
+					"price": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Price"
+					}
+				},
+				"type": "object",
+				"required": ["id", "length_mm", "price"],
+				"title": "RemovedStockView"
+			},
 			"ResultView": {
 				"properties": {
+					"project_name": {
+						"type": "string",
+						"title": "Project Name"
+					},
+					"material": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Material"
+					},
 					"status": {
 						"$ref": "#/components/schemas/SolutionStatus"
 					},
 					"status_label": {
 						"type": "string",
 						"title": "Status Label"
+					},
+					"status_note": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Status Note"
 					},
 					"stale": {
 						"type": "boolean",
@@ -1128,6 +1488,9 @@
 					"metrics": {
 						"$ref": "#/components/schemas/MetricsView"
 					},
+					"cost": {
+						"$ref": "#/components/schemas/CostView"
+					},
 					"bars": {
 						"items": {
 							"$ref": "#/components/schemas/BarView"
@@ -1145,12 +1508,16 @@
 				},
 				"type": "object",
 				"required": [
+					"project_name",
+					"material",
 					"status",
 					"status_label",
+					"status_note",
 					"stale",
 					"stale_reason",
 					"svg",
 					"metrics",
+					"cost",
 					"bars",
 					"unplaced"
 				],
@@ -1256,6 +1623,11 @@
 						"type": "string",
 						"title": "Id"
 					},
+					"added": {
+						"type": "boolean",
+						"title": "Added",
+						"default": false
+					},
 					"length_mm": {
 						"$ref": "#/components/schemas/IntCell"
 					},
@@ -1284,6 +1656,17 @@
 						"type": "boolean",
 						"title": "Unconfirmed"
 					},
+					"unconfirmed_note": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Unconfirmed Note"
+					},
 					"error": {
 						"anyOf": [
 							{
@@ -1294,6 +1677,17 @@
 							}
 						],
 						"title": "Error"
+					},
+					"previous": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Previous"
 					}
 				},
 				"type": "object",

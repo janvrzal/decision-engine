@@ -10,6 +10,7 @@ from conftest import valid_project_data
 from decision_engine.core.model.cutting_1d import Objective, Project
 from decision_engine.core.model.proposal import ChangeProposal, confirm_proposal
 from decision_engine.core.project_file import (
+    BROKEN_VALUES,
     NOT_A_PROJECT,
     read_project_file,
     write_project_file,
@@ -101,9 +102,12 @@ def _without(key: str) -> str:
         (_with(problem={"parts": []}), "V souboru chybí skladové délky."),
         (_with(problem={"stock": []}), "V souboru chybí díly."),
         (
-            _with(problem={"parts": [{"id": "p1", "length_mm": "dlouhý"}], "stock": []}),
+            _with(problem={"parts": ["díl"], "stock": []}),
             "Některé hodnoty v souboru mají nečekaný tvar, soubor je nejspíš poškozený.",
         ),
+        (_with(parameters=[1, 2]), BROKEN_VALUES),
+        ("[" * 100_000 + "]" * 100_000, NOT_A_PROJECT),
+        ('{"a":' * 50_000, NOT_A_PROJECT),
     ],
 )
 def test_neplatny_soubor_ma_srozumitelnou_chybu(content: str, message: str) -> None:
@@ -132,3 +136,64 @@ def test_castecne_neplatna_data_se_nactou_jako_navrh_s_chybami(
             assert path in {error.path for error in errors}
         case Ok(_):
             pytest.fail("neplatná data nesmí projít potvrzením")
+
+
+@pytest.mark.parametrize(
+    ("collection", "field", "value"),
+    [
+        ("parts", "length_mm", "dlouhý"),
+        ("parts", "length_mm", 1800.5),
+        ("parts", "quantity", True),
+        ("stock", "price", "levná"),
+    ],
+)
+def test_hodnota_necekaneho_typu_se_nacte_prazdna_a_oznacena(
+    collection: str, field: str, value: object
+) -> None:
+    data = valid_project_data()
+    data["problem"][collection][0][field] = value
+
+    proposal = _read_ok(json.dumps(data))
+
+    path = ("problem", collection, 0, field)
+    row = (proposal.parts if collection == "parts" else proposal.stock)[0]
+    assert getattr(row, field) is None
+    assert path in proposal.file_errors
+    assert path in proposal.unconfirmed
+
+
+def test_neplatny_cil_a_material_se_oznaci_a_zbytek_souboru_se_nacte() -> None:
+    data = valid_project_data()
+    data["parameters"]["objective"] = "nejkrásnější"
+    data["problem"]["material"] = 42
+
+    proposal = _read_ok(json.dumps(data))
+
+    assert proposal.parameters.objective is None
+    assert proposal.material is None
+    assert {("parameters", "objective"), ("problem", "material")} <= proposal.file_errors
+    assert len(proposal.parts) == len(data["problem"]["parts"])
+
+
+def test_radek_bez_id_dostane_nove_a_nezname_klice_se_ignoruji() -> None:
+    data = valid_project_data()
+    del data["problem"]["parts"][0]["id"]
+    data["problem"]["parts"][0]["poznamka"] = "navíc"
+
+    proposal = _read_ok(json.dumps(data))
+
+    assert proposal.parts[0].id == "p1"
+    assert len({part.id for part in proposal.parts}) == len(proposal.parts)
+
+
+def test_duplicitni_id_se_nacte_a_ukaze_jako_chyba_pri_potvrzeni() -> None:
+    data = valid_project_data()
+    data["problem"]["parts"].append(dict(data["problem"]["parts"][0]))
+
+    proposal = _read_ok(json.dumps(data))
+
+    match confirm_proposal(proposal, "zakazka-1", 0):
+        case Err(errors):
+            assert "duplicate_id" in {error.code for error in errors}
+        case Ok(_):
+            pytest.fail("duplicitní id nesmí projít potvrzením")

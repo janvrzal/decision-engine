@@ -46,7 +46,11 @@
 			.join(' ')
 	);
 	let saveReason = $derived(
-		busy ? 'Ukládám…' : hasProject ? undefined : 'Uložit jde potvrzená zakázka.'
+		busy
+			? 'Ukládám…'
+			: hasProject
+				? undefined
+				: 'Uložit půjde až potvrzenou zakázku. Nejdřív potvrďte údaje.'
 	);
 </script>
 
@@ -61,14 +65,17 @@
 	{/if}
 
 	{#snippet footer()}
+		<!-- Destruktivní akce vlevo, daleko od „Uložit a pokračovat“ (komponenty.md). -->
+		<div class="mr-auto">
+			<Button
+				variant="danger"
+				disabledReason={busy ? 'Počkejte na dokončení.' : undefined}
+				onclick={ondiscard}
+			>
+				{discardLabel}
+			</Button>
+		</div>
 		<Button variant="ghost" data-cancel onclick={() => (open = false)}>Zrušit</Button>
-		<Button
-			variant="danger"
-			disabledReason={busy ? 'Počkejte na dokončení.' : undefined}
-			onclick={ondiscard}
-		>
-			{discardLabel}
-		</Button>
 		<Button variant="primary" disabledReason={saveReason} onclick={onsave}>
 			Uložit a pokračovat
 		</Button>

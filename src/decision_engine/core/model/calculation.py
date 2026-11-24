@@ -1,8 +1,11 @@
 """Výsledek výpočtu plánu (spec kap. 7 `CalculationResult`, kap. 4 Výsledek).
 
-Délky jsou `int` v milimetrech (ADR-0002); jen výtěžnost je poměr (`float`).
+Délky dílů a tyčí jsou `int` v milimetrech (ADR-0002); polohy a zbytky závisí na prořezu
+a ořezu, proto jsou `Decimal` s nejvýš jedním desetinným místem (ADR-0011). Jen výtěžnost
+je poměr (`float`).
 """
 
+from decimal import Decimal
 from enum import StrEnum
 from typing import Literal
 
@@ -29,7 +32,7 @@ class PlacedPiece(_Frozen):
 
     part_id: str
     length_mm: int
-    start_mm: int
+    start_mm: Decimal
     """Poloha začátku kusu od začátku tyče (plan-rezani.md: polohy řezů od začátku tyče)."""
 
 
@@ -57,9 +60,9 @@ class Metrics(_Frozen):
     """Počet spotřebovaných tyčí podle `stock_id`, v pořadí skladových délek zakázky."""
     parts_length_mm: int
     consumed_length_mm: int
-    remnant_length_mm: int
+    remnant_length_mm: Decimal
     remnant_count: int
-    waste_length_mm: int
+    waste_length_mm: Decimal
     """Spotřebovaná délka bez dílů a využitelných zbytků (obsahuje prořezy a ořezy)."""
     yield_ratio: float
     """Délka dílů / spotřebovaná délka; 0 bez spotřebovaných tyčí."""
@@ -74,5 +77,7 @@ class CalculationResult(_Frozen):
     bars: tuple[Bar, ...]
     unplaced: tuple[UnplacedPiece, ...]
     metrics: Metrics
-    lower_bound: int | None = None
-    """Dolní mez hodnoty cíle; do M4 se nepočítá, proto plán nikdy není „Optimální“."""
+    lower_bound: Decimal | None = None
+    """Dolní mez hodnoty cíle (tyče, mm nebo Kč podle cíle), zaokrouhlená nahoru na jednotku.
+
+    „Optimální“ smí plán být, jen když hodnota cíle mez dosáhne (pravidlo 9)."""

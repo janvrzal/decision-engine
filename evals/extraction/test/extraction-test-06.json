@@ -1,0 +1,44 @@
+{
+  "id": "extraction-test-06",
+  "input": "Díly: 5× 2 700 mm, 10× 1 350 mm, 12× 410 mm. Dodavatel nabízí tyče 6 m za 548 Kč a 4 m za 389 Kč, případně i 3 m za 305 Kč. Prořez 3 mm.",
+  "expected": {
+    "parts": [
+      {
+        "length_mm": 2700,
+        "quantity": 5
+      },
+      {
+        "length_mm": 1350,
+        "quantity": 10
+      },
+      {
+        "length_mm": 410,
+        "quantity": 12
+      }
+    ],
+    "stock": [
+      {
+        "length_mm": 6000,
+        "price": "548"
+      },
+      {
+        "length_mm": 4000,
+        "price": "389"
+      },
+      {
+        "length_mm": 3000,
+        "price": "305"
+      }
+    ],
+    "kerf_mm": 3,
+    "trim_mm": null,
+    "min_remnant_mm": null,
+    "objective": null
+  },
+  "tags": [
+    "vice_skladovych",
+    "ceny_kc",
+    "oddelovac_tisicu"
+  ],
+  "author_note": "Tři skladové délky s cenami."
+}

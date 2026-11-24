@@ -36,11 +36,28 @@ class SessionStore:
     def get(self, session_id: str) -> AppState:
         return self._session(session_id).state
 
-    def update(self, session_id: str, change: Callable[[AppState], AppState]) -> AppState:
-        """Provede změnu stavu pod zámkem relace a uloží výsledek."""
+    def update(
+        self,
+        session_id: str,
+        change: Callable[[AppState, Callable[[AppState], None]], AppState],
+    ) -> AppState:
+        """Provede změnu stavu pod zámkem relace a uloží výsledek.
+
+        Změna smí průběžně zveřejnit mezistav (druhý argument); čtení relace ho uvidí
+        hned, např. běžící výpočet po obnovení stránky. Selže-li změna, vrátí se původní stav.
+        """
         session = self._session(session_id)
         with session.lock:
-            session.state = change(session.state)
+            before = session.state
+
+            def publish(state: AppState) -> None:
+                session.state = state
+
+            try:
+                session.state = change(before, publish)
+            except BaseException:
+                session.state = before
+                raise
             return session.state
 
     def _session(self, session_id: str) -> _Session:

@@ -1,5 +1,8 @@
 <script lang="ts">
 	import PanelLeftClose from '@lucide/svelte/icons/panel-left-close';
+	import { tick } from 'svelte';
+	import { STEP_HEADING, focusById, stepAnnouncement } from '#lib/behaviors/step-focus.js';
+	import { barsWord, formatPercent } from '#lib/format.js';
 	import { MediaQuery } from 'svelte/reactivity';
 	import type { StepView, UserEvent, ViewModel } from '#lib/api/types.js';
 	import { EXAMPLE_PROMPTS } from '#lib/examples.js';
@@ -10,6 +13,7 @@
 	import ChatPanel from './ChatPanel.svelte';
 	import ChatRail from './ChatRail.svelte';
 	import DiscardProjectDialog from './DiscardProjectDialog.svelte';
+	import { DiscardGuard } from '#lib/behaviors/discard-guard.svelte.js';
 	import InputStep from './InputStep.svelte';
 	import ImportDialog from './ImportDialog.svelte';
 	import ProjectHeader from './ProjectHeader.svelte';
@@ -31,21 +35,66 @@
 
 	const wide = new MediaQuery('min-width: 1280px');
 	let chatCollapsed = $state(false);
+	/** Uživatel asistenta sám rozbalil nebo sbalil; pak už o tom rozhoduje on. */
+	let chatTouched = $state(false);
 	let chatSheetOpen = $state(false);
 	let shownStep = $state<StepView['id'] | null>(null);
 
 	$effect(() => {
 		if (wide.current) chatSheetOpen = false;
 	});
-	// Když backend posune krok (nový návrh, výsledek), zobrazí se nový krok.
+	// Když backend posune krok (nový návrh, výsledek), zobrazí se nový krok. Nový view model
+	// se stejným krokem (odpověď na úpravu buňky) volbu uživatele nepřepíše.
+	let backendStep: StepView['id'] | null = null;
 	$effect(() => {
-		void view.project.step;
-		shownStep = null;
+		const current = view.project.step;
+		if (current !== backendStep) {
+			backendStep = current;
+			shownStep = null;
+		}
 	});
 
 	let solving = $derived(session.pending?.kind === 'solving');
+	// Na prázdné obrazovce je jedno vstupní pole (krok Zadání); asistent se ukáže
+	// s první zprávou, nebo když ho uživatel rozbalí (#61).
+	let emptyStart = $derived(
+		view.project.step === 'input' && view.messages.length === 0 && session.pending === null
+	);
+	let chatHidden = $derived(chatTouched ? chatCollapsed : emptyStart || chatCollapsed);
+
+	// Po změně kroku fokus na jeho nadpis a krátké oznámení pro čtečku (#59).
+	let announcement = $state('');
+	let focusedStep: StepView['id'] | null = null;
+	$effect(() => {
+		const current = step;
+		const result = view.result;
+		if (focusedStep === null) {
+			focusedStep = current; // první vykreslení: fokus nechat, kde je
+			return;
+		}
+		if (current === focusedStep || solving) return;
+		focusedStep = current;
+		const summary = result
+			? `${result.metrics.bars_used} ${barsWord(result.metrics.bars_used)}, výtěžnost ${formatPercent(result.metrics.yield_ratio)}`
+			: null;
+		announcement = stepAnnouncement(current, summary);
+		void tick().then(() => focusById(STEP_HEADING[current]));
+	});
+
+	async function collapseChat(collapsed: boolean) {
+		chatCollapsed = collapsed;
+		chatTouched = true;
+		await tick();
+		document
+			.querySelector<HTMLElement>(
+				collapsed ? '[aria-label="Rozbalit asistenta"]' : '[aria-label="Sbalit asistenta"]'
+			)
+			?.focus();
+	}
 	let step = $derived(solving ? 'result' : (shownStep ?? view.project.step));
 	let busy = $derived(session.pending !== null);
+	// Zobrazený krok je aktivní; neaktuální krok si svůj stav ponechá a aktivní je jen
+	// přes `current` (aria-current), aby stav „neaktuální“ nezmizel.
 	let steps = $derived(
 		view.project.steps.map((s) => ({
 			...s,
@@ -74,7 +123,11 @@
 	let importOpen = $state(false);
 	let checkError = $state<string | null>(null);
 	let saveError = $state<string | null>(null);
-	let saveReason = $derived(view.project.can_save ? undefined : 'Uložit jde potvrzená zakázka.');
+	let saveReason = $derived(
+		view.project.can_save
+			? undefined
+			: 'Uložit půjde až potvrzenou zakázku. Nejdřív potvrďte údaje.'
+	);
 	let newReason = $derived(view.project.can_start_new ? undefined : 'Počkejte na dokončení.');
 
 	/** Uloží zakázku a dá backendu vědět, kterou revizi si uživatel stáhl. */
@@ -91,78 +144,80 @@
 	}
 
 	// Dialog Zahodit rozpracovanou zakázku (UC-15): akce čeká, než uživatel rozhodne.
-	let discard = $state<{ label: string; run: () => Promise<void> } | null>(null);
-	let discardOpen = $state(false);
-	let discardBusy = $state(false);
-	let discardError = $state<string | null>(null);
-
-	function guarded(label: string, run: () => Promise<void>) {
-		if (!view.project.unsaved_changes) {
-			void run();
-			return;
-		}
-		discard = { label, run };
-		discardError = null;
-		discardOpen = true;
-	}
-
-	async function proceed(saveFirst: boolean) {
-		if (!discard) return;
-		discardBusy = true;
-		const error = saveFirst ? await saveFile() : null;
-		discardBusy = false;
-		if (error) {
-			discardError = error;
-			return;
-		}
-		discardOpen = false;
-		await discard.run();
-	}
+	const guard = new DiscardGuard(() => session.view?.project.unsaved_changes ?? false, saveFile);
 
 	function newProject() {
 		chatSheetOpen = false;
-		guarded('Zahodit zakázku', async () => {
-			saveError = null;
-			await session.send({ type: 'NewProjectRequested' });
+		void guard.request({
+			label: 'Zahodit zakázku',
+			run: async (discardUnsaved) => {
+				saveError = null;
+				await session.send({ type: 'NewProjectRequested', discard_unsaved: discardUnsaved });
+				const fresh = session.view;
+				return fresh !== null && fresh.project.revision === null && fresh.proposal === null;
+			}
 		});
 	}
 
 	function openImport() {
 		chatSheetOpen = false;
 		checkError = null;
+		importErrorOnOpen = false;
 		importOpen = true;
 	}
 
-	async function sendImport(content: string) {
-		await session.send({ type: 'ProjectImported', content });
-		if (session.view && !session.view.import_error && !session.problem) importOpen = false;
-	}
+	let importErrorOnOpen = $state(false);
 
 	/** Platnost souboru se ověří dřív, než se nabídne zahození rozpracované zakázky (F4). */
 	async function importFile(content: string) {
 		checkError = null;
-		if (!view.project.unsaved_changes) {
-			await sendImport(content);
-			return;
-		}
-		try {
-			const { data } = await api.POST('/api/project-files/check', { body: { content } });
-			if (!data) throw new Error('bez dat');
-			if (!data.ok) {
-				checkError = data.message ?? 'Soubor se nepodařilo načíst.';
+		if (view.project.unsaved_changes) {
+			try {
+				const { data } = await api.POST('/api/project-files/check', { body: { content } });
+				if (!data) throw new Error('bez dat');
+				if (!data.ok) {
+					checkError = data.message ?? 'Soubor se nepodařilo načíst.';
+					return;
+				}
+			} catch {
+				checkError = 'Server neodpovídá, soubor se nenačetl.';
 				return;
 			}
-		} catch {
-			checkError = 'Server neodpovídá, soubor se nenačetl.';
-			return;
+			importOpen = false;
 		}
-		importOpen = false;
-		guarded('Zahodit a načíst', async () => {
-			await session.send({ type: 'ProjectImported', content });
-			// Soubor prošel ověřením; kdyby ho backend přesto odmítl, chyba se ukáže v okně.
-			if (session.view?.import_error) importOpen = true;
+		await guard.request({
+			label: 'Zahodit a načíst',
+			run: async (discardUnsaved) => {
+				const before = session.view?.messages.length ?? 0;
+				await session.send({ type: 'ProjectImported', content, discard_unsaved: discardUnsaved });
+				if (session.view?.import_error) {
+					// Soubor backend odmítl: chyba se ukáže v okně.
+					importErrorOnOpen = true;
+					importOpen = true;
+					return true;
+				}
+				// Načtení přidá do dialogu zprávu „Zakázka načtena…“; jinak se neprovedlo.
+				const applied = (session.view?.messages.length ?? 0) > before;
+				if (applied) importOpen = false;
+				return applied;
+			}
 		});
+		// Načtení čeká na rozhodnutí v dialogu Zahodit: okno s výběrem souboru se zavře.
+		if (guard.open) importOpen = false;
 	}
+
+	function retryMessage(text: string) {
+		void session.retryMessage(text);
+	}
+
+	// Chyba AI nebo doptání na kroku Zadání: uživatel psal do hlavního pole, tak ji ukážeme
+	// i tam, nejen v dialogu vlevo.
+	let inputReply = $derived.by(() => {
+		const last = view.messages.at(-1);
+		return last && last.role === 'assistant' && (last.kind === 'error' || last.offer_manual)
+			? last
+			: null;
+	});
 
 	let editReason = $derived(view.project.can_edit ? undefined : 'Počkejte na dokončení výpočtu.');
 
@@ -185,11 +240,11 @@
 		{#snippet header()}
 			{#if withHeader}
 				<div class="flex items-center justify-between border-b border-border px-4 py-2">
-					<h2 class="text-heading text-ink">Dialog</h2>
+					<h2 class="text-heading text-ink">Asistent</h2>
 					<IconButton
-						label="Sbalit dialog"
+						label="Sbalit asistenta"
 						aria-expanded="true"
-						onclick={() => (chatCollapsed = true)}
+						onclick={() => void collapseChat(true)}
 					>
 						<PanelLeftClose size={16} strokeWidth={1.5} aria-hidden="true" />
 					</IconButton>
@@ -199,16 +254,17 @@
 	</ChatPanel>
 {/snippet}
 
-<div class="flex h-dvh flex-col bg-page">
+<div class="flex h-dvh flex-col bg-page print:h-auto print:bg-surface">
 	<AppBar />
 	<ProjectHeader
 		name={view.project.name}
 		{steps}
+		currentStep={step}
 		onselectstep={selectStep}
 		onopenchat={() => (chatSheetOpen = true)}
 		saveDisabledReason={saveReason}
 		saveNote={view.project.save_note}
-		unsaved={view.project.unsaved_changes}
+		unsaved={view.project.unsaved_badge}
 		newDisabledReason={newReason}
 		onsave={() => void save()}
 		onload={openImport}
@@ -217,17 +273,23 @@
 
 	<div class="flex min-h-0 flex-1">
 		{#if wide.current}
-			{#if chatCollapsed}
-				<ChatRail onexpand={() => (chatCollapsed = false)} />
+			{#if chatHidden}
+				<ChatRail onexpand={() => void collapseChat(false)} />
 			{:else}
-				<aside class="flex w-90 shrink-0 flex-col border-r border-border bg-surface">
+				<aside class="flex w-90 shrink-0 flex-col border-r border-border bg-surface print:hidden">
 					{@render chat(true)}
 				</aside>
 			{/if}
 		{/if}
 
 		<div class="flex min-w-0 flex-1 flex-col">
-			<main class="min-h-0 flex-1 overflow-y-auto">
+			<!-- scroll-padding: lepivá lišta dole nezakryje pole s fokusem (WCAG 2.4.11). -->
+			<main
+				id="main"
+				tabindex="-1"
+				class="min-h-0 flex-1 scroll-pb-24 overflow-y-auto focus:outline-none print:overflow-visible"
+			>
+				<p role="status" class="sr-only">{announcement}</p>
 				<div class="mx-auto flex max-w-5xl flex-col gap-6 p-6">
 					{#if saveError}
 						<Alert variant="danger" title="Zakázka se neuložila">
@@ -248,12 +310,24 @@
 							{/snippet}
 						</Alert>
 					{/if}
+					{#if session.problem === 'rejected'}
+						<Alert variant="danger" title="Akce se neprovedla">
+							Server poslední akci odmítl, údaje se nezměnily. Obnovte stránku a zkuste to znovu.
+							{#snippet actions()}
+								<Button variant="secondary" onclick={() => location.reload()}>
+									Obnovit stránku
+								</Button>
+							{/snippet}
+						</Alert>
+					{/if}
 
 					{#if step === 'input'}
 						<InputStep
 							capabilities={view.capabilities}
 							extractionAvailable={view.session.ai.extraction_available}
 							{busy}
+							reply={inputReply}
+							onretry={retryMessage}
 							onsubmit={sendMessage}
 							onmanual={manualEntry}
 							onload={openImport}
@@ -294,7 +368,6 @@
 					proposalPending={view.proposal !== null}
 					onsend={send}
 					onreview={() => (shownStep = 'review')}
-					onsave={() => void save()}
 				/>
 			{/if}
 		</div>
@@ -302,7 +375,7 @@
 </div>
 
 {#if !wide.current}
-	<Sheet bind:open={chatSheetOpen} title="Dialog">
+	<Sheet bind:open={chatSheetOpen} title="Asistent">
 		{@render chat(false)}
 	</Sheet>
 {/if}
@@ -311,17 +384,18 @@
 	bind:open={importOpen}
 	busy={session.pending !== null}
 	error={checkError ?? view.import_error}
+	errorOnOpen={importErrorOnOpen}
 	onimport={importFile}
 />
 
 <DiscardProjectDialog
-	bind:open={discardOpen}
+	bind:open={guard.open}
 	name={view.project.name}
 	hasProject={view.project.can_save}
 	hasProposal={view.proposal !== null}
-	discardLabel={discard?.label ?? 'Zahodit zakázku'}
-	busy={discardBusy}
-	error={discardError}
-	onsave={() => void proceed(true)}
-	ondiscard={() => void proceed(false)}
+	discardLabel={guard.action?.label ?? 'Zahodit zakázku'}
+	busy={guard.busy}
+	error={guard.error}
+	onsave={() => void guard.proceed(true)}
+	ondiscard={() => void guard.proceed(false)}
 />

@@ -75,8 +75,8 @@ def test_odpoved_modelu_vrati_text_a_posle_json_mode() -> None:
     [
         (429, "rate_limit"),
         (400, "invalid_response"),
-        (500, "invalid_response"),
-        (401, "connection"),
+        (500, "connection"),  # výpadek poskytovatele, ne vadná odpověď
+        (401, "configuration"),  # neplatný klíč: opakování nepomůže
     ],
 )
 def test_chyby_api_se_prevedou_na_druh_chyby(status: int, kind: str) -> None:
@@ -116,7 +116,10 @@ def test_zalozni_prompt_dosadi_promenne() -> None:
     )
 
     assert prompt.source == "fallback"
-    assert prompt.messages[-1] == ChatMessage(role="user", content="4 nohy")
+    user = prompt.messages[-1]
+    assert user.role == "user"
+    assert user.content.endswith("Zpráva uživatele:\n4 nohy")
+    assert "<zakazka>\nžádná\n</zakazka>" in user.content
     assert "JSON" in prompt.messages[0].content  # Groq json_object vyžaduje slovo JSON
     assert "{{" not in prompt.messages[0].content
 

@@ -138,3 +138,55 @@ def test_prazdny_navrh_pro_rucni_zadani_ma_vychozi_hodnoty_jako_ai() -> None:
     assert proposal.parameters.kerf_mm is None
     assert proposal.parameters.objective is Objective.LEAST_MATERIAL
     assert ("problem", "stock", 0, "length_mm") in proposal.unconfirmed
+
+
+def _changed_base(project_data: dict[str, Any]) -> Project:
+    """Potvrzená zakázka s materiálem a ručně upravenými parametry."""
+    data = {
+        **project_data,
+        "problem": {**project_data["problem"], "material": "jekl 40×40×2"},
+        "parameters": {
+            **project_data["parameters"],
+            "kerf_mm": 2,
+            "trim_mm": 10,
+            "min_remnant_mm": 500,
+            "objective": "fewest_bars",
+            "time_limit_s": 20,
+        },
+    }
+    return Project.model_validate(data)
+
+
+def test_navazujici_zmena_zachova_material_a_parametry(project_data: dict[str, Any]) -> None:
+    base = _changed_base(project_data)
+    output = ExtractionOutput.model_validate(
+        {"parts": [{"ref": "p1", "name": "noha", "length_mm": 1800, "quantity": 6}]}
+    )
+
+    proposal = proposal_from_extraction(output, base)
+
+    assert proposal.material == "jekl 40×40×2"
+    params = proposal.parameters
+    assert (params.kerf_mm, params.trim_mm, params.min_remnant_mm) == (2, 10, 500)
+    assert params.objective is Objective.FEWEST_BARS
+    assert params.time_limit_s == 20
+    assert [item.id for item in proposal.stock] == [item.id for item in base.problem.stock]
+    assert not any(path[0] == "parameters" for path in proposal.unconfirmed)
+    assert not any(path[:2] == ("problem", "stock") for path in proposal.unconfirmed)
+
+
+def test_navazujici_zmena_prevezme_jen_to_co_uzivatel_rekl(project_data: dict[str, Any]) -> None:
+    base = _changed_base(project_data)
+    output = ExtractionOutput.model_validate(
+        {
+            "material": "jekl 30×30×2",
+            "parts": [{"ref": "p1", "name": "noha", "length_mm": 1800, "quantity": 4}],
+            "kerf_mm": 3,
+        }
+    )
+
+    proposal = proposal_from_extraction(output, base)
+
+    assert proposal.material == "jekl 30×30×2"
+    assert proposal.parameters.kerf_mm == 3
+    assert proposal.parameters.trim_mm == 10

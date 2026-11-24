@@ -1,0 +1,118 @@
+{
+  "id": "dialog-test-09",
+  "turns": [
+    {
+      "input": "Chci udělat stůl.",
+      "expected": {
+        "outcome": "unclear",
+        "project": null
+      }
+    },
+    {
+      "input": "Z jeklu 40×40 potřebuju 4 nohy po 740 mm, 2 kusy po 1 500 mm a 2 po 700 mm, tyče 6 m za 520 Kč, prořez 3 mm.",
+      "expected": {
+        "outcome": "supported",
+        "project": {
+          "material": "jekl 40×40",
+          "parts": [
+            {
+              "length_mm": 740,
+              "quantity": 4
+            },
+            {
+              "length_mm": 1500,
+              "quantity": 2
+            },
+            {
+              "length_mm": 700,
+              "quantity": 2
+            }
+          ],
+          "stock": [
+            {
+              "length_mm": 6000,
+              "price": "520"
+            }
+          ],
+          "kerf_mm": 3,
+          "trim_mm": null,
+          "min_remnant_mm": null
+        }
+      }
+    },
+    {
+      "input": "Nohy zkrať o 20 mm.",
+      "expected": {
+        "outcome": "supported",
+        "project": {
+          "material": "jekl 40×40",
+          "parts": [
+            {
+              "length_mm": 720,
+              "quantity": 4
+            },
+            {
+              "length_mm": 1500,
+              "quantity": 2
+            },
+            {
+              "length_mm": 700,
+              "quantity": 2
+            }
+          ],
+          "stock": [
+            {
+              "length_mm": 6000,
+              "price": "520"
+            }
+          ],
+          "kerf_mm": 3,
+          "trim_mm": null,
+          "min_remnant_mm": null
+        }
+      }
+    },
+    {
+      "input": "Přidej 2 příčky po 1 420 mm.",
+      "expected": {
+        "outcome": "supported",
+        "project": {
+          "material": "jekl 40×40",
+          "parts": [
+            {
+              "length_mm": 720,
+              "quantity": 4
+            },
+            {
+              "length_mm": 1500,
+              "quantity": 2
+            },
+            {
+              "length_mm": 700,
+              "quantity": 2
+            },
+            {
+              "length_mm": 1420,
+              "quantity": 2
+            }
+          ],
+          "stock": [
+            {
+              "length_mm": 6000,
+              "price": "520"
+            }
+          ],
+          "kerf_mm": 3,
+          "trim_mm": null,
+          "min_remnant_mm": null
+        }
+      }
+    }
+  ],
+  "tags": [
+    "unclear_zacatek",
+    "relativni_zmena",
+    "pridani"
+  ],
+  "author_note": "Vágní začátek; zkrácení nohou nesmí sloučit s dílem 700 mm. Materiál se porovnává sémanticky (stejný profil), ne doslovně."
+}

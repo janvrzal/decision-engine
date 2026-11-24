@@ -15,6 +15,7 @@
 	let {
 		name,
 		steps,
+		currentStep,
 		onselectstep,
 		onopenchat,
 		saveDisabledReason,
@@ -27,6 +28,8 @@
 	}: {
 		name: string;
 		steps: StepView[];
+		/** Právě zobrazený krok (může být i neaktuální). */
+		currentStep?: StepView['id'];
 		onselectstep: (id: StepView['id']) => void;
 		onopenchat: () => void;
 		/** Proč teď nejde uložit; `undefined` = jde. */
@@ -49,43 +52,50 @@
 	]);
 </script>
 
-<div class="flex shrink-0 items-center gap-x-6 gap-y-2 border-b border-border bg-surface px-4 py-3">
+<!-- Pod 640 px má hlavička tři řádky: název, akce a kroky (#58). -->
+<section
+	aria-label="Zakázka"
+	class="flex shrink-0 flex-wrap items-center gap-x-6 gap-y-2 border-b border-border bg-surface px-4 py-3 print:hidden"
+>
 	<div class="xl:hidden">
 		<Button variant="secondary" onclick={onopenchat} aria-haspopup="dialog">
 			<MessageSquare size={16} strokeWidth={1.5} aria-hidden="true" />
-			Dialog
+			Asistent
 		</Button>
 	</div>
-	<div class="flex min-w-0 items-center gap-2">
+	<div class="order-first flex w-full min-w-0 items-center gap-2 sm:order-none sm:w-auto">
 		<h1 class="min-w-0 truncate text-title text-ink">{name}</h1>
 		{#if unsaved}
-			<Badge variant="warning" icon={CircleDot}>neuloženo</Badge>
+			<!-- Pod 640 px jen ikona, slovo zůstane čtečkám, aby se vešel název zakázky. -->
+			<Badge variant="warning" icon={CircleDot}>
+				<span class="max-sm:sr-only">neuloženo</span>
+			</Badge>
 		{/if}
 	</div>
-	<div class="flex-1">
-		<StepIndicator {steps} onselect={onselectstep} />
+	<div class="order-last w-full sm:order-none sm:w-auto sm:flex-1">
+		<StepIndicator {steps} current={currentStep} onselect={onselectstep} />
 	</div>
-	<div class="flex items-center gap-2">
+	<div class="ml-auto flex items-center gap-2 sm:ml-0">
 		{#if saveNote && !saveDisabledReason}
 			<!-- UC-06 A2: uloží se jen potvrzená verze, rozpracovaný návrh ne. -->
 			<Tooltip content={saveNote}>
 				{#snippet trigger({ props })}
 					<Button {...props} variant="secondary" onclick={onsave}>
 						<Save size={16} strokeWidth={1.5} aria-hidden="true" />
-						Uložit
+						Uložit zakázku
 					</Button>
 				{/snippet}
 			</Tooltip>
 		{:else}
 			<Button variant="secondary" disabledReason={saveDisabledReason} onclick={onsave}>
 				<Save size={16} strokeWidth={1.5} aria-hidden="true" />
-				Uložit
+				Uložit zakázku
 			</Button>
 		{/if}
 		<div class="hidden items-center gap-2 xl:flex">
 			<Button variant="ghost" onclick={onload}>
 				<FolderOpen size={16} strokeWidth={1.5} aria-hidden="true" />
-				Načíst
+				Načíst zakázku
 			</Button>
 			<Button variant="ghost" disabledReason={newDisabledReason} onclick={onnew}>
 				<FilePlus size={16} strokeWidth={1.5} aria-hidden="true" />
@@ -96,4 +106,4 @@
 			<DropdownMenu label="Další akce se zakázkou" items={moreActions} />
 		</div>
 	</div>
-</div>
+</section>
