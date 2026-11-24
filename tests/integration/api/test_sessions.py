@@ -88,6 +88,7 @@ def test_uc01_cely_tok_pres_http() -> None:
         "value": 300,
         "unconfirmed": True,
         "error": None,
+        "previous": None,
     }
     assert proposal["stock"][0]["price"]["value"] == "420"
     assert proposal["can_confirm"] is True
@@ -156,7 +157,12 @@ def test_neplatny_navrh_nejde_potvrdit_a_rekne_proc() -> None:
     ]
     assert proposal["parts"][0]["length_mm"]["error"] == "Chybí hodnota."
     # Skladová délka chyběla → výchozí 6 000 mm jako nepotvrzená (UC-01 A2).
-    assert proposal["stock"][0]["length_mm"] == {"value": 6000, "unconfirmed": True, "error": None}
+    assert proposal["stock"][0]["length_mm"] == {
+        "value": 6000,
+        "unconfirmed": True,
+        "error": None,
+        "previous": None,
+    }
     cheapest = proposal["objective_options"][0]
     assert cheapest["value"] == "cheapest"
     assert cheapest["disabled_reason"] == "Chybí ceny skladových délek."

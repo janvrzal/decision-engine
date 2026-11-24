@@ -182,7 +182,13 @@ def _proposal_received(state: AppState, event: ProposalReceived) -> Transition:
         }
     )
     if event.reply:
-        reply = Message(id=state.next_message_id, role="assistant", kind="text", text=event.reply)
+        reply = Message(
+            id=state.next_message_id,
+            role="assistant",
+            kind="text",
+            text=event.reply,
+            proposal=True,
+        )
         new_state = _with_message(new_state, reply)
     return new_state, ()
 

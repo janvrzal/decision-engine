@@ -37,6 +37,8 @@ class Message(_Frozen):
     error_kind: AiErrorKind | None = None
     retry_text: str | None = None
     """U chyby AI text zprávy, kterou jde poslat znovu („Zkusit znovu“ i po obnovení)."""
+    proposal: bool = False
+    """Odpověď asistenta k návrhu změny: platí až po potvrzení (UI ji tak označí)."""
 
 
 class PendingOperation(_Frozen):

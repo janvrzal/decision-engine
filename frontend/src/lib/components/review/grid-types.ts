@@ -11,4 +11,6 @@ export interface GridColumn {
 export interface CellState {
 	unconfirmed: boolean;
 	error: string | null;
+	/** Původní hodnota v potvrzené revizi, změnil-li ji návrh. */
+	previous?: string | null;
 }

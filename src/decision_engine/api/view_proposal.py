@@ -3,6 +3,7 @@
 from collections.abc import Mapping
 from decimal import Decimal
 
+from decision_engine.api.view_changes import build_changes, previous_values
 from decision_engine.api.view_model import (
     DecimalCell,
     FieldErrorView,
@@ -16,8 +17,9 @@ from decision_engine.api.view_model import (
     TextCell,
 )
 from decision_engine.core.errors import FieldError, FieldPath
-from decision_engine.core.model.cutting_1d import Objective
+from decision_engine.core.model.cutting_1d import Objective, Project
 from decision_engine.core.model.proposal import ChangeProposal, confirm_proposal
+from decision_engine.core.model.proposal_diff import diff_proposal
 from decision_engine.core.result import Err, Ok
 
 OBJECTIVES: dict[Objective, tuple[str, str]] = {
@@ -41,47 +43,66 @@ PARAMETER_FIELDS = ("kerf_mm", "trim_mm", "min_remnant_mm", "time_limit_s")
 
 
 class _Cells:
-    """Stav buněk návrhu: nepotvrzené hodnoty a chyby podle cesty pole."""
+    """Stav buněk návrhu: nepotvrzené hodnoty, chyby a původní hodnoty podle cesty pole."""
 
-    def __init__(self, unconfirmed: frozenset[FieldPath], errors: Mapping[FieldPath, str]):
+    def __init__(
+        self,
+        unconfirmed: frozenset[FieldPath],
+        errors: Mapping[FieldPath, str],
+        previous: Mapping[FieldPath, str],
+    ):
         self._unconfirmed = unconfirmed
         self._errors = errors
+        self._previous = previous
+
+    def _state(self, path: FieldPath) -> dict[str, object]:
+        return {
+            "unconfirmed": path in self._unconfirmed,
+            "error": self._errors.get(path),
+            "previous": self._previous.get(path),
+        }
 
     def text(self, path: FieldPath, value: str | None) -> TextCell:
-        return TextCell(
-            value=value, unconfirmed=path in self._unconfirmed, error=self._errors.get(path)
-        )
+        return TextCell.model_validate({"value": value, **self._state(path)})
 
     def int(self, path: FieldPath, value: int | None) -> IntCell:
-        return IntCell(
-            value=value, unconfirmed=path in self._unconfirmed, error=self._errors.get(path)
-        )
+        return IntCell.model_validate({"value": value, **self._state(path)})
 
     def decimal(self, path: FieldPath, value: Decimal | None) -> DecimalCell:
-        return DecimalCell(
-            value=value, unconfirmed=path in self._unconfirmed, error=self._errors.get(path)
-        )
+        return DecimalCell.model_validate({"value": value, **self._state(path)})
 
     def money(self, path: FieldPath, value: Decimal | None) -> MoneyCell:
-        return MoneyCell(
-            value=value, unconfirmed=path in self._unconfirmed, error=self._errors.get(path)
-        )
+        return MoneyCell.model_validate({"value": value, **self._state(path)})
 
 
-def build_proposal(proposal: ChangeProposal, session_id: str) -> ProposalView:
-    """Návrh s buňkami a živou validací (stejná pravidla jako při potvrzení)."""
+def build_proposal(
+    proposal: ChangeProposal, session_id: str, base: Project | None = None
+) -> ProposalView:
+    """Návrh s buňkami a živou validací (stejná pravidla jako při potvrzení).
+
+    U úpravy potvrzené zakázky (`base`) přidá souhrn změn a původní hodnoty buněk.
+    """
     errors = tuple(_from_file(e, proposal) for e in _validate(proposal, session_id))
-    cells = _Cells(proposal.unconfirmed, {error.path: error.message for error in errors})
+    diff = diff_proposal(proposal, base) if base is not None else None
+    cells = _Cells(
+        proposal.unconfirmed,
+        {error.path: error.message for error in errors},
+        previous_values(diff) if diff else {},
+    )
+    added_parts = set(diff.added_parts) if diff else set[str]()
+    added_stock = set(diff.added_stock) if diff else set[str]()
     params = proposal.parameters
     all_priced = bool(proposal.stock) and all(s.price is not None for s in proposal.stock)
     return ProposalView(
         is_change=proposal.base_revision is not None,
+        changes=build_changes(proposal, base, diff) if base is not None and diff else None,
         origin=proposal.origin,
         name=cells.text(("name",), proposal.name),
         material=cells.text(("problem", "material"), proposal.material),
         parts=tuple(
             PartRow(
                 id=part.id,
+                added=part.id in added_parts,
                 name=cells.text(("problem", "parts", i, "name"), part.name),
                 length_mm=cells.int(("problem", "parts", i, "length_mm"), part.length_mm),
                 quantity=cells.int(("problem", "parts", i, "quantity"), part.quantity),
@@ -91,6 +112,7 @@ def build_proposal(proposal: ChangeProposal, session_id: str) -> ProposalView:
         stock=tuple(
             StockRow(
                 id=stock.id,
+                added=stock.id in added_stock,
                 length_mm=cells.int(("problem", "stock", i, "length_mm"), stock.length_mm),
                 price=cells.money(("problem", "stock", i, "price"), stock.price),
             )

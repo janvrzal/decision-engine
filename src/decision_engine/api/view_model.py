@@ -73,18 +73,24 @@ class MessageView(_View):
     text: str
     retry_text: str | None = None
     """U chyby AI zpráva, kterou „Zkusit znovu“ pošle znovu."""
+    proposal: bool = False
+    """Odpověď k návrhu změny, který ještě neplatí."""
 
 
 class TextCell(_View):
     value: str | None
     unconfirmed: bool
     error: str | None
+    previous: str | None = None
+    """Hodnota v potvrzené revizi, změnil-li ji návrh („původně 1 800 mm“)."""
 
 
 class IntCell(_View):
     value: int | None
     unconfirmed: bool
     error: str | None
+    previous: str | None = None
+    """Hodnota v potvrzené revizi, změnil-li ji návrh („původně 1 800 mm“)."""
 
 
 class DecimalCell(_View):
@@ -93,16 +99,22 @@ class DecimalCell(_View):
     value: Decimal | None
     unconfirmed: bool
     error: str | None
+    previous: str | None = None
+    """Hodnota v potvrzené revizi, změnil-li ji návrh („původně 1 800 mm“)."""
 
 
 class MoneyCell(_View):
     value: Decimal | None
     unconfirmed: bool
     error: str | None
+    previous: str | None = None
+    """Hodnota v potvrzené revizi, změnil-li ji návrh („původně 1 800 mm“)."""
 
 
 class PartRow(_View):
     id: str
+    added: bool = False
+    """Řádek, který v potvrzené revizi nebyl (nový z návrhu)."""
     name: TextCell
     length_mm: IntCell
     quantity: IntCell
@@ -110,6 +122,7 @@ class PartRow(_View):
 
 class StockRow(_View):
     id: str
+    added: bool = False
     length_mm: IntCell
     price: MoneyCell
 
@@ -136,9 +149,34 @@ class FieldErrorView(_View):
     """Klíč pole ve formuláři (`parts.1.length_mm`), na které vede odkaz v souhrnu chyb."""
 
 
+class RemovedPartView(_View):
+    id: str
+    name: str
+    length_mm: int
+    quantity: int
+
+
+class RemovedStockView(_View):
+    id: str
+    length_mm: int
+    price: Decimal | None
+
+
+class ChangesView(_View):
+    """Souhrn změn navazující úpravy (spec kap. 4, ChangeSummary)."""
+
+    base_revision: int
+    summary: tuple[str, ...]
+    """Změny česky po řádcích („Nový díl: příčka 850 mm × 4 ks“, „Prořez: 3 mm → 2,5 mm“)."""
+    removed_parts: tuple[RemovedPartView, ...]
+    removed_stock: tuple[RemovedStockView, ...]
+
+
 class ProposalView(_View):
     is_change: bool
     """Úprava existující zakázky (jinak nová zakázka)."""
+    changes: ChangesView | None = None
+    """Co se oproti potvrzené revizi změnilo; jen u úpravy zakázky."""
     origin: Literal["ai", "manual", "file"]
     """Návrh z extrakce AI, z ručního zadání či úpravy, nebo ze souboru."""
     name: TextCell

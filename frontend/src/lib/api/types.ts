@@ -32,3 +32,6 @@ export type UserEvent =
 	| Schemas['ProposalConfirmed']
 	| Schemas['ProposalRejected']
 	| Schemas['SolveRequested'];
+export type ChangesView = Schemas['ChangesView'];
+export type RemovedPartView = Schemas['RemovedPartView'];
+export type RemovedStockView = Schemas['RemovedStockView'];

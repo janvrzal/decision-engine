@@ -63,7 +63,9 @@ function fakeClient(replies: Reply[]) {
 describe('Session', () => {
 	it('založí relaci a během zprávy ukáže průběh s textem zprávy', async () => {
 		sessionStorage.clear();
-		const reply = view('r1', [{ id: 1, role: 'user', kind: 'text', text: 'regál' }]);
+		const reply = view('r1', [
+			{ id: 1, role: 'user', kind: 'text', text: 'regál', proposal: false }
+		]);
 		const fake = fakeClient([
 			{ data: view('r1'), status: 200 },
 			{ data: reply, status: 200 }
@@ -120,8 +122,14 @@ describe('Session – fronta úprav', () => {
 		sessionStorage.clear();
 		const fake = fakeClient([
 			{ data: view('r4'), status: 200 },
-			{ data: view('r4', [{ id: 1, role: 'user', kind: 'text', text: 'první' }]), status: 200 },
-			{ data: view('r4', [{ id: 2, role: 'user', kind: 'text', text: 'druhá' }]), status: 200 }
+			{
+				data: view('r4', [{ id: 1, role: 'user', kind: 'text', text: 'první', proposal: false }]),
+				status: 200
+			},
+			{
+				data: view('r4', [{ id: 2, role: 'user', kind: 'text', text: 'druhá', proposal: false }]),
+				status: 200
+			}
 		]);
 		const session = new Session(fake.client as never);
 		await session.start();

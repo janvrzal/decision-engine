@@ -5,6 +5,7 @@
 	import { gridAction } from '#lib/behaviors/grid-navigation.js';
 	import Button from '../ui/Button.svelte';
 	import IconButton from '../ui/IconButton.svelte';
+	import Badge from '../ui/Badge.svelte';
 	import CellInput from './CellInput.svelte';
 	import type { CellState, GridColumn } from './grid-types.js';
 
@@ -18,6 +19,7 @@
 		columns,
 		rows = $bindable(),
 		cell,
+		added = () => false,
 		rowLabel,
 		addLabel,
 		disabled = false,
@@ -31,6 +33,8 @@
 		columns: GridColumn[];
 		rows: Row[];
 		cell: (row: number, key: string) => CellState;
+		/** Řádek, který v potvrzené revizi nebyl (nový z návrhu). */
+		added?: (row: number) => boolean;
 		rowLabel: (row: number) => string;
 		addLabel: string;
 		disabled?: boolean;
@@ -106,7 +110,7 @@
 		<tbody>
 			<!-- Klíčem je pořadí: id řádku může pocházet z načteného souboru a nemusí být jedinečné. -->
 			{#each rows, r (r)}
-				<tr class="border-b border-border align-top">
+				<tr class="border-b border-border align-top {added(r) ? 'bg-proposal-bg' : ''}">
 					{#each columns as column, c (column.key)}
 						{@const state = cell(r, column.key)}
 						<td class="px-1 py-1">
@@ -119,6 +123,7 @@
 								placeholder={column.placeholder}
 								unconfirmed={state.unconfirmed}
 								error={state.error}
+								previous={state.previous}
 								readonly={disabled}
 								data-row={r}
 								data-col={c}
@@ -129,7 +134,10 @@
 							/>
 						</td>
 					{/each}
-					<td class="px-1 py-1 text-right">
+					<td class="px-1 py-1 text-right whitespace-nowrap">
+						{#if added(r)}
+							<Badge variant="proposal">nový</Badge>
+						{/if}
 						<IconButton
 							label="Odebrat {rowLabel(r).toLowerCase()}"
 							disabledReason={disabled

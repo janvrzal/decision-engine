@@ -132,6 +132,11 @@ test.describe('široká obrazovka 1440 px', () => {
 
 		await expect(page.getByRole('heading', { name: 'Kontrola údajů' })).toBeVisible();
 		await expect(page.getByText('Úprava zakázky')).toBeVisible();
+		// Souhrn změn a zvýraznění nového řádku (spec kap. 4).
+		const summary = page.getByRole('region', { name: /Úprava zakázky: změny oproti verzi/ });
+		await expect(summary).toContainText('Nový díl: příčka 850');
+		await expect(page.getByRole('table', { name: 'Díly' }).getByText('nový')).toBeVisible();
+		await expect(page.getByText('Návrh · platí po potvrzení').last()).toBeVisible();
 		// Model materiál nezopakoval; z potvrzené revize zůstane (UC-03).
 		await expect(page.getByRole('textbox', { name: 'Materiál' })).toHaveValue('jekl 40×40×2');
 		await page.getByRole('button', { name: /Plán a cena/ }).click();

@@ -147,6 +147,20 @@ export interface components {
 			/** Label */
 			label: string;
 		};
+		/**
+		 * ChangesView
+		 * @description Souhrn změn navazující úpravy (spec kap. 4, ChangeSummary).
+		 */
+		ChangesView: {
+			/** Base Revision */
+			base_revision: number;
+			/** Summary */
+			summary: string[];
+			/** Removed Parts */
+			removed_parts: components['schemas']['RemovedPartView'][];
+			/** Removed Stock */
+			removed_stock: components['schemas']['RemovedStockView'][];
+		};
 		/** CostLineView */
 		CostLineView: {
 			/** Stock Id */
@@ -183,6 +197,8 @@ export interface components {
 			unconfirmed: boolean;
 			/** Error */
 			error: string | null;
+			/** Previous */
+			previous?: string | null;
 		};
 		/**
 		 * EditRequested
@@ -242,6 +258,8 @@ export interface components {
 			unconfirmed: boolean;
 			/** Error */
 			error: string | null;
+			/** Previous */
+			previous?: string | null;
 		};
 		/**
 		 * MessageSent
@@ -274,6 +292,11 @@ export interface components {
 			text: string;
 			/** Retry Text */
 			retry_text?: string | null;
+			/**
+			 * Proposal
+			 * @default false
+			 */
+			proposal: boolean;
 		};
 		/** MetricsView */
 		MetricsView: {
@@ -302,6 +325,8 @@ export interface components {
 			unconfirmed: boolean;
 			/** Error */
 			error: string | null;
+			/** Previous */
+			previous?: string | null;
 		};
 		/**
 		 * NewProjectRequested
@@ -372,6 +397,11 @@ export interface components {
 		PartRow: {
 			/** Id */
 			id: string;
+			/**
+			 * Added
+			 * @default false
+			 */
+			added: boolean;
 			name: components['schemas']['TextCell'];
 			length_mm: components['schemas']['IntCell'];
 			quantity: components['schemas']['IntCell'];
@@ -507,6 +537,7 @@ export interface components {
 		ProposalView: {
 			/** Is Change */
 			is_change: boolean;
+			changes?: components['schemas']['ChangesView'] | null;
 			/**
 			 * Origin
 			 * @enum {string}
@@ -530,6 +561,26 @@ export interface components {
 			can_confirm: boolean;
 			/** Confirm Disabled Reason */
 			confirm_disabled_reason: string | null;
+		};
+		/** RemovedPartView */
+		RemovedPartView: {
+			/** Id */
+			id: string;
+			/** Name */
+			name: string;
+			/** Length Mm */
+			length_mm: number;
+			/** Quantity */
+			quantity: number;
+		};
+		/** RemovedStockView */
+		RemovedStockView: {
+			/** Id */
+			id: string;
+			/** Length Mm */
+			length_mm: number;
+			/** Price */
+			price: string | null;
 		};
 		/** ResultView */
 		ResultView: {
@@ -604,6 +655,11 @@ export interface components {
 		StockRow: {
 			/** Id */
 			id: string;
+			/**
+			 * Added
+			 * @default false
+			 */
+			added: boolean;
 			length_mm: components['schemas']['IntCell'];
 			price: components['schemas']['MoneyCell'];
 		};
@@ -615,6 +671,8 @@ export interface components {
 			unconfirmed: boolean;
 			/** Error */
 			error: string | null;
+			/** Previous */
+			previous?: string | null;
 		};
 		/**
 		 * ToolSelected

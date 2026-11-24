@@ -17,8 +17,8 @@ const PROPOSAL: ProposalView = {
 	origin: 'ai',
 	name: cell('Regál'),
 	material: cell(null),
-	parts: [{ id: 'p1', name: cell('noha'), length_mm: cell(1800), quantity: cell(4) }],
-	stock: [{ id: 's1', length_mm: cell(6000, true), price: cell('320.50') }],
+	parts: [{ id: 'p1', added: false, name: cell('noha'), length_mm: cell(1800), quantity: cell(4) }],
+	stock: [{ id: 's1', added: false, length_mm: cell(6000, true), price: cell('320.50') }],
 	parameters: {
 		kerf_mm: cell('3'),
 		trim_mm: cell('0', true),

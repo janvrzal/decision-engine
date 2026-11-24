@@ -15,6 +15,7 @@
 		numeric = false,
 		unconfirmed = false,
 		error,
+		previous = null,
 		ref = $bindable(null),
 		oncommit,
 		onvalue,
@@ -26,6 +27,8 @@
 		numeric?: boolean;
 		unconfirmed?: boolean;
 		error?: string | null;
+		/** Hodnota v potvrzené revizi, změnil-li ji návrh (ukáže se přeškrtnutá). */
+		previous?: string | null;
 		ref?: HTMLInputElement | null;
 		oncommit?: () => void;
 		onvalue?: (value: string) => void;
@@ -35,10 +38,11 @@
 	let border = $derived(
 		error ? 'border-danger' : unconfirmed ? 'border-dashed border-proposal' : 'border-border-strong'
 	);
+	let background = $derived(previous ? 'bg-proposal-bg' : 'bg-surface');
 </script>
 
 <div class="flex min-w-0 flex-col gap-1">
-	<div class="flex h-8 items-center rounded-sm border bg-surface {border}">
+	<div class="flex h-8 items-center rounded-sm border {background} {border}">
 		<input
 			{...rest}
 			bind:this={ref}
@@ -46,7 +50,7 @@
 			{id}
 			aria-label={label}
 			aria-invalid={error ? true : undefined}
-			aria-describedby={error || unconfirmed ? `${id}-note` : undefined}
+			aria-describedby={error || unconfirmed || previous ? `${id}-note` : undefined}
 			inputmode={numeric ? 'decimal' : undefined}
 			autocomplete="off"
 			oninput={() => onvalue?.(value)}
@@ -77,6 +81,10 @@
 	</div>
 	{#if error}
 		<p id="{id}-note" class="text-small text-danger">{error}</p>
+	{:else if previous}
+		<p id="{id}-note" class="text-small text-ink-muted">
+			původně <s>{previous}</s>
+		</p>
 	{:else if unconfirmed}
 		<span id="{id}-note" class="sr-only">Nepotvrzená hodnota: výchozí nebo odhad AI, ověřte.</span>
 	{/if}

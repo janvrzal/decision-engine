@@ -80,7 +80,15 @@ def build_view_model(state: AppState, *, extraction_available: bool) -> ViewMode
             else None
         ),
         messages=tuple(_message(m) for m in state.messages),
-        proposal=build_proposal(state.proposal, state.session_id) if state.proposal else None,
+        proposal=(
+            build_proposal(
+                state.proposal,
+                state.session_id,
+                state.project if state.proposal.base_revision is not None else None,
+            )
+            if state.proposal
+            else None
+        ),
         result=build_result(state.result, stale=stale, proposal_pending=state.proposal is not None)
         if state.result
         else None,
@@ -118,4 +126,5 @@ def _message(message: Message) -> MessageView:
         kind=message.kind,
         text=text,
         retry_text=message.retry_text,
+        proposal=message.proposal,
     )

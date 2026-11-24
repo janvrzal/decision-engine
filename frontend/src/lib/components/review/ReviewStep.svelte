@@ -6,6 +6,8 @@
 		MoneyCell,
 		Objective,
 		ProposalView,
+		RemovedPartView,
+		RemovedStockView,
 		TextCell,
 		UserEvent
 	} from '#lib/api/types.js';
@@ -19,11 +21,12 @@
 		type ParameterKey,
 		type ProposalDraft
 	} from '#lib/proposal-draft.js';
-	import Alert from '../ui/Alert.svelte';
 	import Button from '../ui/Button.svelte';
 	import Collapsible from '../ui/Collapsible.svelte';
 	import RadioCardGroup from '../ui/RadioCardGroup.svelte';
+	import { integerText, moneyText } from '#lib/behaviors/number-input.js';
 	import CellInput from './CellInput.svelte';
+	import ChangeSummary from './ChangeSummary.svelte';
 	import EditableGrid from './EditableGrid.svelte';
 	import type { CellState } from './grid-types.js';
 	import ValidationSummary from './ValidationSummary.svelte';
@@ -112,6 +115,26 @@
 		onsend(event);
 	}
 
+	/** Vrátí řádek, který návrh odebral (ChangeSummary „Vrátit“). */
+	function restorePart(row: RemovedPartView) {
+		draft.parts.push({
+			id: row.id,
+			name: row.name,
+			length_mm: integerText(row.length_mm),
+			quantity: integerText(row.quantity)
+		});
+		commit();
+	}
+
+	function restoreStock(row: RemovedStockView) {
+		draft.stock.push({
+			id: row.id,
+			length_mm: integerText(row.length_mm),
+			price: moneyText(row.price)
+		});
+		commit();
+	}
+
 	function confirm() {
 		onsend({ type: 'ProposalConfirmed' });
 	}
@@ -127,7 +150,8 @@
 	function cellState(cell: IntCell | MoneyCell | TextCell | undefined, key: CellKey): CellState {
 		return {
 			unconfirmed: cell?.unconfirmed ?? false,
-			error: localErrors[key] ?? (isNewManual && !touched ? null : (cell?.error ?? null))
+			error: localErrors[key] ?? (isNewManual && !touched ? null : (cell?.error ?? null)),
+			previous: cell?.previous ?? null
 		};
 	}
 
@@ -162,10 +186,13 @@
 		</p>
 	</div>
 
-	{#if proposal.is_change}
-		<Alert variant="info" title="Úprava zakázky">
-			Změny se projeví až po potvrzení. Do té doby platí původní plán.
-		</Alert>
+	{#if proposal.changes}
+		<ChangeSummary
+			changes={proposal.changes}
+			{busy}
+			onrestorepart={restorePart}
+			onrestorestock={restoreStock}
+		/>
 	{/if}
 
 	{#if showErrors}
@@ -195,6 +222,7 @@
 				bind:value={draft.material}
 				label="Materiál"
 				data-cell="material"
+				previous={proposal.material.previous ?? null}
 				placeholder="např. jekl 40×40×2"
 				oncommit={commit}
 			/>
@@ -212,6 +240,7 @@
 		]}
 		cell={(r: number, key: string) =>
 			cellState(proposal.parts[r]?.[key as 'name' | 'length_mm' | 'quantity'], `parts.${r}.${key}`)}
+		added={(r: number) => proposal.parts[r]?.added ?? false}
 		rowLabel={(r: number) => `Díl ${r + 1}`}
 		addLabel="Přidat díl"
 		disabled={busy}
@@ -234,6 +263,7 @@
 		]}
 		cell={(r: number, key: string) =>
 			cellState(proposal.stock[r]?.[key as 'length_mm' | 'price'], `stock.${r}.${key}`)}
+		added={(r: number) => proposal.stock[r]?.added ?? false}
 		rowLabel={(r: number) => `Skladová délka ${r + 1}`}
 		addLabel="Přidat skladovou délku"
 		disabled={busy}
