@@ -23,6 +23,7 @@ export type UserEvent =
 	| Schemas['MessageSent']
 	| Schemas['ToolSelected']
 	| Schemas['EditRequested']
+	| Schemas['ProjectImported']
 	| Schemas['ProposalEdited']
 	| Schemas['ProposalConfirmed']
 	| Schemas['ProposalRejected']

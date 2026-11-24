@@ -53,8 +53,8 @@ class ChangeProposal(_Frozen):
     parameters: ParametersDraft = ParametersDraft()
     unconfirmed: frozenset[FieldPath] = frozenset()
     """Hodnoty z výchozího nastavení nebo odhadnuté modelem (R6); UI je označí."""
-    origin: Literal["ai", "manual"] = "ai"
-    """Kdo návrh založil: extrakce z textu, nebo uživatel ručně (UC-13, „Upravit údaje“)."""
+    origin: Literal["ai", "manual", "file"] = "ai"
+    """Odkud návrh je: extrakce z textu, ruční zadání nebo úprava (UC-13), soubor (UC-06)."""
 
 
 def proposal_from_project(project: Project) -> ChangeProposal:

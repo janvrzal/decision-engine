@@ -5,7 +5,7 @@ Události od uživatele posílá frontend, ostatní vrací aplikační vrstva ja
 
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from decision_engine.core.model.calculation import CalculationResult
 from decision_engine.core.model.proposal import (
@@ -39,6 +39,13 @@ class EditRequested(_Event):
     """Uživatel chce ručně upravit potvrzenou zakázku („Upravit údaje“)."""
 
     type: Literal["EditRequested"] = "EditRequested"
+
+
+class ProjectImported(_Event):
+    """Uživatel načetl soubor zakázky (UC-06); obsah se ověří v jádře."""
+
+    type: Literal["ProjectImported"] = "ProjectImported"
+    content: str = Field(max_length=1_000_000)
 
 
 class ProposalReceived(_Event):
@@ -97,6 +104,7 @@ type Event = (
     MessageSent
     | ToolSelected
     | EditRequested
+    | ProjectImported
     | ProposalReceived
     | ProposalEdited
     | ProposalConfirmed

@@ -48,6 +48,10 @@ class ProjectView(_View):
     steps: tuple[StepView, ...]
     has_content: bool
     can_edit: bool
+    can_save: bool
+    """Potvrzenou zakázku lze uložit do souboru (UC-06)."""
+    save_note: str | None
+    """Upozornění k uložení, např. že rozpracovaný návrh nebude součástí souboru (UC-06 A2)."""
     """Potvrzenou zakázku lze ručně upravit („Upravit údaje“): žádný návrh, nic neběží."""
 
 
@@ -117,8 +121,8 @@ class FieldErrorView(_View):
 class ProposalView(_View):
     is_change: bool
     """Úprava existující zakázky (jinak nová zakázka)."""
-    origin: Literal["ai", "manual"]
-    """Návrh z extrakce AI, nebo ruční zadání či úprava."""
+    origin: Literal["ai", "manual", "file"]
+    """Návrh z extrakce AI, z ručního zadání či úpravy, nebo ze souboru."""
     name: TextCell
     material: TextCell
     parts: tuple[PartRow, ...]
@@ -196,3 +200,5 @@ class ViewModel(_View):
     messages: tuple[MessageView, ...]
     proposal: ProposalView | None
     result: ResultView | None
+    import_error: str | None
+    """Proč se poslední soubor nepodařilo načíst; zakázka zůstala beze změny (UC-06 E1)."""

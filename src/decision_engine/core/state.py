@@ -53,6 +53,8 @@ class AppState(_Frozen):
     messages: tuple[Message, ...] = ()
     pending: PendingOperation | None = None
     next_message_id: int = 1
+    import_error: str | None = None
+    """Proč se poslední soubor nepodařilo načíst (UC-06 E1); zakázka zůstala beze změny."""
 
 
 def initial_state(session_id: str) -> AppState:

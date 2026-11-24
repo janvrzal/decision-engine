@@ -108,6 +108,8 @@
 			{#if proposal.origin === 'ai'}
 				Zkontrolujte, co jsem ze zadání vyčetl. Hodnoty s otazníkem jsou výchozí nebo odhad AI —
 				potvrdíte je spolu s celým návrhem.
+			{:else if proposal.origin === 'file'}
+				Zkontrolujte údaje načtené ze souboru a spusťte výpočet.
 			{:else if proposal.is_change}
 				Upravte údaje potvrzené zakázky v tabulkách nebo změnu napište do dialogu.
 			{:else}

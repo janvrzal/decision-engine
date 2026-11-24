@@ -38,6 +38,23 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/api/sessions/{session_id}/project': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Stáhnout soubor zakázky */
+		get: operations['download_project_api_sessions__session_id__project_get'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/api/sessions/{session_id}/events': {
 		parameters: {
 			query?: never;
@@ -291,6 +308,19 @@ export interface components {
 			/** Start Mm */
 			start_mm: number;
 		};
+		/**
+		 * ProjectImported
+		 * @description Uživatel načetl soubor zakázky (UC-06); obsah se ověří v jádře.
+		 */
+		ProjectImported: {
+			/**
+			 * @description discriminator enum property added by openapi-typescript
+			 * @enum {string}
+			 */
+			type: 'ProjectImported';
+			/** Content */
+			content: string;
+		};
 		/** ProjectView */
 		ProjectView: {
 			/** Name */
@@ -308,6 +338,10 @@ export interface components {
 			has_content: boolean;
 			/** Can Edit */
 			can_edit: boolean;
+			/** Can Save */
+			can_save: boolean;
+			/** Save Note */
+			save_note: string | null;
 		};
 		/**
 		 * ProposalConfirmed
@@ -359,7 +393,7 @@ export interface components {
 			 * Origin
 			 * @enum {string}
 			 */
-			origin: 'ai' | 'manual';
+			origin: 'ai' | 'manual' | 'file';
 			name: components['schemas']['TextCell'];
 			material: components['schemas']['TextCell'];
 			/** Parts */
@@ -490,6 +524,7 @@ export interface components {
 			| components['schemas']['MessageSent']
 			| components['schemas']['ToolSelected']
 			| components['schemas']['EditRequested']
+			| components['schemas']['ProjectImported']
 			| components['schemas']['ProposalEdited']
 			| components['schemas']['ProposalConfirmed']
 			| components['schemas']['ProposalRejected']
@@ -521,6 +556,8 @@ export interface components {
 			messages: components['schemas']['MessageView'][];
 			proposal: components['schemas']['ProposalView'] | null;
 			result: components['schemas']['ResultView'] | null;
+			/** Import Error */
+			import_error: string | null;
 		};
 	};
 	responses: never;
@@ -573,6 +610,51 @@ export interface operations {
 			};
 			/** @description Relace neexistuje (např. po restartu serveru). */
 			404: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			/** @description Validation Error */
+			422: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['HTTPValidationError'];
+				};
+			};
+		};
+	};
+	download_project_api_sessions__session_id__project_get: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				session_id: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Soubor zakázky (UC-06). */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': unknown;
+				};
+			};
+			/** @description Relace neexistuje. */
+			404: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			/** @description Zakázka ještě není potvrzená. */
+			409: {
 				headers: {
 					[name: string]: unknown;
 				};

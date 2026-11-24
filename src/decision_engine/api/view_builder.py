@@ -57,6 +57,12 @@ def build_view_model(state: AppState, *, extraction_available: bool) -> ViewMode
             steps=_steps(state, step, stale),
             has_content=bool(state.project or state.proposal or state.messages),
             can_edit=state.project is not None and state.proposal is None and state.pending is None,
+            can_save=state.project is not None,
+            save_note=(
+                "Rozpracované změny v návrhu nebudou součástí souboru."
+                if state.project is not None and state.proposal is not None
+                else None
+            ),
         ),
         pending_operation=(
             PendingOperationView(kind=state.pending.kind, label=PENDING_LABEL[state.pending.kind])
@@ -68,6 +74,7 @@ def build_view_model(state: AppState, *, extraction_available: bool) -> ViewMode
         result=build_result(state.result, stale=stale, proposal_pending=state.proposal is not None)
         if state.result
         else None,
+        import_error=state.import_error,
     )
 
 
