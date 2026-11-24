@@ -1255,6 +1255,21 @@
 			},
 			"ResultView": {
 				"properties": {
+					"project_name": {
+						"type": "string",
+						"title": "Project Name"
+					},
+					"material": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Material"
+					},
 					"status": {
 						"$ref": "#/components/schemas/SolutionStatus"
 					},
@@ -1304,6 +1319,8 @@
 				},
 				"type": "object",
 				"required": [
+					"project_name",
+					"material",
 					"status",
 					"status_label",
 					"stale",

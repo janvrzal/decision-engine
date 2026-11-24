@@ -533,6 +533,10 @@ export interface components {
 		};
 		/** ResultView */
 		ResultView: {
+			/** Project Name */
+			project_name: string;
+			/** Material */
+			material: string | null;
 			status: components['schemas']['SolutionStatus'];
 			/** Status Label */
 			status_label: string;

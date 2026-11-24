@@ -52,7 +52,9 @@
 	]);
 </script>
 
-<div class="flex shrink-0 items-center gap-x-6 gap-y-2 border-b border-border bg-surface px-4 py-3">
+<div
+	class="flex shrink-0 items-center gap-x-6 gap-y-2 border-b border-border bg-surface px-4 py-3 print:hidden"
+>
 	<div class="xl:hidden">
 		<Button variant="secondary" onclick={onopenchat} aria-haspopup="dialog">
 			<MessageSquare size={16} strokeWidth={1.5} aria-hidden="true" />

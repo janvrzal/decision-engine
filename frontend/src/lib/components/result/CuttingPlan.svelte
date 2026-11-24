@@ -20,7 +20,7 @@
 	});
 </script>
 
-<div class="overflow-x-auto" role="presentation">
+<div class="overflow-x-auto print:overflow-visible" role="presentation">
 	<div
 		bind:this={container}
 		class="min-w-140 transition-opacity duration-(--duration-base) ease-standard {dimmed

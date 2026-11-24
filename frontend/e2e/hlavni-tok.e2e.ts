@@ -172,6 +172,23 @@ test.describe('široká obrazovka 1440 px', () => {
 		await expect(length).toHaveValue('1\u00a0900');
 	});
 
+	test('tisk: papír k pile ukáže plán, cenu a celý rozpis bez ovládání', async ({ page }) => {
+		await toReview(page);
+		await page.getByRole('button', { name: 'Potvrdit a vypočítat' }).click();
+		await expect(page.getByRole('img', { name: /Nářezový plán: .* tyč/ })).toBeVisible();
+		// Nehotové PDF se nenabízí (AGENTS.md pravidlo 9); tisk ano.
+		await expect(page.getByRole('button', { name: 'Stáhnout PDF' })).toHaveCount(0);
+		await expect(page.getByRole('button', { name: 'Vytisknout plán' })).toBeVisible();
+
+		await page.emulateMedia({ media: 'print' });
+
+		await expect(page.getByRole('banner')).toBeHidden();
+		await expect(page.getByRole('button', { name: 'Uložit zakázku' })).toBeHidden();
+		await expect(page.getByText('Regál do dílny · jekl 40×40×2')).toBeVisible();
+		await expect(page.getByRole('table', { name: 'Rozpis po tyčích' })).toBeVisible();
+		await expect(page.getByRole('region', { name: 'Cena materiálu (orientačně)' })).toBeVisible();
+	});
+
 	test('odkaz v souhrnu chyb přesune fokus na pole', async ({ page }) => {
 		await toReview(page);
 

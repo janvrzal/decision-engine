@@ -44,6 +44,12 @@
 </script>
 
 <section class="flex flex-col gap-6" aria-labelledby="result-title" aria-busy={solving}>
+	{#if result && !solving}
+		<!-- Hlavička papíru k pile: na obrazovce je název v hlavičce zakázky. -->
+		<p class="hidden text-heading text-ink print:block">
+			{result.project_name}{#if result.material}&nbsp;· {result.material}{/if}
+		</p>
+	{/if}
 	<div class="flex flex-wrap items-center justify-between gap-3">
 		<div class="flex items-center gap-3">
 			<h2 id="result-title" class="text-title text-ink">Nářezový plán</h2>
@@ -55,14 +61,16 @@
 			{/if}
 		</div>
 		{#if result && !solving && !proposalPending}
-			<Button
-				variant="secondary"
-				disabledReason={editReason}
-				onclick={() => onsend({ type: 'EditRequested' })}
-			>
-				<Pencil size={16} strokeWidth={1.5} aria-hidden="true" />
-				Upravit údaje
-			</Button>
+			<div class="print:hidden">
+				<Button
+					variant="secondary"
+					disabledReason={editReason}
+					onclick={() => onsend({ type: 'EditRequested' })}
+				>
+					<Pencil size={16} strokeWidth={1.5} aria-hidden="true" />
+					Upravit údaje
+				</Button>
+			</div>
 		{/if}
 	</div>
 
@@ -144,8 +152,15 @@
 			<CuttingPlan svg={result.svg} bind:highlighted dimmed={result.stale} />
 		</div>
 
-		<Collapsible label="Rozpis po tyčích" bind:open={breakdownOpen}>
-			<BarBreakdown bars={result.bars} onhighlight={(id: string | null) => (highlighted = id)} />
-		</Collapsible>
+		<div class="print:hidden">
+			<Collapsible label="Rozpis po tyčích" bind:open={breakdownOpen}>
+				<BarBreakdown bars={result.bars} onhighlight={(id: string | null) => (highlighted = id)} />
+			</Collapsible>
+		</div>
+		<!-- Na papíře k pile je rozpis vždy celý, i když je na obrazovce sbalený. -->
+		<div class="hidden print:block">
+			<h3 class="mb-2 text-heading text-ink">Rozpis po tyčích</h3>
+			<BarBreakdown bars={result.bars} onhighlight={() => {}} />
+		</div>
 	{/if}
 </section>

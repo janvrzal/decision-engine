@@ -196,7 +196,7 @@
 	</ChatPanel>
 {/snippet}
 
-<div class="flex h-dvh flex-col bg-page">
+<div class="flex h-dvh flex-col bg-page print:h-auto print:bg-surface">
 	<AppBar />
 	<ProjectHeader
 		name={view.project.name}
@@ -218,14 +218,14 @@
 			{#if chatCollapsed}
 				<ChatRail onexpand={() => (chatCollapsed = false)} />
 			{:else}
-				<aside class="flex w-90 shrink-0 flex-col border-r border-border bg-surface">
+				<aside class="flex w-90 shrink-0 flex-col border-r border-border bg-surface print:hidden">
 					{@render chat(true)}
 				</aside>
 			{/if}
 		{/if}
 
 		<div class="flex min-w-0 flex-1 flex-col">
-			<main class="min-h-0 flex-1 overflow-y-auto">
+			<main class="min-h-0 flex-1 overflow-y-auto print:overflow-visible">
 				<div class="mx-auto flex max-w-5xl flex-col gap-6 p-6">
 					{#if saveError}
 						<Alert variant="danger" title="Zakázka se neuložila">

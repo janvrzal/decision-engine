@@ -35,6 +35,8 @@ def build_result(result: CalculationResult, *, stale: bool, proposal_pending: bo
     metrics = result.metrics
     by_length = Counter(bar.length_mm for bar in result.bars)
     return ResultView(
+        project_name=project.name,
+        material=project.problem.material,
         status=result.status,
         status_label=STATUS_LABEL[result.status],
         stale=stale,
@@ -116,8 +118,14 @@ def _bar(
             )
             for p in bar.pieces
         ),
-        cuts_mm=tuple(
-            p.start_mm + p.length_mm for p in bar.pieces if p.start_mm + p.length_mm < bar.length_mm
+        # Zarovnávací ořez je první řez: pila nejdřív zarovná čelo tyče.
+        cuts_mm=(
+            *((parameters.trim_mm,) if parameters.trim_mm > 0 and bar.pieces else ()),
+            *(
+                p.start_mm + p.length_mm
+                for p in bar.pieces
+                if p.start_mm + p.length_mm < bar.length_mm
+            ),
         ),
         tail=kind,
         tail_length_mm=tail,

@@ -131,11 +131,11 @@ Panel kalkulace: řádky Materiál, Práce, Další náklady (popis vlevo, čás
 
 ### `StaleBanner`
 
-Pruh přes celou šířku nad plánem na `stale-bg` s ikonou přepočtu: „Neaktuální: čekají nepotvrzené změny (+ 2× příčka 850 mm)“ a akce „Zkontrolovat změny“ nebo „Přepočítat“ (`primary`). Plán pod ním je ztlumený (průhlednost 50 %) a export PDF je neaktivní s důvodem v tooltipu.
+Pruh přes celou šířku nad plánem na `stale-bg` s ikonou přepočtu: „Neaktuální: čekají nepotvrzené změny (+ 2× příčka 850 mm)“ a akce „Zkontrolovat změny“ nebo „Přepočítat“ (`primary`). Plán pod ním je ztlumený (průhlednost 50 %), ztlumené jsou i metriky, cena a štítek kvality, a tisk plánu je neaktivní s důvodem v tooltipu.
 
 ### `ResultSummaryBar`
 
-Lišta připnutá dole v kroku Plán a cena: `SolutionStatusBadge`, souhrn („5 tyčí · výtěžnost 91,7 % · celkem 7 166,23 Kč“) a akce Uložit zakázku (`secondary`) a Stáhnout PDF (`primary`, jen u aktuálního výsledku). Varianty: počítá se, neúplná kalkulace, neaktuální (cena přeškrtnutá, akce „Zkontrolovat změny“), částečný („1 kus neumístěn“, akce „Upravit díly“), plán není spočítaný (akce „Vypočítat“).
+Lišta připnutá dole v kroku Plán a cena: `SolutionStatusBadge`, souhrn („5 tyčí · výtěžnost 91,7 % · celkem 7 166,23 Kč“) a akce Vytisknout plán (`secondary`, jen u aktuálního výsledku) a Uložit zakázku (`primary`). Stáhnout PDF přibude s kalkulací (M5); do té doby se nenabízí. Tisk (`@media print`) dá papír k pile na A4: název a materiál, plán, cena materiálu a celý rozpis po tyčích bez ovládacích prvků. Varianty: počítá se, neúplná kalkulace, neaktuální (cena přeškrtnutá, akce „Zkontrolovat změny“), částečný („1 kus neumístěn“, akce „Upravit díly“), plán není spočítaný (akce „Vypočítat“).
 
 ### `ChatMessage`
 

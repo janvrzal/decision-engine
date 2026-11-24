@@ -216,6 +216,9 @@ class CostView(_View):
 
 
 class ResultView(_View):
+    project_name: str
+    """Název zakázky, ze které plán vznikl (tisk plánu k pile)."""
+    material: str | None
     status: SolutionStatus
     status_label: str
     stale: bool

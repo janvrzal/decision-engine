@@ -38,7 +38,7 @@ def test_pristupnost_role_title_desc() -> None:
     assert root.get("role") == "img"
     assert root.get("aria-labelledby") == "plan-title plan-desc"
     title = root.findtext("svg:title", namespaces=NS)
-    assert title == _num("Nářezový plán: 5 tyčí po 6 000 mm, prořez 3 mm")
+    assert title == _num("Nářezový plán: jekl 40×40×2, 5 tyčí po 6 000 mm, prořez 3 mm")
     desc = root.findtext("svg:desc", namespaces=NS) or ""
     assert _num("řezy na 2 000, 4 003, 5 506") in desc
     assert _num("zbytek 491 mm") in desc

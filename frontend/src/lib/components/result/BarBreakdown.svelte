@@ -18,7 +18,7 @@
 	const TAIL = { remnant: 'zbytek', waste: 'odpad', none: '' } as const;
 </script>
 
-<div class="overflow-x-auto">
+<div class="overflow-x-auto print:overflow-visible">
 	<table class="w-full border-collapse text-body">
 		<caption class="sr-only">Rozpis po tyčích</caption>
 		<thead>
@@ -26,7 +26,7 @@
 				<th scope="col" class="px-2 py-2 text-left">Tyč</th>
 				<th scope="col" class="px-2 py-2 text-right">Počet</th>
 				<th scope="col" class="px-2 py-2 text-left">Díly v pořadí řezání</th>
-				<th scope="col" class="px-2 py-2 text-left">Polohy řezů od začátku</th>
+				<th scope="col" class="px-2 py-2 text-left">Polohy řezů od začátku tyče</th>
 				<th scope="col" class="px-2 py-2 text-left">Konec tyče</th>
 			</tr>
 		</thead>
@@ -72,4 +72,8 @@
 			{/each}
 		</tbody>
 	</table>
+	<p class="mt-2 text-small text-ink-muted">
+		Polohy jsou značky měřené od začátku tyče; řežte za značkou, prořez jde do odpadu. Je-li
+		nastavený zarovnávací ořez, první řez zarovná čelo tyče.
+	</p>
 </div>

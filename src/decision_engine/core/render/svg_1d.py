@@ -51,7 +51,9 @@ def render_svg(result: CalculationResult) -> str:
     body += legend
 
     kerf = millimeters(project.parameters.kerf_mm)
-    title = f"Nářezový plán: {_bars_phrase(result)}, prořez {kerf}"
+    material = project.problem.material
+    subject = f"{material}, " if material else ""
+    title = f"Nářezový plán: {subject}{_bars_phrase(result)}, prořez {kerf}"
     return "".join(
         [
             f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {WIDTH} {height}" role="img" '
