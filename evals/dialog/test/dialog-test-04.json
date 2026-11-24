@@ -1,0 +1,123 @@
+{
+  "id": "dialog-test-04",
+  "turns": [
+    {
+      "input": "Trubka 40×20: 6 kusů po 2 400 mm a 12 kusů po 550 mm, tyče 6 m, prořez 3 mm.",
+      "expected": {
+        "outcome": "supported",
+        "project": {
+          "material": "trubka 40×20",
+          "parts": [
+            {
+              "length_mm": 2400,
+              "quantity": 6
+            },
+            {
+              "length_mm": 550,
+              "quantity": 12
+            }
+          ],
+          "stock": [
+            {
+              "length_mm": 6000,
+              "price": null
+            }
+          ],
+          "kerf_mm": 3,
+          "trim_mm": null,
+          "min_remnant_mm": null
+        }
+      }
+    },
+    {
+      "input": "Tyč stojí 389 Kč.",
+      "expected": {
+        "outcome": "supported",
+        "project": {
+          "material": "trubka 40×20",
+          "parts": [
+            {
+              "length_mm": 2400,
+              "quantity": 6
+            },
+            {
+              "length_mm": 550,
+              "quantity": 12
+            }
+          ],
+          "stock": [
+            {
+              "length_mm": 6000,
+              "price": "389"
+            }
+          ],
+          "kerf_mm": 3,
+          "trim_mm": null,
+          "min_remnant_mm": null
+        }
+      }
+    },
+    {
+      "input": "Šestimetrové už nemají, jsou jen pětimetrové za 330 Kč.",
+      "expected": {
+        "outcome": "supported",
+        "project": {
+          "material": "trubka 40×20",
+          "parts": [
+            {
+              "length_mm": 2400,
+              "quantity": 6
+            },
+            {
+              "length_mm": 550,
+              "quantity": 12
+            }
+          ],
+          "stock": [
+            {
+              "length_mm": 5000,
+              "price": "330"
+            }
+          ],
+          "kerf_mm": 3,
+          "trim_mm": null,
+          "min_remnant_mm": null
+        }
+      }
+    },
+    {
+      "input": "Ještě nastav zarovnání čela 10 mm.",
+      "expected": {
+        "outcome": "supported",
+        "project": {
+          "material": "trubka 40×20",
+          "parts": [
+            {
+              "length_mm": 2400,
+              "quantity": 6
+            },
+            {
+              "length_mm": 550,
+              "quantity": 12
+            }
+          ],
+          "stock": [
+            {
+              "length_mm": 5000,
+              "price": "330"
+            }
+          ],
+          "kerf_mm": 3,
+          "trim_mm": 10,
+          "min_remnant_mm": null
+        }
+      }
+    }
+  ],
+  "tags": [
+    "zmena_ceny",
+    "nahrada_skladu",
+    "orez"
+  ],
+  "author_note": "Doplnění ceny, výměna skladové délky a ořez. Materiál se porovnává sémanticky (stejný profil), ne doslovně."
+}

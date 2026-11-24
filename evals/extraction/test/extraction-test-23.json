@@ -1,0 +1,31 @@
+{
+  "id": "extraction-test-23",
+  "input": "Na stojan na kola potřebuju 3 kusy po 1,1 m, 6 kusů po 35 cm a 2 kusy po 90 cm.",
+  "expected": {
+    "parts": [
+      {
+        "length_mm": 1100,
+        "quantity": 3
+      },
+      {
+        "length_mm": 350,
+        "quantity": 6
+      },
+      {
+        "length_mm": 900,
+        "quantity": 2
+      }
+    ],
+    "stock": [],
+    "kerf_mm": null,
+    "trim_mm": null,
+    "min_remnant_mm": null,
+    "objective": null
+  },
+  "tags": [
+    "chybi_sklad",
+    "chybi_prorez",
+    "smisene_jednotky"
+  ],
+  "author_note": "Jen díly; nic dalšího se nesmí vymyslet."
+}

@@ -1,0 +1,33 @@
+{
+  "id": "extraction-test-14",
+  "input": "Dobrý den, minulý týden jsme dělali pro souseda plot a zbylo nám pár tyčí, ale ty teď neřešte. Teď stavím u nás na zahradě pergolu, žena chce, aby byla hotová do května, takže spěchám. Potřebuju na ni 4 sloupky po 2,5 m a 6 příček po 1,8 m z jeklu 60×60. V železářství mají tyče po 6 metrech za 980 Kč. Pila má kotouč 3 mm. Ten plot měl mimochodem 25 metrů.",
+  "expected": {
+    "parts": [
+      {
+        "length_mm": 2500,
+        "quantity": 4
+      },
+      {
+        "length_mm": 1800,
+        "quantity": 6
+      }
+    ],
+    "stock": [
+      {
+        "length_mm": 6000,
+        "price": "980"
+      }
+    ],
+    "kerf_mm": 3,
+    "trim_mm": null,
+    "min_remnant_mm": null,
+    "objective": null
+  },
+  "tags": [
+    "balast",
+    "dlouhy_text",
+    "kontextove_cislo",
+    "jednotky_m"
+  ],
+  "author_note": "Délka plotu 25 m ani zbylé tyče nejsou díly ani sklad."
+}

@@ -1,0 +1,32 @@
+{
+  "id": "extraction-test-27",
+  "input": "Stavíme s tátou přístřešek na dřevo, rozměr 3 × 2 m, střecha bude mít sklon 15 stupňů. Na konstrukci potřebuju z hranolu 80×80 čtyři sloupy po 2,2 m a šest kusů po 1,9 m. Hranoly prodávají po 4 m, jeden za 395 Kč. Prořez pily je 4 mm.",
+  "expected": {
+    "parts": [
+      {
+        "length_mm": 2200,
+        "quantity": 4
+      },
+      {
+        "length_mm": 1900,
+        "quantity": 6
+      }
+    ],
+    "stock": [
+      {
+        "length_mm": 4000,
+        "price": "395"
+      }
+    ],
+    "kerf_mm": 4,
+    "trim_mm": null,
+    "min_remnant_mm": null,
+    "objective": null
+  },
+  "tags": [
+    "balast",
+    "kontextove_cislo",
+    "slovni_cisla"
+  ],
+  "author_note": "Rozměr přístřešku a sklon nejsou díly."
+}

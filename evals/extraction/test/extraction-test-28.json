@@ -1,0 +1,27 @@
+{
+  "id": "extraction-test-28",
+  "input": "Zbytek kratší než 250 mm vyhoď. 11× 1 720 mm, tyče 6 000 mm po 540 Kč, prořez 3 mm.",
+  "expected": {
+    "parts": [
+      {
+        "length_mm": 1720,
+        "quantity": 11
+      }
+    ],
+    "stock": [
+      {
+        "length_mm": 6000,
+        "price": "540"
+      }
+    ],
+    "kerf_mm": 3,
+    "trim_mm": null,
+    "min_remnant_mm": 250,
+    "objective": null
+  },
+  "tags": [
+    "min_zbytek",
+    "oddelovac_tisicu"
+  ],
+  "author_note": "Minimální zbytek v mm."
+}

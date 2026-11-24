@@ -1,0 +1,36 @@
+{
+  "id": "extraction-test-10",
+  "input": "Ať to vyjde co nejlevněji: 6× 1 900 mm, 6× 600 mm. Tyče 4 m za 330 Kč, 6 m za 470 Kč.",
+  "expected": {
+    "parts": [
+      {
+        "length_mm": 1900,
+        "quantity": 6
+      },
+      {
+        "length_mm": 600,
+        "quantity": 6
+      }
+    ],
+    "stock": [
+      {
+        "length_mm": 4000,
+        "price": "330"
+      },
+      {
+        "length_mm": 6000,
+        "price": "470"
+      }
+    ],
+    "kerf_mm": null,
+    "trim_mm": null,
+    "min_remnant_mm": null,
+    "objective": "cheapest"
+  },
+  "tags": [
+    "cil",
+    "vice_skladovych",
+    "chybi_prorez"
+  ],
+  "author_note": "Cíl nejnižší cena."
+}

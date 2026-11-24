@@ -1,0 +1,27 @@
+{
+  "id": "extraction-test-05",
+  "input": "Hliníková trubka 30 mm: 22 kusů po 540 mm a 8 kusů po 1 180 mm, prořez 3 mm.",
+  "expected": {
+    "parts": [
+      {
+        "length_mm": 540,
+        "quantity": 22
+      },
+      {
+        "length_mm": 1180,
+        "quantity": 8
+      }
+    ],
+    "stock": [],
+    "kerf_mm": 3,
+    "trim_mm": null,
+    "min_remnant_mm": null,
+    "objective": null
+  },
+  "tags": [
+    "chybi_sklad",
+    "jednotky_mm",
+    "oddelovac_tisicu"
+  ],
+  "author_note": "Skladová délka chybí; 30 mm je průměr profilu, ne díl."
+}

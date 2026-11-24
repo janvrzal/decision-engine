@@ -1,0 +1,32 @@
+{
+  "id": "extraction-test-19",
+  "input": "Nerezová trubka 16×1: 30 ks po 412 mm, 30 ks po 188 mm. Tyč 6 m, cena 1 120 Kč, prořez 1,8 mm.",
+  "expected": {
+    "parts": [
+      {
+        "length_mm": 412,
+        "quantity": 30
+      },
+      {
+        "length_mm": 188,
+        "quantity": 30
+      }
+    ],
+    "stock": [
+      {
+        "length_mm": 6000,
+        "price": "1120"
+      }
+    ],
+    "kerf_mm": 1.8,
+    "trim_mm": null,
+    "min_remnant_mm": null,
+    "objective": null
+  },
+  "tags": [
+    "prorez_desetinny",
+    "oddelovac_tisicu",
+    "ceny_kc"
+  ],
+  "author_note": "Rozměr profilu 16×1 není díl."
+}

@@ -1,0 +1,28 @@
+{
+  "id": "extraction-test-07",
+  "input": "Potřebuju 40 kusů po 125 mm z kulatiny průměr 20. Kulatina 1 m stojí 142,90 Kč za kus, pila bere 1,5 mm.",
+  "expected": {
+    "parts": [
+      {
+        "length_mm": 125,
+        "quantity": 40
+      }
+    ],
+    "stock": [
+      {
+        "length_mm": 1000,
+        "price": "142.90"
+      }
+    ],
+    "kerf_mm": 1.5,
+    "trim_mm": null,
+    "min_remnant_mm": null,
+    "objective": null
+  },
+  "tags": [
+    "desetinna_cena",
+    "prorez_desetinny",
+    "za_kus"
+  ],
+  "author_note": "Cena s haléři za kus tyče; průměr 20 není díl."
+}

@@ -1,0 +1,32 @@
+{
+  "id": "extraction-test-09",
+  "input": "Kusy pod 40 cm už mi k ničemu nejsou, ty ber jako odpad. Potřebuju 9× 1,15 m a 4× 2,6 m, tyče 6,5 m za 615 Kč, prořez 3 mm.",
+  "expected": {
+    "parts": [
+      {
+        "length_mm": 1150,
+        "quantity": 9
+      },
+      {
+        "length_mm": 2600,
+        "quantity": 4
+      }
+    ],
+    "stock": [
+      {
+        "length_mm": 6500,
+        "price": "615"
+      }
+    ],
+    "kerf_mm": 3,
+    "trim_mm": null,
+    "min_remnant_mm": 400,
+    "objective": null
+  },
+  "tags": [
+    "min_zbytek",
+    "jednotky_m",
+    "desetinna_carka"
+  ],
+  "author_note": "Minimální zbytek nepřímo v cm."
+}

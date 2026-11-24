@@ -1,0 +1,32 @@
+{
+  "id": "extraction-test-29",
+  "input": "Na police: 16 kusů po 780 mm. Mají tyče 2 m za 180 korun a 3 m za 250 korun, chci to nejlevnější řešení.",
+  "expected": {
+    "parts": [
+      {
+        "length_mm": 780,
+        "quantity": 16
+      }
+    ],
+    "stock": [
+      {
+        "length_mm": 2000,
+        "price": "180"
+      },
+      {
+        "length_mm": 3000,
+        "price": "250"
+      }
+    ],
+    "kerf_mm": null,
+    "trim_mm": null,
+    "min_remnant_mm": null,
+    "objective": "cheapest"
+  },
+  "tags": [
+    "cil",
+    "vice_skladovych",
+    "chybi_prorez"
+  ],
+  "author_note": "Ceny v korunách slovem."
+}

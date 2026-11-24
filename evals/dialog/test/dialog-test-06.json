@@ -1,0 +1,103 @@
+{
+  "id": "dialog-test-06",
+  "turns": [
+    {
+      "input": "Na plot potřebuju 10 sloupků po 1,8 m a 18 příček po 2 m z trubky 40×40, tyče 6 m, prořez 3 mm.",
+      "expected": {
+        "outcome": "supported",
+        "project": {
+          "material": "trubka 40×40",
+          "parts": [
+            {
+              "length_mm": 1800,
+              "quantity": 10
+            },
+            {
+              "length_mm": 2000,
+              "quantity": 18
+            }
+          ],
+          "stock": [
+            {
+              "length_mm": 6000,
+              "price": null
+            }
+          ],
+          "kerf_mm": 3,
+          "trim_mm": null,
+          "min_remnant_mm": null
+        }
+      }
+    },
+    {
+      "input": "Změň tu délku na 1,9 m.",
+      "expected": {
+        "outcome": "unclear",
+        "project": null
+      }
+    },
+    {
+      "input": "Sloupky mají mít 1,9 m.",
+      "expected": {
+        "outcome": "supported",
+        "project": {
+          "material": "trubka 40×40",
+          "parts": [
+            {
+              "length_mm": 1900,
+              "quantity": 10
+            },
+            {
+              "length_mm": 2000,
+              "quantity": 18
+            }
+          ],
+          "stock": [
+            {
+              "length_mm": 6000,
+              "price": null
+            }
+          ],
+          "kerf_mm": 3,
+          "trim_mm": null,
+          "min_remnant_mm": null
+        }
+      }
+    },
+    {
+      "input": "Příček stačí 16.",
+      "expected": {
+        "outcome": "supported",
+        "project": {
+          "material": "trubka 40×40",
+          "parts": [
+            {
+              "length_mm": 1900,
+              "quantity": 10
+            },
+            {
+              "length_mm": 2000,
+              "quantity": 16
+            }
+          ],
+          "stock": [
+            {
+              "length_mm": 6000,
+              "price": null
+            }
+          ],
+          "kerf_mm": 3,
+          "trim_mm": null,
+          "min_remnant_mm": null
+        }
+      }
+    }
+  ],
+  "tags": [
+    "nejasny_odkaz",
+    "doptani",
+    "zmena_delky",
+    "zmena_poctu"
+  ],
+  "author_note": "Dvě délky → nejasný odkaz; odkazy názvem dílu z dřívějšího kola. Materiál se porovnává sémanticky (stejný profil), ne doslovně."
+}

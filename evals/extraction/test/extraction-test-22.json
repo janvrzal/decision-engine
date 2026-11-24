@@ -1,0 +1,37 @@
+{
+  "id": "extraction-test-22",
+  "input": "jekl 25x25, 6ks 175cm, 12ks 62,5cm, tyce 6m a 3m, cena 320 a 170 kc, prorez 3mm",
+  "expected": {
+    "parts": [
+      {
+        "length_mm": 1750,
+        "quantity": 6
+      },
+      {
+        "length_mm": 625,
+        "quantity": 12
+      }
+    ],
+    "stock": [
+      {
+        "length_mm": 6000,
+        "price": "320"
+      },
+      {
+        "length_mm": 3000,
+        "price": "170"
+      }
+    ],
+    "kerf_mm": 3,
+    "trim_mm": null,
+    "min_remnant_mm": null,
+    "objective": null
+  },
+  "tags": [
+    "bez_diakritiky",
+    "vice_skladovych",
+    "desetinna_carka",
+    "jednotky_cm"
+  ],
+  "author_note": "Ceny přiřazené pořadím."
+}

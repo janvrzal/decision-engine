@@ -1,0 +1,107 @@
+{
+  "id": "dialog-test-02",
+  "turns": [
+    {
+      "input": "Hranol 60×60: 6× 2,2 m a 6× 0,8 m, řezivo po 4 m, prořez 4 mm.",
+      "expected": {
+        "outcome": "supported",
+        "project": {
+          "material": "hranol 60×60",
+          "parts": [
+            {
+              "length_mm": 2200,
+              "quantity": 6
+            },
+            {
+              "length_mm": 800,
+              "quantity": 6
+            }
+          ],
+          "stock": [
+            {
+              "length_mm": 4000,
+              "price": null
+            }
+          ],
+          "kerf_mm": 4,
+          "trim_mm": null,
+          "min_remnant_mm": null
+        }
+      }
+    },
+    {
+      "input": "Prodluž to o kus.",
+      "expected": {
+        "outcome": "unclear",
+        "project": null
+      }
+    },
+    {
+      "input": "Ty krátké díly prodluž na 850 mm.",
+      "expected": {
+        "outcome": "supported",
+        "project": {
+          "material": "hranol 60×60",
+          "parts": [
+            {
+              "length_mm": 2200,
+              "quantity": 6
+            },
+            {
+              "length_mm": 850,
+              "quantity": 6
+            }
+          ],
+          "stock": [
+            {
+              "length_mm": 4000,
+              "price": null
+            }
+          ],
+          "kerf_mm": 4,
+          "trim_mm": null,
+          "min_remnant_mm": null
+        }
+      }
+    },
+    {
+      "input": "Dodavatel má i hranoly 5 m za 290 Kč.",
+      "expected": {
+        "outcome": "supported",
+        "project": {
+          "material": "hranol 60×60",
+          "parts": [
+            {
+              "length_mm": 2200,
+              "quantity": 6
+            },
+            {
+              "length_mm": 850,
+              "quantity": 6
+            }
+          ],
+          "stock": [
+            {
+              "length_mm": 4000,
+              "price": null
+            },
+            {
+              "length_mm": 5000,
+              "price": "290"
+            }
+          ],
+          "kerf_mm": 4,
+          "trim_mm": null,
+          "min_remnant_mm": null
+        }
+      }
+    }
+  ],
+  "tags": [
+    "nejasny_odkaz",
+    "doptani",
+    "zmena_delky",
+    "pridani_skladu"
+  ],
+  "author_note": "Nejasná změna nesmí nic změnit; po upřesnění se mění jen krátké díly. Materiál se porovnává sémanticky (stejný profil), ne doslovně."
+}

@@ -1,0 +1,32 @@
+{
+  "id": "extraction-test-32",
+  "input": "Potřebuju 20 kusů po půl metru a 4 kusy po 2,25 m. Tyče 4,5 m za 299 Kč, prořez 1,5 mm.",
+  "expected": {
+    "parts": [
+      {
+        "length_mm": 500,
+        "quantity": 20
+      },
+      {
+        "length_mm": 2250,
+        "quantity": 4
+      }
+    ],
+    "stock": [
+      {
+        "length_mm": 4500,
+        "price": "299"
+      }
+    ],
+    "kerf_mm": 1.5,
+    "trim_mm": null,
+    "min_remnant_mm": null,
+    "objective": null
+  },
+  "tags": [
+    "slovni_cisla",
+    "desetinna_carka",
+    "prorez_desetinny"
+  ],
+  "author_note": "Půl metru = 500 mm."
+}

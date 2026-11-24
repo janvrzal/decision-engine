@@ -1,0 +1,29 @@
+{
+  "id": "extraction-test-11",
+  "input": "Chci co nejmíň tyčí, ať toho z velkoobchodu netahám moc. 14 kusů po 1,25 m, tyče 5 m, 260 Kč za kus, prořez 2 mm.",
+  "expected": {
+    "parts": [
+      {
+        "length_mm": 1250,
+        "quantity": 14
+      }
+    ],
+    "stock": [
+      {
+        "length_mm": 5000,
+        "price": "260"
+      }
+    ],
+    "kerf_mm": 2,
+    "trim_mm": null,
+    "min_remnant_mm": null,
+    "objective": "fewest_bars"
+  },
+  "tags": [
+    "cil",
+    "jednotky_m",
+    "desetinna_carka",
+    "za_kus"
+  ],
+  "author_note": "Cíl nejméně tyčí."
+}

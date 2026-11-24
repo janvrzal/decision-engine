@@ -1,0 +1,36 @@
+{
+  "id": "extraction-test-25",
+  "input": "Délka 2 040 mm / 5 ks, délka 1 015 mm / 5 ks, délka 505 mm / 10 ks. Tyč 6 m 455,50 Kč. Prořez 2,2 mm.",
+  "expected": {
+    "parts": [
+      {
+        "length_mm": 2040,
+        "quantity": 5
+      },
+      {
+        "length_mm": 1015,
+        "quantity": 5
+      },
+      {
+        "length_mm": 505,
+        "quantity": 10
+      }
+    ],
+    "stock": [
+      {
+        "length_mm": 6000,
+        "price": "455.50"
+      }
+    ],
+    "kerf_mm": 2.2,
+    "trim_mm": null,
+    "min_remnant_mm": null,
+    "objective": null
+  },
+  "tags": [
+    "desetinna_cena",
+    "prorez_desetinny",
+    "oddelovac_tisicu"
+  ],
+  "author_note": "Zápis délka / počet."
+}

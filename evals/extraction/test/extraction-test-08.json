@@ -1,0 +1,32 @@
+{
+  "id": "extraction-test-08",
+  "input": "Pro každou tyč počítej se zarovnáním čela 5 mm. Řežu 12× 1 480 mm a 12× 730 mm, prořez 3 mm, tyče 6 000 mm.",
+  "expected": {
+    "parts": [
+      {
+        "length_mm": 1480,
+        "quantity": 12
+      },
+      {
+        "length_mm": 730,
+        "quantity": 12
+      }
+    ],
+    "stock": [
+      {
+        "length_mm": 6000,
+        "price": null
+      }
+    ],
+    "kerf_mm": 3,
+    "trim_mm": 5,
+    "min_remnant_mm": null,
+    "objective": null
+  },
+  "tags": [
+    "orez",
+    "oddelovac_tisicu",
+    "chybi_cena"
+  ],
+  "author_note": "Zarovnání čela = trim."
+}

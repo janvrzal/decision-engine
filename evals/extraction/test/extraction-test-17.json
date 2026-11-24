@@ -1,0 +1,32 @@
+{
+  "id": "extraction-test-17",
+  "input": "Hele, potřebuju udělat dvanáct štaflí, teda dvanáct kusů po metru a půl, a k tomu šestnáct špaček po třiceti centimetrech. Tyčky beru čtyřmetrový, řez žere dva milimetry.",
+  "expected": {
+    "parts": [
+      {
+        "length_mm": 1500,
+        "quantity": 12
+      },
+      {
+        "length_mm": 300,
+        "quantity": 16
+      }
+    ],
+    "stock": [
+      {
+        "length_mm": 4000,
+        "price": null
+      }
+    ],
+    "kerf_mm": 2,
+    "trim_mm": null,
+    "min_remnant_mm": null,
+    "objective": null
+  },
+  "tags": [
+    "hovorove",
+    "slovni_cisla",
+    "chybi_cena"
+  ],
+  "author_note": "Obecná čeština, slovní čísla."
+}

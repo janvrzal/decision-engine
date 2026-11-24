@@ -1,0 +1,31 @@
+{
+  "id": "extraction-test-24",
+  "input": "Dvacet čtyři kusů po sedmi stech milimetrech a deset kusů po metru a čtvrt, tyče šestimetrové, prořez tři milimetry.",
+  "expected": {
+    "parts": [
+      {
+        "length_mm": 700,
+        "quantity": 24
+      },
+      {
+        "length_mm": 1250,
+        "quantity": 10
+      }
+    ],
+    "stock": [
+      {
+        "length_mm": 6000,
+        "price": null
+      }
+    ],
+    "kerf_mm": 3,
+    "trim_mm": null,
+    "min_remnant_mm": null,
+    "objective": null
+  },
+  "tags": [
+    "slovni_cisla",
+    "chybi_cena"
+  ],
+  "author_note": "Metr a čtvrt = 1250 mm."
+}

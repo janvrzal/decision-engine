@@ -1,0 +1,36 @@
+{
+  "id": "extraction-test-15",
+  "input": "Na lavici: 2× 1,6 m, 4× 42 cm, 3× 380 mm. Trámek má 2,4 m, prořez 4 mm.",
+  "expected": {
+    "parts": [
+      {
+        "length_mm": 1600,
+        "quantity": 2
+      },
+      {
+        "length_mm": 420,
+        "quantity": 4
+      },
+      {
+        "length_mm": 380,
+        "quantity": 3
+      }
+    ],
+    "stock": [
+      {
+        "length_mm": 2400,
+        "price": null
+      }
+    ],
+    "kerf_mm": 4,
+    "trim_mm": null,
+    "min_remnant_mm": null,
+    "objective": null
+  },
+  "tags": [
+    "smisene_jednotky",
+    "desetinna_carka",
+    "chybi_cena"
+  ],
+  "author_note": "m, cm i mm v jedné zprávě."
+}

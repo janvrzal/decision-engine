@@ -1,0 +1,29 @@
+{
+  "id": "extraction-test-20",
+  "input": "Profil 40×40: 6× 2 950 mm. Tyče 6 000 mm za 690 Kč. Prořez 3 mm, na začátku každé tyče ořezávám 15 mm, zbytky od 50 cm schovávám. Chci nejmíň tyčí.",
+  "expected": {
+    "parts": [
+      {
+        "length_mm": 2950,
+        "quantity": 6
+      }
+    ],
+    "stock": [
+      {
+        "length_mm": 6000,
+        "price": "690"
+      }
+    ],
+    "kerf_mm": 3,
+    "trim_mm": 15,
+    "min_remnant_mm": 500,
+    "objective": "fewest_bars"
+  },
+  "tags": [
+    "parametry",
+    "orez",
+    "min_zbytek",
+    "cil"
+  ],
+  "author_note": "Všechny parametry najednou."
+}
