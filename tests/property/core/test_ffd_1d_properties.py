@@ -15,6 +15,7 @@ from decision_engine.core.model.cutting_1d import (
     Project,
     StockLength,
 )
+from decision_engine.core.solvers.cutting_1d.bounds import objective_value
 from decision_engine.core.solvers.cutting_1d.ffd import solve_ffd
 from decision_engine.core.validation.check_cutting_1d import check_cutting_1d
 
@@ -59,7 +60,10 @@ def test_vysledek_projde_validatorem(project: Project) -> None:
     result = solve_ffd(project)
 
     assert check_cutting_1d(project, result) == ()
-    assert result.status is not SolutionStatus.OPTIMAL
+    if result.status is SolutionStatus.OPTIMAL:
+        # „Optimální“ jen při dosažení dolní meze (pravidlo 9).
+        assert result.lower_bound is not None
+        assert objective_value(project, result.bars) == result.lower_bound
 
 
 @settings(max_examples=200, deadline=None)
@@ -87,3 +91,91 @@ def test_poradi_dilu_v_zadani_nemeni_spotrebu(project: Project, rnd: Random) -> 
     )
 
     assert solve_ffd(shuffled).metrics == solve_ffd(project).metrics
+
+
+def _brute_force_optimum(project: Project) -> Decimal | None:
+    """Nejlepší hodnota cíle úplným prohledáním rozdělení kusů do tyčí (jen malé zakázky)."""
+    params = project.parameters
+    pieces = [p.length_mm for p in project.problem.parts for _ in range(p.quantity)]
+
+    def bar_cost(group: list[int]) -> Decimal | None:
+        need = sum(Decimal(x) + params.kerf_mm for x in group)
+        costs = [
+            Decimal(1)
+            if params.objective is Objective.FEWEST_BARS
+            else Decimal(s.length_mm)
+            if params.objective is Objective.LEAST_MATERIAL
+            else s.price
+            for s in project.problem.stock
+            if need <= Decimal(s.length_mm) - params.trim_mm + params.kerf_mm
+        ]
+        usable = [c for c in costs if c is not None]
+        return min(usable) if usable else None
+
+    best: Decimal | None = None
+
+    def partitions(items: list[int]) -> list[list[list[int]]]:
+        if not items:
+            return [[]]
+        first, rest = items[0], items[1:]
+        found: list[list[list[int]]] = []
+        for part in partitions(rest):
+            found.append([[first], *part])
+            for i in range(len(part)):
+                found.append([*part[:i], [first, *part[i]], *part[i + 1 :]])
+        return found
+
+    for partition in partitions(pieces):
+        costs = [bar_cost(group) for group in partition]
+        if any(cost is None for cost in costs):
+            continue
+        total = sum((c or Decimal(0) for c in costs), Decimal(0))
+        best = total if best is None else min(best, total)
+    return best
+
+
+@st.composite
+def small_projects(draw: st.DrawFn) -> Project:
+    stock_lengths = draw(st.lists(st.integers(1_000, 4_000), min_size=1, max_size=2, unique=True))
+    parts = tuple(
+        Part(
+            id=f"p{i}",
+            name=f"díl {i}",
+            length_mm=draw(st.integers(200, 1_000)),
+            quantity=draw(st.integers(1, 2)),
+        )
+        for i in range(draw(st.integers(1, 3)))
+    )
+    stock = tuple(
+        StockLength(id=f"s{i}", length_mm=length, price=Decimal(draw(st.integers(1, 500))))
+        for i, length in enumerate(stock_lengths)
+    )
+    return Project(
+        id="z",
+        name="Malá zakázka",
+        format_version=1,
+        task_type="cutting_1d",
+        revision=0,
+        problem=Problem(material=None, parts=parts, stock=stock),
+        parameters=Parameters(
+            kerf_mm=Decimal(draw(st.integers(0, 40))) / 10,
+            trim_mm=Decimal(draw(st.integers(0, 50))),
+            min_remnant_mm=0,
+            objective=draw(st.sampled_from(Objective)),
+        ),
+    )
+
+
+@settings(max_examples=200, deadline=None)
+@given(small_projects())
+def test_dolni_mez_a_optimum_odpovidaji_uplnemu_prohledani(project: Project) -> None:
+    result = solve_ffd(project)
+    optimum = _brute_force_optimum(project)
+    value = objective_value(project, result.bars)
+
+    assert optimum is not None
+    assert value is not None
+    assert result.lower_bound is not None
+    assert result.lower_bound <= optimum <= value
+    if result.status is SolutionStatus.OPTIMAL:
+        assert value == optimum

@@ -130,8 +130,29 @@ def test_vypocet_je_deterministicky() -> None:
     assert solve_ffd(project) == solve_ffd(project)
 
 
-def test_nikdy_nevraci_optimalni_bez_dolni_meze() -> None:
+def test_plan_na_dolni_mezi_je_optimalni() -> None:
+    # 6 × 1000 mm přesně do jedné tyče 6000 mm: dolní mez 6000 mm je dosažená.
     result = _solve(project_1d([(1000, 6)], [(6000, None)]))
+
+    assert result.status is SolutionStatus.OPTIMAL
+    assert result.lower_bound == Decimal(6000)
+
+
+def test_plan_nad_dolni_mezi_je_nejlepsi_nalezeny_s_mezi() -> None:
+    # 3 × 3500 mm do tyčí 6000 mm: mez 2 tyče, ale do jedné tyče se vejde jen 1 kus.
+    project = project_1d([(3500, 3)], [(6000, None)], objective=Objective.FEWEST_BARS)
+
+    result = _solve(project)
+
+    assert result.status is SolutionStatus.BEST_FOUND
+    assert result.lower_bound == Decimal(2)
+    assert len(result.bars) == 3
+
+
+def test_cena_bez_ceny_neni_optimalni() -> None:
+    project = project_1d([(1000, 2)], [(6000, None)], objective=Objective.CHEAPEST)
+
+    result = _solve(project)
 
     assert result.status is SolutionStatus.BEST_FOUND
     assert result.lower_bound is None

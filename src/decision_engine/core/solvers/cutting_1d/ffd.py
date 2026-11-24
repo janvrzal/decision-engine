@@ -3,7 +3,8 @@
 Kusy se seřadí sestupně a každý jde do první otevřené tyče, kam se vejde. Když se
 nevejde nikam, otevře se nová tyč; skladová délka se vybere podle poměru zvoleného cíle
 na zabalenou délku dílů (zkusmé naplnění zbývajícími kusy). Výsledek je vždy platné
-řešení a horní mez pro pozdější optimalizaci; „Optimální“ neprokazuje.
+řešení a horní mez pro pozdější optimalizaci. „Optimální“ je jen tehdy, když hodnota cíle
+dosáhne dolní meze ze spojité relaxace (`bounds.py`); jinak „Nejlepší nalezený“.
 
 Časový limit (spec kap. 8): jádro nečte čas, dostane funkci `expired`. Po vypršení
 limitu se zbylé kusy rozmístí rychle (jen do poslední otevřené tyče, skladová délka bez
@@ -23,6 +24,7 @@ from decision_engine.core.model.calculation import (
     UnplacedPiece,
 )
 from decision_engine.core.model.cutting_1d import Objective, Parameters, Project, StockLength
+from decision_engine.core.solvers.cutting_1d.bounds import lower_bound, objective_value
 from decision_engine.core.solvers.cutting_1d.geometry import fits, next_start
 from decision_engine.core.solvers.cutting_1d.metrics import compute_metrics
 
@@ -87,12 +89,18 @@ def solve_ffd(project: Project, expired: Callable[[], bool] = _never) -> Calcula
         for part in project.problem.parts
         if too_long[part.id]
     )
+    bound = lower_bound(project, [piece.length_mm for piece in placeable])
+    value = objective_value(project, bars)
+    status = _status(bars, unplaced)
+    if status is SolutionStatus.BEST_FOUND and bound is not None and value == bound:
+        status = SolutionStatus.OPTIMAL
     return CalculationResult(
-        status=_status(bars, unplaced),
+        status=status,
         source=project,
         bars=bars,
         unplaced=unplaced,
         metrics=compute_metrics(project, bars),
+        lower_bound=bound,
     )
 
 

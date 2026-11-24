@@ -221,6 +221,8 @@ class ResultView(_View):
     material: str | None
     status: SolutionStatus
     status_label: str
+    status_note: str | None
+    """Co štítek znamená: dosažená dolní mez, nebo o kolik je plán nad ní (spec kap. 8)."""
     stale: bool
     stale_reason: str | None
     svg: str

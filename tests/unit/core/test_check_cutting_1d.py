@@ -82,7 +82,19 @@ def test_zbytecne_neumisteny_kus() -> None:
 
 
 def test_optimalni_bez_dolni_meze() -> None:
+    lying = VALID.model_copy(update={"status": SolutionStatus.OPTIMAL, "lower_bound": None})
+    assert "label" in _codes(lying)
+
+
+def test_optimalni_nad_dolni_mezi_je_lez() -> None:
+    # Plán spotřebuje 6000 mm, mez je nižší: „Optimální“ by bylo nepravdivé (pravidlo 9).
+    assert VALID.lower_bound is not None
+    assert VALID.lower_bound < Decimal(6000)
     assert "label" in _codes(VALID.model_copy(update={"status": SolutionStatus.OPTIMAL}))
+
+
+def test_dolni_mez_nad_hodnotou_planu_je_chyba() -> None:
+    assert "bound" in _codes(VALID.model_copy(update={"lower_bound": Decimal(7000)}))
 
 
 def test_castecny_bez_neumistenych_kusu() -> None:

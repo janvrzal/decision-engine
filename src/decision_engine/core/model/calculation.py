@@ -77,5 +77,7 @@ class CalculationResult(_Frozen):
     bars: tuple[Bar, ...]
     unplaced: tuple[UnplacedPiece, ...]
     metrics: Metrics
-    lower_bound: int | None = None
-    """Dolní mez hodnoty cíle; do M4 se nepočítá, proto plán nikdy není „Optimální“."""
+    lower_bound: Decimal | None = None
+    """Dolní mez hodnoty cíle (tyče, mm nebo Kč podle cíle), zaokrouhlená nahoru na jednotku.
+
+    „Optimální“ smí plán být, jen když hodnota cíle mez dosáhne (pravidlo 9)."""

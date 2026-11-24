@@ -540,6 +540,8 @@ export interface components {
 			status: components['schemas']['SolutionStatus'];
 			/** Status Label */
 			status_label: string;
+			/** Status Note */
+			status_note: string | null;
 			/** Stale */
 			stale: boolean;
 			/** Stale Reason */

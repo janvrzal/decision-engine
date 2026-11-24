@@ -59,6 +59,8 @@ test.describe('široká obrazovka 1440 px', () => {
 		await expect(page.locator('[data-status="best_found"]').first()).toContainText(
 			'Nejlepší nalezený'
 		);
+		// Štítek je vysvětlený: rozdíl od dolní meze pro zvolený cíl (spec kap. 8).
+		await expect(page.getByText(/Dolní mez je .*; plán je nejvýš o .* nad ní/)).toBeVisible();
 		const plan = page.getByRole('img', { name: /Nářezový plán: .* tyč/ });
 		await expect(plan).toBeVisible();
 		await expect(page.getByText('Spotřebované tyče')).toBeVisible();

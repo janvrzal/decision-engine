@@ -4,7 +4,7 @@
 **Datum:** 24. 11. 2026  
 **Stav:** Specifikace budoucího chování; tento dokument nepopisuje dokončenou implementaci.
 
-**Změny oproti 0.6.0:** Horní meze velikosti úlohy a dodržení časového limitu (kap. 8). Prořez a ořez v desetinách mm, odvozování výchozího cíle a potvrzení ručně zapsané hodnoty (UC-01, ADR-0011). První etapa UC-04: orientační cena materiálu u výsledku.
+**Změny oproti 0.6.0:** Horní meze velikosti úlohy a dodržení časového limitu (kap. 8). Prořez a ořez v desetinách mm, odvozování výchozího cíle a potvrzení ručně zapsané hodnoty (UC-01, ADR-0011). První etapa UC-04: orientační cena materiálu u výsledku. Dolní mez a štítek „Optimální“ (kap. 8).
 
 ## 1. Produkt a jeho účel
 
@@ -429,7 +429,7 @@ Sklad má vlastní revize a vlastní úložiště. Výsledek výpočtu se sklade
 - Každé volání AI se trasuje do Langfuse (model, verze promptu, vstup, výstup, latence, tokeny, cena, chyba). Nedostupný Langfuse nesmí ovlivnit běh aplikace: prompty se vezmou ze záložní kopie a trasování se vypne.
 - Každý výpočet má časový limit (výchozí 10 s, nastavitelný do 120 s). Po jeho dosažení se vrátí nejlepší platné řešení, pokud existuje; heuristika zaručuje, že nějaké platné řešení existuje vždy, když je úloha proveditelná bez omezení skladu. Jádro čas nečte: dostane ho od aplikační vrstvy jako argument. FFD po vypršení limitu rozmístí zbylé kusy rychlým postupem, takže plán je dál úplný.
 - Velikost úlohy má horní meze, aby překlep (např. „40000“ místo „4“) nezablokoval relaci. Délka nejvýš 100 000 mm, počet kusů dílu nejvýš 10 000, celá zakázka nejvýš 5 000 kusů, 500 dílů a 50 skladových délek, cena tyče nejvýš 10 000 000 Kč, texty (název, materiál, díl) nejvýš 200 znaků, zpráva do dialogu nejvýš 4 000 znaků. Překročení je chyba pole s českou hláškou, ne pád.
-- Označení „optimální“ se používá pouze při prokázaném optimu pro deklarovaný model a **zvolený cíl** (UC-01) – u 1D na základě dolní meze z LP relaxace. Jinak UI uvádí štítek „Nejlepší nalezený“ a rozdíl od dolní meze.
+- Označení „optimální“ se používá pouze při prokázaném optimu pro deklarovaný model a **zvolený cíl** (UC-01) – u 1D na základě dolní meze z LP relaxace. Jinak UI uvádí štítek „Nejlepší nalezený“ a rozdíl od dolní meze. První dolní mez je spojitá relaxace kapacity (každý kus spotřebuje délku + prořez, tyč nabízí L − ořez + prořez; místo se pokryje skladovou délkou s nejlepším poměrem ceny cíle), zaokrouhlená nahoru na jednotku cíle; plán, který ji dosáhne, je „Optimální“. Nezávislý validátor odmítne „Optimální“, které mez nedosahuje.
 - Zachovává se identita dílů i při shodných rozměrech.
 - Schéma zaručuje tvar dat; správnost přepisu uživatelského zadání vyžaduje kontrolu a testování.
 - Vývojářská diagnostika ukazuje čas, použitý model, router a verzi promptu, stav validace, rozhodnutí routeru a u solveru počet vzorů, dolní mez a stav CP-SAT, bez tajných údajů.

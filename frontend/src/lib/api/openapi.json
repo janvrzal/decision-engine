@@ -1277,6 +1277,17 @@
 						"type": "string",
 						"title": "Status Label"
 					},
+					"status_note": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Status Note"
+					},
 					"stale": {
 						"type": "boolean",
 						"title": "Stale"
@@ -1323,6 +1334,7 @@
 					"material",
 					"status",
 					"status_label",
+					"status_note",
 					"stale",
 					"stale_reason",
 					"svg",

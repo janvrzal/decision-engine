@@ -60,6 +60,11 @@
 				</span>
 			{/if}
 		</div>
+		{#if result && !solving && result.status_note}
+			<p class="w-full text-small text-ink-muted {result.stale ? 'opacity-60' : ''}">
+				{result.status_note}
+			</p>
+		{/if}
 		{#if result && !solving && !proposalPending}
 			<div class="print:hidden">
 				<Button
