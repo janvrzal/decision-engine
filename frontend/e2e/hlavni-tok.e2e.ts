@@ -124,6 +124,8 @@ test.describe('široká obrazovka 1440 px', () => {
 
 		await expect(page.getByRole('heading', { name: 'Kontrola údajů' })).toBeVisible();
 		await expect(page.getByText('Úprava zakázky')).toBeVisible();
+		// Model materiál nezopakoval; z potvrzené revize zůstane (UC-03).
+		await expect(page.getByRole('textbox', { name: 'Materiál' })).toHaveValue('jekl 40×40×2');
 		await page.getByRole('button', { name: /Plán a cena/ }).click();
 		await expect(page.getByText(/Neaktuální:.*čekají nepotvrzené změny/)).toBeVisible();
 	});

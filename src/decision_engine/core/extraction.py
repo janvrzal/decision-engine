@@ -95,17 +95,24 @@ def proposal_from_extraction(output: ExtractionOutput, base: Project | None) -> 
     )
     for index, item in enumerate(output.stock):
         unconfirmed |= {("problem", "stock", index, field) for field in item.uncertain}
+    if not stock and base is not None:
+        stock = tuple(
+            StockLengthDraft(id=item.id, length_mm=item.length_mm, price=item.price)
+            for item in base.problem.stock
+        )
     if not stock:
         stock = (StockLengthDraft(id="s1", length_mm=DEFAULT_STOCK_LENGTH_MM),)
         unconfirmed.add(("problem", "stock", 0, "length_mm"))
 
-    parameters, defaulted = _parameters(output, stock)
+    parameters, defaulted = _parameters(output, stock, base)
     unconfirmed |= {("parameters", field) for field in defaulted}
 
     return ChangeProposal(
         base_revision=base.revision if base else None,
         name=output.name or (base.name if base else DEFAULT_PROJECT_NAME),
-        material=output.material,
+        # Navazující změna mění jen to, co uživatel řekl (UC-03): co model nezopakoval,
+        # zůstane z potvrzené revize.
+        material=output.material or (base.problem.material if base else None),
         parts=parts,
         stock=stock,
         parameters=parameters,
@@ -114,9 +121,29 @@ def proposal_from_extraction(output: ExtractionOutput, base: Project | None) -> 
 
 
 def _parameters(
-    output: ExtractionOutput, stock: tuple[StockLengthDraft, ...]
+    output: ExtractionOutput, stock: tuple[StockLengthDraft, ...], base: Project | None
 ) -> tuple[ParametersDraft, set[str]]:
-    """Parametry ze zadání; chybějící doplní výchozími hodnotami a vrátí jejich seznam."""
+    """Parametry ze zadání; chybějící převezme z potvrzené revize, jinak z výchozích hodnot.
+
+    Vrátí i seznam parametrů doplněných výchozí hodnotou; převzaté z revize už uživatel
+    potvrdil, proto nepotvrzené nejsou.
+    """
+    if base is not None:
+        kept = base.parameters
+        return (
+            ParametersDraft(
+                kerf_mm=output.kerf_mm if output.kerf_mm is not None else kept.kerf_mm,
+                trim_mm=output.trim_mm if output.trim_mm is not None else kept.trim_mm,
+                min_remnant_mm=(
+                    output.min_remnant_mm
+                    if output.min_remnant_mm is not None
+                    else kept.min_remnant_mm
+                ),
+                objective=output.objective or kept.objective,
+                time_limit_s=kept.time_limit_s,
+            ),
+            set(),
+        )
     defaulted: set[str] = set()
     trim = output.trim_mm
     if trim is None:
