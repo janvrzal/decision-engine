@@ -10,7 +10,6 @@ v Markdownu na výstup (přesnost s 95% Wilsonovým intervalem, matice záměn, 
 
 import argparse
 import json
-import math
 import os
 import time
 import uuid
@@ -25,20 +24,10 @@ from decision_engine.adapters.llm_router import LlmRouter
 from decision_engine.app.ports import Router, RoutingRequest
 from decision_engine.core.result import Err, Ok
 from decision_engine.core.routing import NO_ORDER, RouteOutcome, RoutingDecision
+from eval_stats import interval
 
 ROOT = Path(__file__).resolve().parent.parent
 RAW_DIR = ROOT / "evals" / "reports" / "raw"
-
-
-def wilson(correct: int, total: int, z: float = 1.96) -> tuple[float, float]:
-    """95% Wilsonův interval pro podíl správných odpovědí."""
-    if total == 0:
-        return 0.0, 0.0
-    p = correct / total
-    denominator = 1 + z * z / total
-    centre = (p + z * z / (2 * total)) / denominator
-    margin = z * math.sqrt(p * (1 - p) / total + z * z / (4 * total * total)) / denominator
-    return max(0.0, centre - margin), min(1.0, centre + margin)
 
 
 def label(decision: RoutingDecision) -> str:
@@ -93,14 +82,12 @@ def report(records: list[dict[str, Any]], case_set: str) -> str:
     for name in sorted({r["router"] for r in records}):
         mine = [r for r in records if r["router"] == name]
         correct = sum(r["got"] == r["expected"]["capability"] for r in mine)
-        low, high = wilson(correct, len(mine))
         latencies = sorted(r["latency_ms"] for r in mine)
         p50 = latencies[len(latencies) // 2] if latencies else 0
         lines += [
             f"## {name}",
             "",
-            f"- Správně: {correct}/{len(mine)} ({correct / max(len(mine), 1):.0%}), "
-            f"95% interval {low:.0%}–{high:.0%}",
+            f"- Správně: {interval(correct, len(mine))}",
             f"- Latence p50: {p50} ms",
             "",
             "| očekáváno → rozhodnuto | počet |",

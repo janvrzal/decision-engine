@@ -1,0 +1,77 @@
+{
+  "id": "dialog-dev-01",
+  "turns": [
+    {
+      "input": "Regál do dílny z jeklu 40×40×2: 4 nohy po 1800 mm a 8 polic po 1200 mm z tyčí 6 m po 320 Kč, prořez 3 mm.",
+      "expected": {
+        "outcome": "supported",
+        "project": {
+          "material": "jekl 40×40×2",
+          "parts": [
+            {
+              "length_mm": 1800,
+              "quantity": 4
+            },
+            {
+              "length_mm": 1200,
+              "quantity": 8
+            }
+          ],
+          "stock": [
+            {
+              "length_mm": 6000,
+              "price": "320"
+            }
+          ],
+          "kerf_mm": 3,
+          "trim_mm": null,
+          "min_remnant_mm": null
+        }
+      }
+    },
+    {
+      "input": "Přidej příčky ať jsou 850 mm, 4 kusy.",
+      "expected": {
+        "outcome": "supported",
+        "project": {
+          "material": "jekl 40×40×2",
+          "parts": [
+            {
+              "length_mm": 1800,
+              "quantity": 4
+            },
+            {
+              "length_mm": 1200,
+              "quantity": 8
+            },
+            {
+              "length_mm": 850,
+              "quantity": 4
+            }
+          ],
+          "stock": [
+            {
+              "length_mm": 6000,
+              "price": "320"
+            }
+          ],
+          "kerf_mm": 3,
+          "trim_mm": null,
+          "min_remnant_mm": null
+        }
+      }
+    },
+    {
+      "input": "Chci vyrobit skříň.",
+      "expected": {
+        "outcome": "unclear",
+        "project": null
+      }
+    }
+  ],
+  "tags": [
+    "pridani_dilu",
+    "doptani"
+  ],
+  "author_note": "Odpovídá přehrávaným odpovědím v e2e fixture; ověří skript offline."
+}

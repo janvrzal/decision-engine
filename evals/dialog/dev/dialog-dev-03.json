@@ -1,0 +1,65 @@
+{
+  "id": "dialog-dev-03",
+  "turns": [
+    {
+      "input": "Dobrý den, potřebuju něco nařezat.",
+      "expected": {
+        "outcome": "unclear",
+        "project": null
+      }
+    },
+    {
+      "input": "Deset latí po 900 mm z prken 4 m.",
+      "expected": {
+        "outcome": "supported",
+        "project": {
+          "material": null,
+          "parts": [
+            {
+              "length_mm": 900,
+              "quantity": 10
+            }
+          ],
+          "stock": [
+            {
+              "length_mm": 4000,
+              "price": null
+            }
+          ],
+          "kerf_mm": null,
+          "trim_mm": null,
+          "min_remnant_mm": null
+        }
+      }
+    },
+    {
+      "input": "Ať je jich dvanáct.",
+      "expected": {
+        "outcome": "supported",
+        "project": {
+          "material": null,
+          "parts": [
+            {
+              "length_mm": 900,
+              "quantity": 12
+            }
+          ],
+          "stock": [
+            {
+              "length_mm": 4000,
+              "price": null
+            }
+          ],
+          "kerf_mm": null,
+          "trim_mm": null,
+          "min_remnant_mm": null
+        }
+      }
+    }
+  ],
+  "tags": [
+    "doptani",
+    "zmena_poctu"
+  ],
+  "author_note": "Nejdřív nejasné zadání, pak navazující změna počtu."
+}
