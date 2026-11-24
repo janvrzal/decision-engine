@@ -305,6 +305,84 @@
 				"required": ["id", "label"],
 				"title": "CapabilityView"
 			},
+			"CostLineView": {
+				"properties": {
+					"stock_id": {
+						"type": "string",
+						"title": "Stock Id"
+					},
+					"length_mm": {
+						"type": "integer",
+						"title": "Length Mm"
+					},
+					"count": {
+						"type": "integer",
+						"title": "Count"
+					},
+					"unit_price": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Unit Price"
+					},
+					"total": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Total"
+					}
+				},
+				"type": "object",
+				"required": ["stock_id", "length_mm", "count", "unit_price", "total"],
+				"title": "CostLineView"
+			},
+			"CostView": {
+				"properties": {
+					"lines": {
+						"items": {
+							"$ref": "#/components/schemas/CostLineView"
+						},
+						"type": "array",
+						"title": "Lines"
+					},
+					"total": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Total"
+					},
+					"note": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Note"
+					}
+				},
+				"type": "object",
+				"required": ["lines", "total", "note"],
+				"title": "CostView",
+				"description": "Orientační cena materiálu (UC-04, první etapa)."
+			},
 			"DecimalCell": {
 				"properties": {
 					"value": {
@@ -1206,6 +1284,9 @@
 					"metrics": {
 						"$ref": "#/components/schemas/MetricsView"
 					},
+					"cost": {
+						"$ref": "#/components/schemas/CostView"
+					},
 					"bars": {
 						"items": {
 							"$ref": "#/components/schemas/BarView"
@@ -1229,6 +1310,7 @@
 					"stale_reason",
 					"svg",
 					"metrics",
+					"cost",
 					"bars",
 					"unplaced"
 				],

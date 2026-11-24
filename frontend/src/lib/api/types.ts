@@ -11,6 +11,7 @@ export type StepView = Schemas['StepView'];
 export type StepState = Schemas['StepState'];
 export type BarView = Schemas['BarView'];
 export type MetricsView = Schemas['MetricsView'];
+export type CostView = Schemas['CostView'];
 export type ObjectiveOption = Schemas['ObjectiveOption'];
 export type Objective = Schemas['Objective'];
 export type SolutionStatus = Schemas['SolutionStatus'];

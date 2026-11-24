@@ -197,6 +197,24 @@ class UnplacedView(_View):
     reason: str
 
 
+class CostLineView(_View):
+    stock_id: str
+    length_mm: int
+    count: int
+    unit_price: Decimal | None
+    total: Decimal | None
+
+
+class CostView(_View):
+    """Orientační cena materiálu (UC-04, první etapa)."""
+
+    lines: tuple[CostLineView, ...]
+    total: Decimal | None
+    """`None`: některé spotřebované skladové délce chybí cena (kalkulace je neúplná)."""
+    note: str | None
+    """Proč součet chybí, česky; `None` u úplné kalkulace."""
+
+
 class ResultView(_View):
     status: SolutionStatus
     status_label: str
@@ -204,6 +222,7 @@ class ResultView(_View):
     stale_reason: str | None
     svg: str
     metrics: MetricsView
+    cost: CostView
     bars: tuple[BarView, ...]
     unplaced: tuple[UnplacedView, ...]
 

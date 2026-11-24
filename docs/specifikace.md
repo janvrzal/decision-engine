@@ -4,7 +4,7 @@
 **Datum:** 24. 11. 2026  
 **Stav:** Specifikace budoucího chování; tento dokument nepopisuje dokončenou implementaci.
 
-**Změny oproti 0.6.0:** Horní meze velikosti úlohy a dodržení časového limitu (kap. 8). Prořez a ořez v desetinách mm, odvozování výchozího cíle a potvrzení ručně zapsané hodnoty (UC-01, ADR-0011).
+**Změny oproti 0.6.0:** Horní meze velikosti úlohy a dodržení časového limitu (kap. 8). Prořez a ořez v desetinách mm, odvozování výchozího cíle a potvrzení ručně zapsané hodnoty (UC-01, ADR-0011). První etapa UC-04: orientační cena materiálu u výsledku.
 
 ## 1. Produkt a jeho účel
 
@@ -192,6 +192,8 @@ Práci, další náklady, přirážku a DPH (vstupy kalkulace) uživatel upravuj
 Přirážka znamená procento z nákladů, nikoli marži z prodejní ceny. Sazby ani ceny aplikace sama nevymýšlí. Chybějící cena znamená neúplnou kalkulaci, nikoli nulový náklad. Peněžní výpočty používají desetinnou aritmetiku (`Decimal`) a jednotné zaokrouhlování. Výstup je orientační kalkulace, ne faktura.
 
 Při zapnutém skladu se materiál ze skladu oceňuje evidovanou cenou skladové položky. Uživatel může zvolit, že se skladový materiál do kalkulace nezapočítá (například již zaplacené zbytky); tato volba se uvádí mezi cenovými předpoklady.
+
+**Dodání po etapách:** První etapa (M2/M5) ukazuje u výsledku orientační cenu materiálu: pro každou spotřebovanou skladovou délku počet tyčí, cenu za kus a součet, a celkovou částku. Chybí-li cena spotřebované délky, celková částka se neuvádí a UI řekne proč. Práce, paušální náklady, přirážka, DPH a export přibudou v další etapě.
 
 **Úspěch:** Každá částka je odvoditelná ze zobrazených vstupů a po změně plánu se materiálové náklady aktualizují.
 

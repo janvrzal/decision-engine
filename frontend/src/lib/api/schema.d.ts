@@ -147,6 +147,31 @@ export interface components {
 			/** Label */
 			label: string;
 		};
+		/** CostLineView */
+		CostLineView: {
+			/** Stock Id */
+			stock_id: string;
+			/** Length Mm */
+			length_mm: number;
+			/** Count */
+			count: number;
+			/** Unit Price */
+			unit_price: string | null;
+			/** Total */
+			total: string | null;
+		};
+		/**
+		 * CostView
+		 * @description Orientační cena materiálu (UC-04, první etapa).
+		 */
+		CostView: {
+			/** Lines */
+			lines: components['schemas']['CostLineView'][];
+			/** Total */
+			total: string | null;
+			/** Note */
+			note: string | null;
+		};
 		/**
 		 * DecimalCell
 		 * @description Délka v mm s nejvýš jedním desetinným místem (prořez, ořez; ADR-0011).
@@ -518,6 +543,7 @@ export interface components {
 			/** Svg */
 			svg: string;
 			metrics: components['schemas']['MetricsView'];
+			cost: components['schemas']['CostView'];
 			/** Bars */
 			bars: components['schemas']['BarView'][];
 			/** Unplaced */

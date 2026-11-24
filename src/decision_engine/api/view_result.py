@@ -5,11 +5,14 @@ from collections import Counter
 from decision_engine.api.view_model import (
     BarsByLength,
     BarView,
+    CostLineView,
+    CostView,
     MetricsView,
     PieceView,
     ResultView,
     UnplacedView,
 )
+from decision_engine.core.costing import material_cost
 from decision_engine.core.model.calculation import Bar, CalculationResult, SolutionStatus
 from decision_engine.core.model.cutting_1d import Parameters
 from decision_engine.core.render.groups import group_bars
@@ -56,6 +59,7 @@ def build_result(result: CalculationResult, *, stale: bool, proposal_pending: bo
             waste_length_mm=metrics.waste_length_mm,
             yield_ratio=metrics.yield_ratio,
         ),
+        cost=_cost(result),
         bars=tuple(
             _bar(group.bar, group.numbers, names, project.parameters)
             for group in group_bars(result)
@@ -69,6 +73,29 @@ def build_result(result: CalculationResult, *, stale: bool, proposal_pending: bo
                 reason=UNPLACED_REASON[item.reason],
             )
             for item in result.unplaced
+        ),
+    )
+
+
+def _cost(result: CalculationResult) -> CostView:
+    cost = material_cost(result)
+    return CostView(
+        lines=tuple(
+            CostLineView(
+                stock_id=line.stock_id,
+                length_mm=line.length_mm,
+                count=line.count,
+                unit_price=line.unit_price,
+                total=line.total,
+            )
+            for line in cost.lines
+        ),
+        total=cost.total,
+        note=(
+            "Cena nejde sečíst: u spotřebované skladové délky chybí cena. Doplňte ji v kroku "
+            "Kontrola údajů."
+            if cost.missing_price
+            else None
         ),
     )
 

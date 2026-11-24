@@ -63,6 +63,12 @@ test.describe('široká obrazovka 1440 px', () => {
 		await expect(plan).toBeVisible();
 		await expect(page.getByText('Spotřebované tyče')).toBeVisible();
 		await expect(page.getByText('Výtěžnost', { exact: true })).toBeVisible();
+		// Orientační cena materiálu: spotřebované tyče × cena za kus (UC-04, první etapa).
+		const cost = page.getByRole('region', { name: 'Cena materiálu (orientačně)' });
+		await expect(cost).toContainText(/\d[\d\u00a0]*,\d{2}\u00a0?Kč/);
+		await expect(
+			cost.getByRole('table', { name: 'Rozpis ceny podle skladových délek' })
+		).toBeVisible();
 		await expect(
 			page.getByRole('navigation', { name: 'Kroky zakázky' }).locator('[aria-current="step"]')
 		).toContainText('Plán a cena');

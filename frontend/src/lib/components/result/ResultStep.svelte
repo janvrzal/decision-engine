@@ -1,4 +1,5 @@
 <script lang="ts">
+	import CostSummary from './CostSummary.svelte';
 	import Pencil from '@lucide/svelte/icons/pencil';
 	import RefreshCw from '@lucide/svelte/icons/refresh-cw';
 	import type { ResultView, UserEvent } from '#lib/api/types.js';
@@ -136,6 +137,8 @@
 				note="délka dílů / spotřeba"
 			/>
 		</div>
+
+		<CostSummary cost={result.cost} stale={result.stale} />
 
 		<div class="rounded-lg border border-border bg-surface p-4">
 			<CuttingPlan svg={result.svg} bind:highlighted dimmed={result.stale} />
