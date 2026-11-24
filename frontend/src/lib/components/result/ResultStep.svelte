@@ -143,7 +143,12 @@
 				unit="mm"
 				note="{result.metrics.remnant_count} ks"
 			/>
-			<MetricCard label="Odpad" value={number(result.metrics.waste_length_mm)} unit="mm" />
+			<MetricCard
+				label="Odpad"
+				value={number(result.metrics.waste_length_mm)}
+				unit="mm"
+				note="z toho prořez a ořez {formatLength(result.metrics.cutting_loss_mm)}"
+			/>
 			<MetricCard
 				label="Výtěžnost"
 				value={formatPercent(result.metrics.yield_ratio)}

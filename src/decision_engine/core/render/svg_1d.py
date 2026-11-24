@@ -12,21 +12,26 @@ from decision_engine.core.model.cutting_1d import Parameters, Project
 from decision_engine.core.render.format import bars_word, millimeters, number
 from decision_engine.core.render.groups import BarGroup, group_bars
 from decision_engine.core.render.plan_colors import PLAN_COLORS, part_color
+from decision_engine.core.render.svg_text import fit, n, text, text_width
 from decision_engine.core.solvers.cutting_1d.geometry import remainder
 
 WIDTH = 960
 PAD = 16
 GROUP_COLUMN = 72
-BAR_HEIGHT = 26
-CUT_AREA = 34
+BAR_HEIGHT = 30
+CUT_AREA = 40
 """Místo nad tyčí pro dvě řady poloh řezů (svislý rozestup mezi tyčemi)."""
-STRIPE = 5
+STRIPE = 8
 TOP = 40
-LEGEND_COLUMN = 224
-LABEL_FULL_PX = 110
-LABEL_SHORT_PX = 40
-CUT_LABEL_GAP_PX = 48
-CUT_ROW_PX = 14
+LEGEND_COLUMN = 300
+LEGEND_ROW = 26
+LABEL_SHORT_PX = 44
+CUT_LABEL_GAP_PX = 56
+CUT_ROW_PX = 16
+TEXT = 13
+"""Velikost popisků v jednotkách viewBoxu. Panel bývá užší než 960 px a plán má ve
+frontendu nejmenší šířku 720 px, takže na obrazovce vychází text aspoň na ~10 px."""
+
 FONT = "'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif"
 C = PLAN_COLORS
 
@@ -39,13 +44,13 @@ def render_svg(result: CalculationResult) -> str:
     longest = max(stock.length_mm for stock in project.problem.stock)
     scale = (WIDTH - x0 - PAD) / longest
 
-    body: list[str] = [_text(PAD, 20, _summary(project, result), 13, C["ink-muted"])]
+    body: list[str] = [text(PAD, 20, _summary(project, result), TEXT + 1, C["ink-muted"])]
     y = TOP
     for group in groups:
         body += _group(project, group, x0, y + CUT_AREA, scale)
         y += CUT_AREA + BAR_HEIGHT
     if not groups:
-        body.append(_text(PAD, y + 20, "Žádná tyč", 14, C["ink-muted"]))
+        body.append(text(PAD, y + 20, "Žádná tyč", 14, C["ink-muted"]))
         y += 40
     legend, height = _legend(project, result, y + 24)
     body += legend
@@ -81,9 +86,9 @@ def _group(project: Project, group: BarGroup, x0: float, y: float, scale: float)
     names = {part.id: part.name for part in project.problem.parts}
     types = {part.id: index for index, part in enumerate(project.problem.parts)}
     out = [
-        _text(PAD, y + 13, f"{group.count}×", 14, C["ink"], weight=600),
-        _text(PAD, y + 25, group.label(), 11, C["ink-muted"]),
-        f'<rect x="{_n(x0)}" y="{_n(y)}" width="{_n(bar.length_mm * scale)}" '
+        text(PAD, y + 14, f"{group.count}×", 15, C["ink"], weight=600),
+        text(PAD, y + 28, group.label(), TEXT - 1, C["ink-muted"]),
+        f'<rect x="{n(x0)}" y="{n(y)}" width="{n(bar.length_mm * scale)}" '
         f'height="{BAR_HEIGHT}" rx="2" fill="{C["plan-bar"]}" stroke="{C["border-strong"]}"/>',
     ]
     if params.trim_mm:
@@ -94,20 +99,19 @@ def _group(project: Project, group: BarGroup, x0: float, y: float, scale: float)
         width = piece.length_mm * scale
         name = names.get(piece.part_id, piece.part_id)
         tooltip = f"{name} {millimeters(piece.length_mm)}"
+        size = number(piece.length_mm)
         label = (
-            f"{name} {number(piece.length_mm)}"
-            if width >= LABEL_FULL_PX
-            else number(piece.length_mm)
+            fit(f"{name} {size}", width - 8, size=TEXT, keep=f" {size}")
             if width >= LABEL_SHORT_PX
             else ""
         )
         out.append(
             f"<g data-part-id={quoteattr(piece.part_id)}><title>{escape(tooltip)}</title>"
-            f'<rect x="{_n(x)}" y="{_n(y)}" width="{_n(width)}" height="{BAR_HEIGHT}" '
+            f'<rect x="{n(x)}" y="{n(y)}" width="{n(width)}" height="{BAR_HEIGHT}" '
             f'fill="{C["surface"]}" stroke="{C["border-strong"]}"/>'
-            f'<rect x="{_n(x)}" y="{_n(y)}" width="{_n(width)}" height="{STRIPE}" '
+            f'<rect x="{n(x)}" y="{n(y)}" width="{n(width)}" height="{STRIPE}" '
             f'fill="{part_color(types.get(piece.part_id, 0))}"/>'
-            + (_text(x + width / 2, y + 19, label, 11, C["ink"], anchor="middle") if label else "")
+            + (text(x + width / 2, y + 22, label, TEXT, C["ink"], anchor="middle") if label else "")
             + "</g>"
         )
     out += _cuts(bar, x0, y, scale)
@@ -137,21 +141,21 @@ def _cuts(bar: Bar, x0: float, y: float, scale: float) -> list[str]:
         label = ""
         if row is not None:
             last_in_row[row] = x
-            label = _text(
+            label = text(
                 x,
-                y - 9 - row * CUT_ROW_PX,
+                y - 10 - row * CUT_ROW_PX,
                 number(end),
-                11,
+                TEXT - 1,
                 C["plan-cut"],
                 weight=600,
                 anchor="middle",
             )
         out.append(
             f"<g><title>řez na {escape(millimeters(end))} od začátku tyče</title>"
-            f'<line x1="{_n(x)}" y1="{_n(y)}" x2="{_n(x)}" y2="{_n(y + BAR_HEIGHT)}" '
+            f'<line x1="{n(x)}" y1="{n(y)}" x2="{n(x)}" y2="{n(y + BAR_HEIGHT)}" '
             f'stroke="{C["plan-cut"]}" stroke-width="1.5"/>'
-            f'<polygon points="{_n(x - 4)},{_n(y - 7)} {_n(x + 4)},{_n(y - 7)} '
-            f'{_n(x)},{_n(y - 1)}" fill="{C["plan-cut"]}"/>' + label + "</g>"
+            f'<polygon points="{n(x - 4)},{n(y - 7)} {n(x + 4)},{n(y - 7)} '
+            f'{n(x)},{n(y - 1)}" fill="{C["plan-cut"]}"/>' + label + "</g>"
         )
     return out
 
@@ -168,11 +172,11 @@ def _tail(bar: Bar, params: Parameters, x0: float, y: float, scale: float) -> li
     label = f"zbytek {number(length)}"
     return [
         f"<g><title>využitelný zbytek {escape(millimeters(length))}</title>"
-        f'<rect x="{_n(x)}" y="{_n(y)}" width="{_n(width)}" height="{BAR_HEIGHT}" '
+        f'<rect x="{n(x)}" y="{n(y)}" width="{n(width)}" height="{BAR_HEIGHT}" '
         f'fill="{C["plan-remnant"]}" stroke="{C["border-strong"]}"/>'
         + (
-            _text(x + width / 2, y + 17, label, 11, C["success"], weight=600, anchor="middle")
-            if width >= LABEL_FULL_PX * 0.7
+            text(x + width / 2, y + 20, label, TEXT, C["success"], weight=600, anchor="middle")
+            if width >= text_width(label, TEXT) + 8
             else ""
         )
         + "</g>"
@@ -182,7 +186,7 @@ def _tail(bar: Bar, params: Parameters, x0: float, y: float, scale: float) -> li
 def _waste(x: float, y: float, width: float, tooltip: str) -> str:
     return (
         f"<g><title>{escape(tooltip)}</title>"
-        f'<rect x="{_n(x)}" y="{_n(y)}" width="{_n(width)}" height="{BAR_HEIGHT}" '
+        f'<rect x="{n(x)}" y="{n(y)}" width="{n(width)}" height="{BAR_HEIGHT}" '
         f'fill="url(#plan-hatch)" stroke="{C["border-strong"]}"/></g>'
     )
 
@@ -214,13 +218,14 @@ def _legend(project: Project, result: CalculationResult, y: float) -> tuple[list
     ]
     per_row = (WIDTH - 2 * PAD) // LEGEND_COLUMN
     out: list[str] = []
-    for index, (swatch, text) in enumerate(entries):
+    for index, (swatch, caption) in enumerate(entries):
         x = PAD + (index % per_row) * LEGEND_COLUMN
-        row_y = y + (index // per_row) * 22
-        out.append(f'<g transform="translate({_n(x)},{_n(row_y)})">{swatch}</g>')
-        out.append(_text(x + 18, row_y + 10, text, 12, C["ink"]))
+        row_y = y + (index // per_row) * LEGEND_ROW
+        out.append(f'<g transform="translate({n(x)},{n(row_y)})">{swatch}</g>')
+        fitted = fit(caption, LEGEND_COLUMN - 26, size=TEXT)
+        out.append(text(x + 18, row_y + 11, fitted, TEXT, C["ink"]))
     rows = (len(entries) + per_row - 1) // per_row
-    return out, int(y + rows * 22 + PAD)
+    return out, int(y + rows * LEGEND_ROW + PAD)
 
 
 def _legend_part(name: str, length_mm: int, placed: int, quantity: int) -> str:
@@ -265,32 +270,10 @@ def _description(project: Project, groups: tuple[BarGroup, ...]) -> str:
         ]
         kind, length = remainder(bar.length_mm, bar.pieces, project.parameters)
         tail = {"remnant": f"zbytek {millimeters(length)}", "waste": f"odpad {millimeters(length)}"}
-        text = f"{group.count}× tyč {millimeters(bar.length_mm)} ({group.label()}): {pieces}"
+        line = f"{group.count}× tyč {millimeters(bar.length_mm)} ({group.label()}): {pieces}"
         if cuts:
-            text += f"; řezy na {', '.join(cuts)}"
+            line += f"; řezy na {', '.join(cuts)}"
         if kind in tail:
-            text += f"; {tail[kind]}"
-        lines.append(text + ".")
+            line += f"; {tail[kind]}"
+        lines.append(line + ".")
     return " ".join(lines) if lines else "Plán neobsahuje žádnou tyč."
-
-
-def _text(
-    x: float,
-    y: float,
-    content: str,
-    size: int,
-    fill: str,
-    *,
-    weight: int = 400,
-    anchor: str = "start",
-) -> str:
-    return (
-        f'<text x="{_n(x)}" y="{_n(y)}" font-size="{size}" font-weight="{weight}" '
-        f'fill="{fill}" text-anchor="{anchor}">{escape(content)}</text>'
-    )
-
-
-def _n(value: float) -> str:
-    """Souřadnice zaokrouhlená na setiny bez zbytečných nul (stabilní snapshoty)."""
-    text = f"{value:.2f}".rstrip("0").rstrip(".")
-    return "0" if text == "-0" else text

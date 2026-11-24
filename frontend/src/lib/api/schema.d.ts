@@ -323,6 +323,8 @@ export interface components {
 			remnant_count: number;
 			/** Waste Length Mm */
 			waste_length_mm: string;
+			/** Cutting Loss Mm */
+			cutting_loss_mm: string;
 			/** Yield Ratio */
 			yield_ratio: number;
 		};

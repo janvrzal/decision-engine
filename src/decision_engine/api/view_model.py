@@ -216,6 +216,8 @@ class MetricsView(_View):
     remnant_length_mm: Decimal
     remnant_count: int
     waste_length_mm: Decimal
+    cutting_loss_mm: Decimal
+    """Část odpadu, kterou spotřebují řezy a zarovnání čela (zbytek odpadu jsou odřezky)."""
     yield_ratio: float
 
 

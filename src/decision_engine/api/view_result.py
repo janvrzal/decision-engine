@@ -1,6 +1,7 @@
 """View model výsledku (Panel Plán): štítek, neaktuálnost, SVG, metriky, rozpis."""
 
 from collections import Counter
+from decimal import Decimal
 
 from decision_engine.api.view_model import (
     BarsByLength,
@@ -62,6 +63,7 @@ def build_result(result: CalculationResult, *, stale: bool, proposal_pending: bo
             remnant_length_mm=metrics.remnant_length_mm,
             remnant_count=metrics.remnant_count,
             waste_length_mm=metrics.waste_length_mm,
+            cutting_loss_mm=metrics.waste_length_mm - _offcuts(result),
             yield_ratio=metrics.yield_ratio,
         ),
         cost=_cost(result),
@@ -80,6 +82,17 @@ def build_result(result: CalculationResult, *, stale: bool, proposal_pending: bo
             for item in result.unplaced
         ),
     )
+
+
+def _offcuts(result: CalculationResult) -> Decimal:
+    """Odřezky na konci tyčí kratší než využitelný zbytek (bez prořezů a ořezu)."""
+    parameters = result.source.parameters
+    total = Decimal(0)
+    for bar in result.bars:
+        kind, length = remainder(bar.length_mm, bar.pieces, parameters)
+        if kind == "waste":
+            total += length
+    return total
 
 
 def _status_note(result: CalculationResult) -> str | None:
