@@ -18,7 +18,8 @@ class Capability:
     id: str
     label: str
     """Název v jazyce dílny pro UI."""
-    solve: Callable[[Project], CalculationResult]
+    solve: Callable[[Project, Callable[[], bool]], CalculationResult]
+    """Výpočet; druhý argument řekne, zda už vypršel časový limit (jádro nečte čas)."""
     check: Callable[[Project, CalculationResult], tuple[Violation, ...]]
 
 

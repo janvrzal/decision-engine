@@ -133,3 +133,22 @@ def test_nikdy_nevraci_optimalni_bez_dolni_meze() -> None:
 
     assert result.status is SolutionStatus.BEST_FOUND
     assert result.lower_bound is None
+
+
+def test_po_vyprseni_limitu_je_plan_uplny_a_platny() -> None:
+    project = project_1d(
+        [(1800, 40), (1200, 80), (850, 40)], [(6000, "320"), (4000, "230")], kerf=3
+    )
+
+    result = solve_ffd(project, lambda: True)
+
+    assert check_cutting_1d(project, result) == ()
+    assert result.status is SolutionStatus.BEST_FOUND
+    placed = sum(len(bar.pieces) for bar in result.bars)
+    assert placed == 160
+
+
+def test_bez_vyprseni_limitu_je_vysledek_stejny_jako_bez_hodin() -> None:
+    project = project_1d([(1800, 4), (1200, 8)], [(6000, "320")], kerf=3)
+
+    assert solve_ffd(project, lambda: False) == solve_ffd(project)

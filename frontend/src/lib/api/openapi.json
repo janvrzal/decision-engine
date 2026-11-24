@@ -453,6 +453,7 @@
 					},
 					"text": {
 						"type": "string",
+						"maxLength": 4000,
 						"title": "Text"
 					}
 				},
@@ -968,6 +969,7 @@
 							"$ref": "#/components/schemas/PartDraft"
 						},
 						"type": "array",
+						"maxItems": 500,
 						"title": "Parts"
 					},
 					"stock": {
@@ -975,6 +977,7 @@
 							"$ref": "#/components/schemas/StockLengthDraft"
 						},
 						"type": "array",
+						"maxItems": 50,
 						"title": "Stock"
 					},
 					"parameters": {

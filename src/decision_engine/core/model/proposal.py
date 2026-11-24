@@ -8,7 +8,7 @@ takže pravidla validace jsou na jednom místě (spec kap. 7 Stav zakázky, R1, 
 from decimal import Decimal
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, StrictInt
 
 from decision_engine.core.errors import FieldError, FieldPath
 from decision_engine.core.model.cutting_1d import Objective, Project
@@ -20,25 +20,28 @@ class _Frozen(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
 
+# Celá čísla jsou striktní: `true` ani „12“ z API či souboru nejsou délka.
+
+
 class PartDraft(_Frozen):
     id: str
     name: str | None = None
-    length_mm: int | None = None
-    quantity: int | None = None
+    length_mm: StrictInt | None = None
+    quantity: StrictInt | None = None
 
 
 class StockLengthDraft(_Frozen):
     id: str
-    length_mm: int | None = None
+    length_mm: StrictInt | None = None
     price: Decimal | None = None
 
 
 class ParametersDraft(_Frozen):
-    kerf_mm: int | None = None
-    trim_mm: int | None = None
-    min_remnant_mm: int | None = None
+    kerf_mm: StrictInt | None = None
+    trim_mm: StrictInt | None = None
+    min_remnant_mm: StrictInt | None = None
     objective: Objective | None = None
-    time_limit_s: int | None = None
+    time_limit_s: StrictInt | None = None
 
 
 class ChangeProposal(_Frozen):

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { MAX_MESSAGE_CHARS } from '#lib/limits.js';
 	import Send from '@lucide/svelte/icons/send';
 	import Button from './ui/Button.svelte';
 	import TextArea from './ui/TextArea.svelte';
@@ -44,6 +45,7 @@
 		label="Zpráva"
 		hideLabel
 		rows={3}
+		maxlength={MAX_MESSAGE_CHARS}
 		placeholder="Napište, co potřebujete…"
 		onkeydown={handleKeydown}
 	/>

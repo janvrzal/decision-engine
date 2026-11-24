@@ -4,9 +4,14 @@ Kusy se seřadí sestupně a každý jde do první otevřené tyče, kam se vejd
 nevejde nikam, otevře se nová tyč; skladová délka se vybere podle poměru zvoleného cíle
 na zabalenou délku dílů (zkusmé naplnění zbývajícími kusy). Výsledek je vždy platné
 řešení a horní mez pro pozdější optimalizaci; „Optimální“ neprokazuje.
+
+Časový limit (spec kap. 8): jádro nečte čas, dostane funkci `expired`. Po vypršení
+limitu se zbylé kusy rozmístí rychle (jen do poslední otevřené tyče, skladová délka bez
+zkusmého naplnění), takže výsledek je dál úplný a platný, jen méně úsporný.
 """
 
 from collections import Counter
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from decimal import Decimal
 
@@ -44,8 +49,16 @@ class _OpenBar:
         return True
 
 
-def solve_ffd(project: Project) -> CalculationResult:
-    """Spočítá plán řezání heuristikou FFD."""
+CHECK_EVERY = 64
+"""Po kolika kusech se ptát, zda nevypršel časový limit."""
+
+
+def _never() -> bool:
+    return False
+
+
+def solve_ffd(project: Project, expired: Callable[[], bool] = _never) -> CalculationResult:
+    """Spočítá plán řezání heuristikou FFD; po vypršení limitu dokončí rychlým rozmístěním."""
     parameters = project.parameters
     pieces = _sorted_pieces(project)
     longest = max(stock.length_mm for stock in project.problem.stock)
@@ -53,10 +66,14 @@ def solve_ffd(project: Project) -> CalculationResult:
     too_long = Counter(p.part_id for p in pieces if not fits(longest, [], p.length_mm, parameters))
 
     open_bars: list[_OpenBar] = []
+    hurry = False
     for index, piece in enumerate(placeable):
-        if any(bar.try_add(piece, parameters) for bar in open_bars):
+        if not hurry and index % CHECK_EVERY == 0:
+            hurry = expired()
+        candidates = open_bars[-1:] if hurry else open_bars
+        if any(bar.try_add(piece, parameters) for bar in candidates):
             continue
-        stock = _choose_stock(project, placeable[index:])
+        stock = _quick_stock(project, piece) if hurry else _choose_stock(project, placeable[index:])
         bar = _OpenBar(stock)
         bar.try_add(piece, parameters)
         open_bars.append(bar)
@@ -104,11 +121,32 @@ def _choose_stock(project: Project, remaining: list[_Piece]) -> StockLength:
     return best[2]
 
 
+def _quick_stock(project: Project, piece: _Piece) -> StockLength:
+    """Skladová délka s nejlepším poměrem cíle na délku tyče, bez zkusmého naplnění."""
+    parameters = project.parameters
+    usable = [
+        (index, stock)
+        for index, stock in enumerate(project.problem.stock)
+        if fits(stock.length_mm, [], piece.length_mm, parameters)
+    ]
+    _, stock = min(
+        usable,
+        key=lambda item: (
+            _objective_cost(item[1], parameters.objective) / Decimal(item[1].length_mm),
+            item[0],
+        ),
+    )
+    return stock
+
+
 def _trial_fill(stock: StockLength, remaining: list[_Piece], parameters: Parameters) -> int:
     """Délka dílů, které by FFD dalo do jedné nové tyče této délky (první kus vždy)."""
     trial = _OpenBar(stock)
+    shortest = remaining[-1].length_mm  # kusy jsou seřazené sestupně
     for piece in remaining:
         trial.try_add(piece, parameters)
+        if not fits(stock.length_mm, trial.pieces, shortest, parameters):
+            break  # do tyče se už nevejde ani nejkratší kus
     return sum(piece.length_mm for piece in trial.pieces)
 
 

@@ -3,11 +3,12 @@
 Události od uživatele posílá frontend, ostatní vrací aplikační vrstva jako výsledek efektů.
 """
 
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from decision_engine.core.model.calculation import CalculationResult
+from decision_engine.core.model.cutting_1d import MAX_PARTS, MAX_STOCK
 from decision_engine.core.model.proposal import (
     ChangeProposal,
     ParametersDraft,
@@ -15,6 +16,9 @@ from decision_engine.core.model.proposal import (
     StockLengthDraft,
 )
 from decision_engine.core.state import AiErrorKind
+
+MAX_MESSAGE_CHARS = 4_000
+"""Nejdelší zpráva do dialogu; delší text by jen prodražil volání modelu."""
 
 
 class _Event(BaseModel):
@@ -25,7 +29,7 @@ class MessageSent(_Event):
     """Uživatel odeslal zprávu nebo zadání."""
 
     type: Literal["MessageSent"] = "MessageSent"
-    text: str
+    text: Annotated[str, Field(max_length=MAX_MESSAGE_CHARS)]
 
 
 class ToolSelected(_Event):
@@ -79,8 +83,8 @@ class ProposalEdited(_Event):
     type: Literal["ProposalEdited"] = "ProposalEdited"
     name: str | None
     material: str | None
-    parts: tuple[PartDraft, ...]
-    stock: tuple[StockLengthDraft, ...]
+    parts: Annotated[tuple[PartDraft, ...], Field(max_length=MAX_PARTS)]
+    stock: Annotated[tuple[StockLengthDraft, ...], Field(max_length=MAX_STOCK)]
     parameters: ParametersDraft
 
 

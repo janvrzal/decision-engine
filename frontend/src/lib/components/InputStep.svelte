@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { MAX_MESSAGE_CHARS } from '#lib/limits.js';
 	import ArrowRight from '@lucide/svelte/icons/arrow-right';
 	import FolderOpen from '@lucide/svelte/icons/folder-open';
 	import Shuffle from '@lucide/svelte/icons/shuffle';
@@ -77,6 +78,7 @@
 			label="Zadání zakázky"
 			hideLabel
 			rows={6}
+			maxlength={MAX_MESSAGE_CHARS}
 			placeholder={example?.text}
 			hint="Uveďte díly s délkou a počtem, skladovou délku tyčí a případně prořez a ceny."
 		/>

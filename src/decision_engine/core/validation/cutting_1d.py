@@ -11,7 +11,7 @@ from pydantic import ValidationError
 from pydantic_core import ErrorDetails
 
 from decision_engine.core.errors import FieldError
-from decision_engine.core.model.cutting_1d import Objective, Project
+from decision_engine.core.model.cutting_1d import MAX_PIECES, Objective, Project
 from decision_engine.core.result import Err, Ok, Result
 
 type ProjectResult = Result[Project, tuple[FieldError, ...]]
@@ -41,6 +41,7 @@ def validate_project(project: Project) -> ProjectResult:
         ),
         *_trim_errors(project),
         *_missing_price_errors(project),
+        *_too_many_pieces(project),
     )
     return Err(errors) if errors else Ok(project)
 
@@ -86,6 +87,26 @@ def _missing_price_errors(project: Project) -> tuple[FieldError, ...]:
         for index, stock in enumerate(project.problem.stock)
         if stock.price is None
     )
+
+
+def _too_many_pieces(project: Project) -> tuple[FieldError, ...]:
+    total = sum(part.quantity for part in project.problem.parts)
+    if total <= MAX_PIECES:
+        return ()
+    return (
+        FieldError(
+            path=("problem", "parts"),
+            code="too_many_pieces",
+            message=(
+                f"Zakázka má {_number(total)} kusů, aplikace spočítá nejvýš "
+                f"{_number(MAX_PIECES)}. Zkontrolujte počty, nebo zakázku rozdělte."
+            ),
+        ),
+    )
+
+
+def _number(value: object) -> str:
+    return f"{value:,}".replace(",", NBSP)
 
 
 def _mm(value: int) -> str:
@@ -137,4 +158,11 @@ def _code_and_message(detail: ErrorDetails, path: tuple[str | int, ...]) -> tupl
         return "too_small", f"Hodnota musí být větší než {context.get('gt')}."
     if kind == "greater_than_equal":
         return "too_small", f"Hodnota musí být alespoň {context.get('ge')}."
+    if kind in ("less_than_equal", "less_than"):
+        limit = context.get("le", context.get("lt"))
+        return "too_large", f"Hodnota smí být nejvýš {_number(limit)}."
+    if kind == "string_too_long":
+        return "too_long", f"Text smí mít nejvýš {context.get('max_length')} znaků."
+    if kind == "too_long":
+        return "too_long", f"Seznam smí mít nejvýš {_number(context.get('max_length'))} položek."
     return "invalid", "Neplatná hodnota."

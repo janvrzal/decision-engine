@@ -7,7 +7,7 @@ import pytest
 from decision_engine.core.errors import FieldError
 from decision_engine.core.model.cutting_1d import Project
 from decision_engine.core.result import Err, Ok
-from decision_engine.core.validation.cutting_1d import parse_project
+from decision_engine.core.validation.cutting_1d import NBSP, parse_project
 
 
 def _errors(data: object) -> tuple[FieldError, ...]:
@@ -165,3 +165,39 @@ def test_bez_cen_projde_cil_nejmene_materialu(project_data: dict[str, Any]) -> N
     project_data["parameters"]["objective"] = "least_material"
 
     assert isinstance(parse_project(project_data), Ok)
+
+
+@pytest.mark.parametrize(
+    ("path", "value", "message"),
+    [
+        (("problem", "parts", 0, "quantity"), 10_001, f"Hodnota smí být nejvýš 10{NBSP}000."),
+        (("problem", "parts", 0, "length_mm"), 100_001, f"Hodnota smí být nejvýš 100{NBSP}000."),
+        (
+            ("problem", "stock", 0, "price"),
+            "10000000.01",
+            f"Hodnota smí být nejvýš 10{NBSP}000{NBSP}000.",
+        ),
+        (("parameters", "time_limit_s"), 121, "Hodnota smí být nejvýš 120."),
+        (("problem", "parts", 0, "name"), "x" * 201, "Text smí mít nejvýš 200 znaků."),
+    ],
+)
+def test_prilis_velka_hodnota_ma_ceskou_hlasku(
+    project_data: dict[str, Any], path: tuple[str | int, ...], value: object, message: str
+) -> None:
+    _set(project_data, path, value)
+
+    errors = _by_path(_errors(project_data))
+
+    assert errors[path].code == "too_large" or errors[path].code == "too_long"
+    assert errors[path].message == message
+
+
+def test_prilis_mnoho_kusu_v_zakazce_je_chyba(project_data: dict[str, Any]) -> None:
+    for part in project_data["problem"]["parts"]:
+        part["quantity"] = 4_000
+
+    errors = _by_path(_errors(project_data))
+
+    error = errors[("problem", "parts")]
+    assert error.code == "too_many_pieces"
+    assert f"nejvýš 5{NBSP}000" in error.message
