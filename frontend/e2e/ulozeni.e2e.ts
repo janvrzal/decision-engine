@@ -79,7 +79,6 @@ test.describe('široká obrazovka 1440 px', () => {
 		await plannedProject(page);
 
 		await page.getByRole('button', { name: 'Načíst', exact: true }).click();
-		await expect(loadDialog(page).getByText('Aktuální zakázka bude nahrazena')).toBeVisible();
 		await loadDialog(page)
 			.getByLabel('Soubor zakázky', { exact: true })
 			.last()

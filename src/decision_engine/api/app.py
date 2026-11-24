@@ -11,6 +11,7 @@ from fastapi.responses import FileResponse, HTMLResponse
 from pydantic import BaseModel, ConfigDict
 
 from decision_engine.adapters.config import UnavailableLlm, build_ai_adapters
+from decision_engine.api.project_files import project_files_router
 from decision_engine.api.routes import Services, session_router
 from decision_engine.api.sessions import SessionStore
 from decision_engine.app.ports import Ports
@@ -64,6 +65,7 @@ def create_app(static_dir: Path | None, services: Services | None = None) -> Fas
 
     app = FastAPI(title="DecisionEngine", version=version("decision-engine"), lifespan=lifespan)
     app.include_router(session_router(resolved))
+    app.include_router(project_files_router())
 
     @app.get("/api/health", tags=["system"])
     def health() -> HealthResponse:  # pyright: ignore[reportUnusedFunction]

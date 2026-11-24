@@ -14,7 +14,9 @@ function view(id: string, messages: ViewModel['messages'] = []): ViewModel {
 			has_content: false,
 			can_edit: false,
 			can_save: false,
-			save_note: null
+			save_note: null,
+			unsaved_changes: false,
+			can_start_new: true
 		},
 		pending_operation: null,
 		messages,

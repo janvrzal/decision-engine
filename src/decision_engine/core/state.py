@@ -12,7 +12,11 @@ from pydantic import BaseModel, ConfigDict
 from decision_engine.core.errors import FieldError
 from decision_engine.core.model.calculation import CalculationResult
 from decision_engine.core.model.cutting_1d import Objective, Project
-from decision_engine.core.model.proposal import ChangeProposal
+from decision_engine.core.model.proposal import (
+    ChangeProposal,
+    inputs_fingerprint,
+    proposal_from_project,
+)
 
 
 class _Frozen(BaseModel):
@@ -55,6 +59,10 @@ class AppState(_Frozen):
     next_message_id: int = 1
     import_error: str | None = None
     """Proč se poslední soubor nepodařilo načíst (UC-06 E1); zakázka zůstala beze změny."""
+    saved_inputs: ChangeProposal | None = None
+    """Otisk vstupů naposledy uloženého nebo načteného souboru (`inputs_fingerprint`)."""
+    proposal_start: ChangeProposal | None = None
+    """Otisk ručního návrhu v okamžiku, kdy vznikl; netknutý formulář není rozpracovaná práce."""
 
 
 def initial_state(session_id: str) -> AppState:
@@ -95,3 +103,15 @@ def _plan_inputs(project: Project) -> object:
     if project.parameters.objective is not Objective.CHEAPEST:
         stock = tuple(item.model_copy(update={"price": None}) for item in stock)
     return (project.problem.parts, stock, project.parameters)
+
+
+def has_unsaved_changes(state: AppState) -> bool:
+    """Neuložené změny (UC-15): zakázka se liší od posledního souboru, nebo čeká návrh s prací."""
+    if state.project is not None:
+        current = inputs_fingerprint(proposal_from_project(state.project))
+        if current != state.saved_inputs:
+            return True
+    proposal = state.proposal
+    if proposal is None:
+        return False
+    return state.proposal_start is None or inputs_fingerprint(proposal) != state.proposal_start

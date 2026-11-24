@@ -328,7 +328,7 @@ Kroky scénářů uvádějí události (→ `Event`) a efekty (⇒ `Effect`) pod
 **Alternativy**
 
 - **A1 Layo je k dispozici.** Demo může místo připraveného routeru použít lokální Layo. Pruh to uvádí („rozpoznání úlohy: lokální model“).
-- **A2 Ukončení dema** → `NewProjectRequested`* Návrat na úvodní obrazovku, demo data se zahodí.
+- **A2 Ukončení dema** → `NewProjectRequested` Návrat na úvodní obrazovku, demo data se zahodí.
 
 **Poznámka:** Demo se vždy označuje. Připravené odpovědi se nikdy nevydávají za živé volání modelu (spec. kap. 12).
 
@@ -416,7 +416,7 @@ Kroky scénářů uvádějí události (→ `Event`) a efekty (⇒ `Effect`) pod
 **Hlavní scénář**
 
 1. Uživatel v hlavičce zakázky zvolí „Nová zakázka“.
-2. Pokud aktuální zakázka nemá neuložené změny, → `NewProjectRequested`* a aplikace přejde na úvodní obrazovku (nebo krok Zadání prázdné zakázky).
+2. Pokud aktuální zakázka nemá neuložené změny, → `NewProjectRequested` a aplikace přejde na úvodní obrazovku (nebo krok Zadání prázdné zakázky).
 3. Pokud neuložené změny má, zobrazí se Dialog Zahodit rozpracovanou zakázku: „Zakázka ‚Plot zahrada‘ má neuložené změny.“ → **Uložit a pokračovat** / **Zahodit** / **Zrušit**.
 
 **Alternativy**
@@ -483,7 +483,8 @@ Události ze specifikace (kap. 7) jsou bez hvězdičky. Ostatní jsou návrh toh
 | `ExampleOpened`* | uživatel | Výběr příkladu | 10 |
 | `ExplanationReceived`* | app | Odpověď na dotaz k výsledku | 14 |
 | `ProjectRenamed`* | uživatel | Přejmenování zakázky v Hlavičce (nemění vstupy plánu) | 06, 15 |
-| `NewProjectRequested`* | uživatel | Nová zakázka, ukončení dema | 11, 15 |
+| `ProjectSaved` | uživatel | Soubor zakázky stažený v dané revizi; podklad pro „neuložené změny“ | 06, 15 |
+| `NewProjectRequested` | uživatel | Nová zakázka, ukončení dema; na neuložené změny se UI ptá předem | 11, 15 |
 | `RouterSwitched`* | uživatel | Přepnutí implementace routeru | 07, 12 |
 | `StockChangeProposed`* / `StockChangeConfirmed`* / `StockChangeRejected`* | uživatel | Úprava skladu, odepsání po výrobě | 08, 16 |
 

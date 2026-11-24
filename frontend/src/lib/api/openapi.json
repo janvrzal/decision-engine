@@ -162,6 +162,45 @@
 				}
 			}
 		},
+		"/api/project-files/check": {
+			"post": {
+				"tags": ["project-files"],
+				"summary": "Ověřit soubor zakázky",
+				"operationId": "check_file_api_project_files_check_post",
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/FileCheckRequest"
+							}
+						}
+					},
+					"required": true
+				},
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/FileCheckResponse"
+								}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
 		"/api/health": {
 			"get": {
 				"tags": ["system"],
@@ -294,6 +333,41 @@
 				"type": "object",
 				"required": ["field", "message"],
 				"title": "FieldErrorView"
+			},
+			"FileCheckRequest": {
+				"properties": {
+					"content": {
+						"type": "string",
+						"maxLength": 1000000,
+						"title": "Content"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": ["content"],
+				"title": "FileCheckRequest"
+			},
+			"FileCheckResponse": {
+				"properties": {
+					"ok": {
+						"type": "boolean",
+						"title": "Ok"
+					},
+					"message": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Message"
+					}
+				},
+				"type": "object",
+				"required": ["ok"],
+				"title": "FileCheckResponse"
 			},
 			"HTTPValidationError": {
 				"properties": {
@@ -485,6 +559,20 @@
 				"type": "object",
 				"required": ["value", "unconfirmed", "error"],
 				"title": "MoneyCell"
+			},
+			"NewProjectRequested": {
+				"properties": {
+					"type": {
+						"type": "string",
+						"const": "NewProjectRequested",
+						"title": "Type",
+						"default": "NewProjectRequested"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"title": "NewProjectRequested",
+				"description": "Uživatel začíná novou zakázku; rozpracovaná se zahodí (UC-15).\n\nNa neuložené změny se ptá UI předem, reducer už jen začne znovu."
 			},
 			"Objective": {
 				"type": "string",
@@ -725,6 +813,25 @@
 				"title": "ProjectImported",
 				"description": "Uživatel načetl soubor zakázky (UC-06); obsah se ověří v jádře."
 			},
+			"ProjectSaved": {
+				"properties": {
+					"type": {
+						"type": "string",
+						"const": "ProjectSaved",
+						"title": "Type",
+						"default": "ProjectSaved"
+					},
+					"revision": {
+						"type": "integer",
+						"title": "Revision"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": ["revision"],
+				"title": "ProjectSaved",
+				"description": "Uživatel si stáhl soubor zakázky v dané revizi (UC-06)."
+			},
 			"ProjectView": {
 				"properties": {
 					"name": {
@@ -776,6 +883,14 @@
 							}
 						],
 						"title": "Save Note"
+					},
+					"unsaved_changes": {
+						"type": "boolean",
+						"title": "Unsaved Changes"
+					},
+					"can_start_new": {
+						"type": "boolean",
+						"title": "Can Start New"
 					}
 				},
 				"type": "object",
@@ -787,7 +902,9 @@
 					"has_content",
 					"can_edit",
 					"can_save",
-					"save_note"
+					"save_note",
+					"unsaved_changes",
+					"can_start_new"
 				],
 				"title": "ProjectView"
 			},
@@ -1234,6 +1351,12 @@
 						"$ref": "#/components/schemas/ProjectImported"
 					},
 					{
+						"$ref": "#/components/schemas/ProjectSaved"
+					},
+					{
+						"$ref": "#/components/schemas/NewProjectRequested"
+					},
+					{
 						"$ref": "#/components/schemas/ProposalEdited"
 					},
 					{
@@ -1251,7 +1374,9 @@
 					"mapping": {
 						"EditRequested": "#/components/schemas/EditRequested",
 						"MessageSent": "#/components/schemas/MessageSent",
+						"NewProjectRequested": "#/components/schemas/NewProjectRequested",
 						"ProjectImported": "#/components/schemas/ProjectImported",
+						"ProjectSaved": "#/components/schemas/ProjectSaved",
 						"ProposalConfirmed": "#/components/schemas/ProposalConfirmed",
 						"ProposalEdited": "#/components/schemas/ProposalEdited",
 						"ProposalRejected": "#/components/schemas/ProposalRejected",

@@ -10,7 +10,9 @@ from decision_engine.core.events import (
     EditRequested,
     Event,
     MessageSent,
+    NewProjectRequested,
     ProjectImported,
+    ProjectSaved,
     ProposalConfirmed,
     ProposalEdited,
     ProposalReceived,
@@ -23,12 +25,13 @@ from decision_engine.core.extraction import empty_proposal
 from decision_engine.core.model.proposal import (
     ChangeProposal,
     confirm_proposal,
+    inputs_fingerprint,
     proposal_from_project,
 )
 from decision_engine.core.model.proposal_edit import edit_proposal
 from decision_engine.core.project_file import read_project_file
 from decision_engine.core.result import Err, Ok
-from decision_engine.core.state import AppState, Message, PendingOperation
+from decision_engine.core.state import AppState, Message, PendingOperation, initial_state
 
 type Transition = tuple[AppState, tuple[Effect, ...]]
 
@@ -49,6 +52,12 @@ def reduce(state: AppState, event: Event) -> Transition:
             return _manual_proposal(state, proposal_from_project(state.project), needs_project=True)
         case ProjectImported(content=content):
             return _project_imported(state, content)
+        case ProjectSaved(revision=revision):
+            return _project_saved(state, revision)
+        case NewProjectRequested():
+            if state.pending is not None:
+                return _unchanged(state)
+            return initial_state(state.session_id), ()
         case ProposalReceived():
             return _proposal_received(state, event)
         case ProposalEdited():
@@ -96,7 +105,20 @@ def _manual_proposal(
     has_project = state.project is not None
     if state.pending is not None or state.proposal is not None or has_project != needs_project:
         return _unchanged(state)
-    return state.model_copy(update={"proposal": proposal, "proposal_errors": ()}), ()
+    update = {
+        "proposal": proposal,
+        "proposal_errors": (),
+        "proposal_start": inputs_fingerprint(proposal),
+    }
+    return state.model_copy(update=update), ()
+
+
+def _project_saved(state: AppState, revision: int) -> Transition:
+    """Soubor stažený v aktuální revizi je uložená práce; starší revize ne (UC-06)."""
+    if state.project is None or state.project.revision != revision:
+        return _unchanged(state)
+    saved = inputs_fingerprint(proposal_from_project(state.project))
+    return state.model_copy(update={"saved_inputs": saved}), ()
 
 
 def _project_imported(state: AppState, content: str) -> Transition:
@@ -118,6 +140,8 @@ def _project_imported(state: AppState, content: str) -> Transition:
                     "project": None,
                     "proposal": proposal,
                     "proposal_errors": (),
+                    "proposal_start": None,
+                    "saved_inputs": inputs_fingerprint(proposal),
                     "result": None,
                     "messages": (note,),
                     "next_message_id": state.next_message_id + 1,
@@ -131,7 +155,12 @@ def _proposal_received(state: AppState, event: ProposalReceived) -> Transition:
     if state.pending is None or state.pending.kind != "extraction":
         return _unchanged(state)
     new_state = state.model_copy(
-        update={"proposal": event.proposal, "proposal_errors": (), "pending": None}
+        update={
+            "proposal": event.proposal,
+            "proposal_errors": (),
+            "proposal_start": None,
+            "pending": None,
+        }
     )
     if event.reply:
         reply = Message(id=state.next_message_id, role="assistant", kind="text", text=event.reply)
@@ -166,6 +195,7 @@ def _proposal_confirmed(state: AppState) -> Transition:
                     "project": project,
                     "proposal": None,
                     "proposal_errors": (),
+                    "proposal_start": None,
                     "pending": PendingOperation(kind="solving", revision=project.revision),
                 }
             )
@@ -175,7 +205,8 @@ def _proposal_confirmed(state: AppState) -> Transition:
 def _proposal_rejected(state: AppState) -> Transition:
     if state.proposal is None:
         return _unchanged(state)
-    return state.model_copy(update={"proposal": None, "proposal_errors": ()}), ()
+    update = {"proposal": None, "proposal_errors": (), "proposal_start": None}
+    return state.model_copy(update=update), ()
 
 
 def _solve_requested(state: AppState) -> Transition:

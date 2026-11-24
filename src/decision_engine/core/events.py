@@ -48,6 +48,22 @@ class ProjectImported(_Event):
     content: str = Field(max_length=1_000_000)
 
 
+class ProjectSaved(_Event):
+    """Uživatel si stáhl soubor zakázky v dané revizi (UC-06)."""
+
+    type: Literal["ProjectSaved"] = "ProjectSaved"
+    revision: int
+
+
+class NewProjectRequested(_Event):
+    """Uživatel začíná novou zakázku; rozpracovaná se zahodí (UC-15).
+
+    Na neuložené změny se ptá UI předem, reducer už jen začne znovu.
+    """
+
+    type: Literal["NewProjectRequested"] = "NewProjectRequested"
+
+
 class ProposalReceived(_Event):
     """Extrakce vrátila návrh změny (výsledek `CallExtractor`)."""
 
@@ -105,6 +121,8 @@ type Event = (
     | ToolSelected
     | EditRequested
     | ProjectImported
+    | ProjectSaved
+    | NewProjectRequested
     | ProposalReceived
     | ProposalEdited
     | ProposalConfirmed

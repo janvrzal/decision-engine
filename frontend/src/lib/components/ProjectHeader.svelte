@@ -2,13 +2,14 @@
 	import FilePlus from '@lucide/svelte/icons/file-plus';
 	import FolderOpen from '@lucide/svelte/icons/folder-open';
 	import MessageSquare from '@lucide/svelte/icons/message-square';
+	import CircleDot from '@lucide/svelte/icons/circle-dot';
 	import Save from '@lucide/svelte/icons/save';
 	import StepIndicator from './StepIndicator.svelte';
+	import Badge from './ui/Badge.svelte';
 	import Button from './ui/Button.svelte';
 	import Tooltip from './ui/Tooltip.svelte';
 	import DropdownMenu, { type MenuItem } from './ui/DropdownMenu.svelte';
 	import type { StepView } from '#lib/api/types.js';
-	import { NOT_AVAILABLE_REASON } from '#lib/examples.js';
 
 	/** Hlavička zakázky: název, ukazatel kroků a akce se zakázkou (mapa obrazovek). */
 	let {
@@ -18,8 +19,11 @@
 		onopenchat,
 		saveDisabledReason,
 		saveNote,
+		unsaved,
+		newDisabledReason,
 		onsave,
-		onload
+		onload,
+		onnew
 	}: {
 		name: string;
 		steps: StepView[];
@@ -29,14 +33,19 @@
 		saveDisabledReason: string | undefined;
 		/** Upozornění k uložení (rozpracovaný návrh nebude v souboru). */
 		saveNote: string | null;
+		/** Zakázka má neuložené změny (štítek „neuloženo“). */
+		unsaved: boolean;
+		/** Proč teď nejde začít novou zakázku; `undefined` = jde. */
+		newDisabledReason: string | undefined;
 		onsave: () => void;
 		onload: () => void;
+		onnew: () => void;
 	} = $props();
 
 	// Na střední šířce jsou méně časté akce v menu „⋯“ (komponenty.md).
 	let moreActions = $derived<MenuItem[]>([
 		{ label: 'Načíst zakázku', icon: FolderOpen, onselect: onload },
-		{ label: 'Nová zakázka', icon: FilePlus, disabledReason: NOT_AVAILABLE_REASON }
+		{ label: 'Nová zakázka', icon: FilePlus, disabledReason: newDisabledReason, onselect: onnew }
 	]);
 </script>
 
@@ -47,7 +56,12 @@
 			Dialog
 		</Button>
 	</div>
-	<h1 class="min-w-0 truncate text-title text-ink">{name}</h1>
+	<div class="flex min-w-0 items-center gap-2">
+		<h1 class="min-w-0 truncate text-title text-ink">{name}</h1>
+		{#if unsaved}
+			<Badge variant="warning" icon={CircleDot}>neuloženo</Badge>
+		{/if}
+	</div>
 	<div class="flex-1">
 		<StepIndicator {steps} onselect={onselectstep} />
 	</div>
@@ -73,7 +87,7 @@
 				<FolderOpen size={16} strokeWidth={1.5} aria-hidden="true" />
 				Načíst
 			</Button>
-			<Button variant="ghost" disabledReason={NOT_AVAILABLE_REASON}>
+			<Button variant="ghost" disabledReason={newDisabledReason} onclick={onnew}>
 				<FilePlus size={16} strokeWidth={1.5} aria-hidden="true" />
 				Nová zakázka
 			</Button>

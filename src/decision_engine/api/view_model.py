@@ -48,11 +48,15 @@ class ProjectView(_View):
     steps: tuple[StepView, ...]
     has_content: bool
     can_edit: bool
+    """Potvrzenou zakázku lze ručně upravit („Upravit údaje“): žádný návrh, nic neběží."""
     can_save: bool
     """Potvrzenou zakázku lze uložit do souboru (UC-06)."""
     save_note: str | None
     """Upozornění k uložení, např. že rozpracovaný návrh nebude součástí souboru (UC-06 A2)."""
-    """Potvrzenou zakázku lze ručně upravit („Upravit údaje“): žádný návrh, nic neběží."""
+    unsaved_changes: bool
+    """Zahozením by se ztratila práce: neuložená zakázka nebo rozpracovaný návrh (UC-15)."""
+    can_start_new: bool
+    """Novou zakázku lze začít (nic neběží)."""
 
 
 class PendingOperationView(_View):

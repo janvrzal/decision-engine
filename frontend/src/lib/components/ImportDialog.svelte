@@ -6,20 +6,18 @@
 
 	/**
 	 * Okno Načíst zakázku (UC-06): výběr souboru nebo přetažení. Soubor se jen přečte
-	 * a pošle backendu; zda je platný, rozhodne jádro a chybu vrátí ve view modelu.
+	 * a pošle backendu; zda je platný, rozhodne jádro. Neuložené změny hlídá volající
+	 * (Dialog Zahodit rozpracovanou zakázku, UC-06 A1).
 	 */
 	let {
 		open = $bindable(false),
-		hasContent,
 		busy,
 		error,
 		onimport
 	}: {
 		open?: boolean;
-		/** Rozpracovaná zakázka bude nahrazena; okno na to upozorní. */
-		hasContent: boolean;
 		busy: boolean;
-		/** Chyba načtení z backendu (`import_error`). */
+		/** Chyba načtení z backendu (`import_error` nebo ověření souboru). */
 		error: string | null;
 		onimport: (content: string) => Promise<void>;
 	} = $props();
@@ -74,12 +72,6 @@
 	title="Načíst zakázku"
 	description="Soubor .decision.json uložený z DecisionEngine."
 >
-	{#if hasContent}
-		<Alert variant="warning" title="Aktuální zakázka bude nahrazena">
-			Pokud ji chcete zachovat, nejdřív ji uložte.
-		</Alert>
-	{/if}
-
 	<div
 		role="group"
 		aria-label="Soubor zakázky"

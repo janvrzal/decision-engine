@@ -7,9 +7,17 @@ import type { api } from './api/client.js';
 
 type Client = Pick<typeof api, 'GET'>;
 
-export type SaveResult = { ok: true; fileName: string } | { ok: false; message: string };
+export type SaveResult =
+	{ ok: true; fileName: string; revision: number | null } | { ok: false; message: string };
 
 const FALLBACK_NAME = 'zakazka.decision.json';
+const REVISION_HEADER = 'X-Project-Revision';
+
+/** Revize zakázky ve staženém souboru; backend ji posílá v hlavičce. */
+export function revisionFromHeader(header: string | null): number | null {
+	if (header === null || !/^\d+$/.test(header.trim())) return null;
+	return Number(header.trim());
+}
 
 /** Název souboru z hlavičky `Content-Disposition` (`filename*=UTF-8''…` nebo `filename=…`). */
 export function fileNameFromDisposition(header: string | null): string {
@@ -48,7 +56,11 @@ export async function saveProject(client: Client, sessionId: string): Promise<Sa
 		link.download = fileName;
 		link.click();
 		URL.revokeObjectURL(url);
-		return { ok: true, fileName };
+		return {
+			ok: true,
+			fileName,
+			revision: revisionFromHeader(response.headers.get(REVISION_HEADER))
+		};
 	} catch {
 		return { ok: false, message: 'Server neodpovídá, zakázka se neuložila.' };
 	}

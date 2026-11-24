@@ -19,7 +19,14 @@ from decision_engine.api.view_proposal import build_proposal
 from decision_engine.api.view_result import build_result
 from decision_engine.capabilities.registry import CAPABILITIES
 from decision_engine.core.extraction import DEFAULT_PROJECT_NAME
-from decision_engine.core.state import AppState, Message, Step, current_step, is_result_stale
+from decision_engine.core.state import (
+    AppState,
+    Message,
+    Step,
+    current_step,
+    has_unsaved_changes,
+    is_result_stale,
+)
 
 AI_ERROR_TEXT = {
     "connection": "AI teď neodpovídá. Zkuste to znovu za chvíli.",
@@ -63,6 +70,8 @@ def build_view_model(state: AppState, *, extraction_available: bool) -> ViewMode
                 if state.project is not None and state.proposal is not None
                 else None
             ),
+            unsaved_changes=has_unsaved_changes(state),
+            can_start_new=state.pending is None,
         ),
         pending_operation=(
             PendingOperationView(kind=state.pending.kind, label=PENDING_LABEL[state.pending.kind])
