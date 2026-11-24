@@ -167,6 +167,7 @@ dependencies = [
     { name = "openai" },
     { name = "ortools" },
     { name = "pydantic" },
+    { name = "typesafe-sdk" },
     { name = "uvicorn", extra = ["standard"] },
 ]
 
@@ -181,9 +182,6 @@ dev = [
     { name = "pytest-cov" },
     { name = "ruff" },
 ]
-router-spike = [
-    { name = "typesafe-sdk" },
-]
 
 [package.metadata]
 requires-dist = [
@@ -192,6 +190,7 @@ requires-dist = [
     { name = "openai", specifier = ">=2" },
     { name = "ortools", specifier = ">=9.11" },
     { name = "pydantic", specifier = ">=2.9" },
+    { name = "typesafe-sdk", specifier = ">=0.7.5" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.32" },
 ]
 
@@ -206,7 +205,6 @@ dev = [
     { name = "pytest-cov", specifier = ">=6.0" },
     { name = "ruff", specifier = ">=0.8" },
 ]
-router-spike = [{ name = "typesafe-sdk", specifier = ">=0.7.5" }]
 
 [[package]]
 name = "distlib"

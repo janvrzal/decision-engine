@@ -18,6 +18,12 @@ def number(value: int | Decimal) -> str:
     return sign + f"{int(magnitude):,}".replace(",", NBSP)
 
 
+def money(value: Decimal) -> str:
+    """Částka v Kč: `1 280,00 Kč`."""
+    whole, fraction = f"{value:,.2f}".split(".")
+    return f"{whole.replace(',', NBSP)},{fraction}{NBSP}Kč"
+
+
 def millimeters(value: int | Decimal) -> str:
     """Délka s jednotkou: `6 000 mm`."""
     return f"{number(value)}{NBSP}mm"

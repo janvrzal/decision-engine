@@ -13,7 +13,7 @@ from decision_engine.core.result import Err, Ok, Result
 pytestmark = pytest.mark.integration
 
 FIXTURE = Path(__file__).resolve().parents[3] / "frontend" / "e2e" / "fixtures" / "uc01.json"
-PROMPT = Prompt(name="t", version=None, source="fallback", messages=())
+PROMPT = Prompt(name="extract-proposal-1d", version=None, source="fallback", messages=())
 
 
 def _ask(llm: ReplayLlm, text: str) -> Result[str, LlmError]:
@@ -50,3 +50,17 @@ def test_konfigurace_pouzije_prehravani() -> None:
     adapters = build_ai_adapters({"LLM_REPLAY_FILE": str(FIXTURE)})
 
     assert isinstance(adapters.llm, ReplayLlm)
+
+
+def test_odpoved_routeru_se_vybere_podle_nazvu_promptu() -> None:
+    llm = ReplayLlm(
+        [
+            {"match": "skříň", "response": {"name": "extrakce"}},
+            {"match": "skříň", "prompt": "route-request", "response": {"capability": "unclear"}},
+        ]
+    )
+    route = Prompt(name="route-request", version=None, source="fallback", messages=())
+    message = [ChatMessage(role="user", content="Chci skříň.")]
+
+    assert llm.complete_json(message, prompt=route, attempt=1) == Ok('{"capability": "unclear"}')
+    assert llm.complete_json(message, prompt=PROMPT, attempt=1) == Ok('{"name": "extrakce"}')

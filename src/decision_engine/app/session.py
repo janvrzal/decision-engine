@@ -9,16 +9,19 @@ from collections.abc import Callable
 from dataclasses import asdict
 
 from decision_engine.app.extractor import ExtractionTrace, run_extraction
-from decision_engine.app.ports import Ports, Turn
-from decision_engine.core.effects import CallExtractor, Effect, RunSolver
+from decision_engine.app.ports import Ports, RoutingRequest, Turn
+from decision_engine.core.effects import CallExtractor, CallRouter, Effect, RunSolver
 from decision_engine.core.events import (
     AiFailed,
     Event,
     MessageSent,
     ProposalReceived,
+    RouteDecided,
     SolveFinished,
 )
 from decision_engine.core.reducer import reduce
+from decision_engine.core.result import Err, Ok
+from decision_engine.core.routing import RouteOutcome, RoutingDecision
 from decision_engine.core.state import AppState, current_step
 
 type Publish = Callable[[AppState], None]
@@ -60,6 +63,11 @@ def _run(
 
 def _execute(effect: Effect, ports: Ports, turn: Turn | None) -> Event:
     match effect:
+        case CallRouter():
+            decision = _route(effect, ports)
+            if turn is not None:
+                turn.set_metadata({"routing": decision.model_dump(mode="json")})
+            return RouteDecided(decision=decision)
         case CallExtractor():
             event, trace = run_extraction(effect, ports)
             if turn is not None:
@@ -67,6 +75,21 @@ def _execute(effect: Effect, ports: Ports, turn: Turn | None) -> Event:
             return event
         case RunSolver(project=project):
             return SolveFinished(result=ports.solver.solve(project))
+
+
+def _route(effect: CallRouter, ports: Ports) -> RoutingDecision:
+    request = RoutingRequest(message=effect.text, order=effect.order)
+    match ports.router.route(request):
+        case Ok(decision):
+            return decision
+        case Err(error):
+            # Záložní cesta, kdyby router v portech nebyl řetěz se zálohou: rovnou extrakce.
+            return RoutingDecision(
+                outcome=RouteOutcome.SUPPORTED,
+                capability="cutting_1d",
+                router="manual",
+                fallback_reason=f"{error.router}: {error.detail}",
+            )
 
 
 def _record_extraction(turn: Turn, event: Event, trace: ExtractionTrace) -> None:

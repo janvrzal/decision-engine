@@ -28,12 +28,15 @@ from decision_engine.core.state import (
     is_result_stale,
 )
 
+# Vzor „co se stalo + co udělat“ (docs/design-system/obsah.md).
 AI_ERROR_TEXT = {
-    "connection": "AI teď neodpovídá. Zkuste to znovu za chvíli.",
-    "rate_limit": "AI je teď přetížená (vyčerpaný limit). Zkuste to znovu za minutu.",
+    "connection": "AI teď neodpovídá. Zkuste to za chvíli znovu, nebo vyplňte údaje ručně.",
+    "rate_limit": (
+        "AI má teď moc požadavků najednou. Zkuste to za minutu znovu, nebo vyplňte údaje ručně."
+    ),
     "invalid_response": (
-        "AI vrátila odpověď, které aplikace nerozumí. Zkuste zadání napsat jinak "
-        "nebo to zkuste znovu."
+        "Ze zadání jsem nevyčetl díly k řezání. Uveďte díly s délkou a počtem a délku tyčí, "
+        "nebo údaje vyplňte ručně."
     ),
 }
 PENDING_LABEL = {
@@ -127,4 +130,5 @@ def _message(message: Message) -> MessageView:
         text=text,
         retry_text=message.retry_text,
         proposal=message.proposal,
+        offer_manual=message.offer_manual,
     )

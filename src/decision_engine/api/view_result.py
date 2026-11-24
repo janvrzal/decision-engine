@@ -1,7 +1,6 @@
 """View model výsledku (Panel Plán): štítek, neaktuálnost, SVG, metriky, rozpis."""
 
 from collections import Counter
-from decimal import Decimal
 
 from decision_engine.api.view_model import (
     BarsByLength,
@@ -16,7 +15,7 @@ from decision_engine.api.view_model import (
 from decision_engine.core.costing import material_cost
 from decision_engine.core.model.calculation import Bar, CalculationResult, SolutionStatus
 from decision_engine.core.model.cutting_1d import Objective, Parameters
-from decision_engine.core.render.format import NBSP, bars_word, millimeters, number
+from decision_engine.core.render.format import bars_word, millimeters, money, number
 from decision_engine.core.render.groups import group_bars
 from decision_engine.core.render.svg_1d import render_svg
 from decision_engine.core.solvers.cutting_1d.bounds import objective_value
@@ -100,16 +99,11 @@ def _status_note(result: CalculationResult) -> str | None:
         case Objective.LEAST_MATERIAL:
             gap, limit = millimeters(value - bound), millimeters(bound)
         case Objective.CHEAPEST:
-            gap, limit = _money(value - bound), _money(bound)
+            gap, limit = money(value - bound), money(bound)
     return (
         f"Dolní mez je {limit}; plán je nejvýš o {gap} nad ní. Lepší plán může existovat, "
         "ale nemusí."
     )
-
-
-def _money(value: Decimal) -> str:
-    whole, fraction = f"{value:,.2f}".split(".")
-    return f"{whole.replace(',', NBSP)},{fraction}{NBSP}Kč"
 
 
 def _cost(result: CalculationResult) -> CostView:

@@ -75,6 +75,8 @@ class MessageView(_View):
     """U chyby AI zpráva, kterou „Zkusit znovu“ pošle znovu."""
     proposal: bool = False
     """Odpověď k návrhu změny, který ještě neplatí."""
+    offer_manual: bool = False
+    """Odpověď na nejasné nebo nepodporované zadání: nabídnout ruční zadání (UC-05)."""
 
 
 class TextCell(_View):

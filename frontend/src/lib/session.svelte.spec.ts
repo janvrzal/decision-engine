@@ -64,7 +64,7 @@ describe('Session', () => {
 	it('založí relaci a během zprávy ukáže průběh s textem zprávy', async () => {
 		sessionStorage.clear();
 		const reply = view('r1', [
-			{ id: 1, role: 'user', kind: 'text', text: 'regál', proposal: false }
+			{ id: 1, role: 'user', kind: 'text', text: 'regál', proposal: false, offer_manual: false }
 		]);
 		const fake = fakeClient([
 			{ data: view('r1'), status: 200 },
@@ -123,11 +123,15 @@ describe('Session – fronta úprav', () => {
 		const fake = fakeClient([
 			{ data: view('r4'), status: 200 },
 			{
-				data: view('r4', [{ id: 1, role: 'user', kind: 'text', text: 'první', proposal: false }]),
+				data: view('r4', [
+					{ id: 1, role: 'user', kind: 'text', text: 'první', proposal: false, offer_manual: false }
+				]),
 				status: 200
 			},
 			{
-				data: view('r4', [{ id: 2, role: 'user', kind: 'text', text: 'druhá', proposal: false }]),
+				data: view('r4', [
+					{ id: 2, role: 'user', kind: 'text', text: 'druhá', proposal: false, offer_manual: false }
+				]),
 				status: 200
 			}
 		]);

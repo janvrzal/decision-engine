@@ -39,6 +39,8 @@ class Message(_Frozen):
     """U chyby AI text zprávy, kterou jde poslat znovu („Zkusit znovu“ i po obnovení)."""
     proposal: bool = False
     """Odpověď asistenta k návrhu změny: platí až po potvrzení (UI ji tak označí)."""
+    offer_manual: bool = False
+    """Odpověď na nejasné nebo nepodporované zadání: UI nabídne ruční zadání (UC-05)."""
 
 
 class PendingOperation(_Frozen):

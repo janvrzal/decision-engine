@@ -297,6 +297,11 @@ export interface components {
 			 * @default false
 			 */
 			proposal: boolean;
+			/**
+			 * Offer Manual
+			 * @default false
+			 */
+			offer_manual: boolean;
 		};
 		/** MetricsView */
 		MetricsView: {

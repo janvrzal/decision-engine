@@ -4,7 +4,7 @@
 a nikdy nevyhodí výjimku. Událost, která v daném stavu nedává smysl, stav nezmění.
 """
 
-from decision_engine.core.effects import CallExtractor, Effect, RunSolver
+from decision_engine.core.effects import CallRouter, Effect, RunSolver
 from decision_engine.core.events import (
     AiFailed,
     EditRequested,
@@ -17,6 +17,7 @@ from decision_engine.core.events import (
     ProposalEdited,
     ProposalReceived,
     ProposalRejected,
+    RouteDecided,
     SolveFinished,
     SolveRequested,
     ToolSelected,
@@ -31,6 +32,8 @@ from decision_engine.core.model.proposal import (
 from decision_engine.core.model.proposal_edit import edit_proposal
 from decision_engine.core.project_file import read_project_file
 from decision_engine.core.result import Err, Ok
+from decision_engine.core.route_reply import route_decided
+from decision_engine.core.routing import order_summary
 from decision_engine.core.state import (
     AppState,
     Message,
@@ -64,6 +67,8 @@ def reduce(state: AppState, event: Event) -> Transition:
             if state.pending is not None or (has_unsaved_changes(state) and not discard):
                 return _unchanged(state)
             return initial_state(state.session_id), ()
+        case RouteDecided(decision=decision):
+            return route_decided(state, decision)
         case ProposalReceived():
             return _proposal_received(state, event)
         case ProposalEdited():
@@ -101,7 +106,8 @@ def _message_sent(state: AppState, text: str) -> Transition:
     new_state = _with_message(state, message).model_copy(
         update={"pending": PendingOperation(kind="extraction")}
     )
-    return new_state, (CallExtractor(text=text, base=state.project),)
+    # Nejdřív router (ADR-0012): rozpozná úlohu; extrakce až u podporovaného zadání.
+    return new_state, (CallRouter(text=text, order=order_summary(state.project, state.result)),)
 
 
 def _manual_proposal(

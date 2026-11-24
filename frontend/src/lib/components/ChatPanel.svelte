@@ -113,7 +113,14 @@
 		{#if pending?.kind === 'extraction'}
 			{#if pending.text}
 				<ChatMessageItem
-					message={{ id: -1, role: 'user', kind: 'text', text: pending.text, proposal: false }}
+					message={{
+						id: -1,
+						role: 'user',
+						kind: 'text',
+						text: pending.text,
+						proposal: false,
+						offer_manual: false
+					}}
 				/>
 			{/if}
 			<Loader label="Připravuji údaje ke kontrole…" />

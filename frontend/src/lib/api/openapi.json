@@ -665,6 +665,11 @@
 						"type": "boolean",
 						"title": "Proposal",
 						"default": false
+					},
+					"offer_manual": {
+						"type": "boolean",
+						"title": "Offer Manual",
+						"default": false
 					}
 				},
 				"type": "object",

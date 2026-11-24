@@ -161,6 +161,19 @@
 		if (guard.open) importOpen = false;
 	}
 
+	function retryMessage(text: string) {
+		void session.retryMessage(text);
+	}
+
+	// Chyba AI nebo doptání na kroku Zadání: uživatel psal do hlavního pole, tak ji ukážeme
+	// i tam, nejen v dialogu vlevo.
+	let inputReply = $derived.by(() => {
+		const last = view.messages.at(-1);
+		return last && last.role === 'assistant' && (last.kind === 'error' || last.offer_manual)
+			? last
+			: null;
+	});
+
 	let editReason = $derived(view.project.can_edit ? undefined : 'Počkejte na dokončení výpočtu.');
 
 	function selectStep(id: StepView['id']) {
@@ -262,6 +275,8 @@
 							capabilities={view.capabilities}
 							extractionAvailable={view.session.ai.extraction_available}
 							{busy}
+							reply={inputReply}
+							onretry={retryMessage}
 							onsubmit={sendMessage}
 							onmanual={manualEntry}
 							onload={openImport}

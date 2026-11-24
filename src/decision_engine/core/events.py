@@ -15,6 +15,7 @@ from decision_engine.core.model.proposal import (
     PartDraft,
     StockLengthDraft,
 )
+from decision_engine.core.routing import RoutingDecision
 from decision_engine.core.state import AiErrorKind
 
 MAX_MESSAGE_CHARS = 4_000
@@ -70,6 +71,13 @@ class NewProjectRequested(_Event):
 
     type: Literal["NewProjectRequested"] = "NewProjectRequested"
     discard_unsaved: bool = False
+
+
+class RouteDecided(_Event):
+    """Router rozpoznal úlohu ve zprávě (výsledek `CallRouter`)."""
+
+    type: Literal["RouteDecided"] = "RouteDecided"
+    decision: RoutingDecision
 
 
 class ProposalReceived(_Event):
@@ -134,6 +142,7 @@ type Event = (
     | ProjectImported
     | ProjectSaved
     | NewProjectRequested
+    | RouteDecided
     | ProposalReceived
     | ProposalEdited
     | ProposalConfirmed

@@ -1,10 +1,12 @@
 """Přehrávaný model: připravené odpovědi ze souboru místo volání AI.
 
 Slouží end-to-end testům UI (deterministický běh bez sítě a klíčů) a později demu
-(service design F6). Odpověď se vybere podle textu poslední zprávy uživatele:
+(service design F6). Odpověď se vybere podle textu poslední zprávy uživatele a názvu
+promptu (`prompt`, výchozí je extrakce; router má vlastní odpovědi):
 
     {"answers": [
         {"match": "regál", "response": {...výstup extrakce...}},
+        {"match": "skříň", "prompt": "route-request", "response": {"capability": "unclear"}},
         {"match": "výpadek", "error": "connection"}
     ]}
 """
@@ -19,6 +21,8 @@ from decision_engine.core.result import Err, Ok, Result
 from decision_engine.core.state import AiErrorKind
 
 _ERROR_KINDS: tuple[AiErrorKind, ...] = ("connection", "rate_limit", "invalid_response")
+DEFAULT_PROMPT = "extract-proposal-1d"
+"""Odpovědi bez `prompt` patří extrakci (i jejímu opravnému pokusu)."""
 
 
 class ReplayLlm:
@@ -37,6 +41,8 @@ class ReplayLlm:
     ) -> Result[str, LlmError]:
         user_text = next((m.content for m in reversed(messages) if m.role == "user"), "").lower()
         for answer in self._answers:
+            if str(answer.get("prompt", DEFAULT_PROMPT)) != prompt.name:
+                continue
             if str(answer.get("match", "")).lower() in user_text:
                 error = answer.get("error")
                 for kind in _ERROR_KINDS:

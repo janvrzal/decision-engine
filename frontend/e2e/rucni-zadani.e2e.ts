@@ -125,8 +125,10 @@ test.describe('široká obrazovka 1440 px', () => {
 		await field.fill('simuluj výpadek AI');
 		await field.press('Enter');
 
-		const alert = page.getByRole('alert');
+		// Chyba je v dialogu i u hlavního pole kroku Zadání, kam uživatel psal.
+		const alert = page.getByRole('main').getByRole('alert');
 		await expect(alert).toContainText('AI teď neodpovídá');
+		await expect(page.getByRole('log').getByRole('alert')).toBeVisible();
 		await alert.getByRole('button', { name: 'Zadat ručně' }).click();
 
 		await expect(page.getByRole('heading', { name: 'Kontrola údajů' })).toBeVisible();

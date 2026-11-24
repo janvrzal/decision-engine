@@ -8,20 +8,27 @@
 	import Button from './ui/Button.svelte';
 	import TextArea from './ui/TextArea.svelte';
 	import { EXAMPLE_PROMPTS, TOOL_DESCRIPTIONS, type Tool } from '#lib/examples.js';
+	import type { MessageView } from '#lib/api/types.js';
+	import ChatMessageItem from './ChatMessageItem.svelte';
 
 	/** Krok Zadání: velké pole s ukázkou zadání; odeslání jde do dialogu jako `MessageSent`. */
 	let {
 		capabilities,
 		extractionAvailable,
 		busy,
+		reply = null,
 		onsubmit,
+		onretry,
 		onmanual,
 		onload
 	}: {
 		capabilities: { id: string; label: string }[];
 		extractionAvailable: boolean;
 		busy: boolean;
+		/** Poslední odpověď na zadání (chyba AI, doptání); ukáže se i u hlavního pole. */
+		reply?: MessageView | null;
 		onsubmit: (text: string) => void;
+		onretry?: (text: string) => void;
 		/** Ruční zadání bez AI zvoleným nástrojem (UC-13). */
 		onmanual: (capability: string) => void;
 		/** Otevře okno Načíst zakázku (UC-06). */
@@ -68,6 +75,16 @@
 				Napište zadání vlastními slovy, jako byste ho říkali kolegovi v dílně.
 			</p>
 		</div>
+		{#if reply}
+			<div aria-live="polite">
+				<ChatMessageItem
+					message={reply}
+					onretry={reply.retry_text ? () => onretry?.(reply.retry_text ?? '') : undefined}
+					onmanual={() => onmanual('cutting_1d')}
+					retryDisabledReason={busy ? 'Probíhá zpracování.' : undefined}
+				/>
+			</div>
+		{/if}
 		{#if !extractionAvailable}
 			<Alert variant="info" title="AI není nastavená">
 				Zadání z textu teď nepůjde zpracovat. Zakázku vyplňte ručně tlačítkem „Zadat ručně“.

@@ -5,16 +5,18 @@ from decimal import Decimal
 import pytest
 from scenario import run, shelf_proposal, solved
 
-from decision_engine.core.effects import CallExtractor, RunSolver
+from decision_engine.core.effects import CallExtractor, CallRouter, RunSolver
 from decision_engine.core.events import (
     AiFailed,
     MessageSent,
     ProposalConfirmed,
     ProposalReceived,
     ProposalRejected,
+    RouteDecided,
     SolveRequested,
 )
 from decision_engine.core.model.cutting_1d import Objective
+from decision_engine.core.routing import NO_ORDER, RouteOutcome, RoutingDecision
 from decision_engine.core.state import AppState, Step, current_step, is_result_stale
 
 pytestmark = pytest.mark.flow
@@ -35,11 +37,17 @@ def _planned() -> AppState:
     return state
 
 
+SUPPORTED = RoutingDecision(outcome=RouteOutcome.SUPPORTED, capability="cutting_1d", router="test")
+
+
 def test_uc01_od_zpravy_k_planu() -> None:
     state, effects = run([MessageSent(text=ZADANI)])
-    assert effects == (CallExtractor(text=ZADANI, base=None),)
+    # Nejdřív router (ADR-0012), u podporovaného zadání pak extrakce.
+    assert effects == (CallRouter(text=ZADANI, order={"rozpracovana_zakazka": NO_ORDER}),)
     assert state.pending is not None
     assert state.pending.kind == "extraction"
+    state, effects = run([RouteDecided(decision=SUPPORTED)], state)
+    assert effects == (CallExtractor(text=ZADANI, base=None),)
 
     state, effects = run([ProposalReceived(proposal=shelf_proposal())], state)
     assert effects == ()
@@ -159,7 +167,7 @@ def test_vypadek_ai_nezmeni_data_a_dovoli_dalsi_zpravu() -> None:
     assert state.messages[-1].retry_text == "Přidej příčku."
 
     _, effects = run([MessageSent(text="Přidej příčku.")], state)
-    assert isinstance(effects[0], CallExtractor)
+    assert isinstance(effects[0], CallRouter)
 
 
 def test_zprava_behem_operace_se_ignoruje() -> None:

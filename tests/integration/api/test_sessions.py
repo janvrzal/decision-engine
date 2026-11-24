@@ -179,7 +179,7 @@ def test_vypadek_ai_je_cesky_a_data_zustanou() -> None:
     view = _send(client, session, {"type": "MessageSent", "text": ZADANI})
 
     assert view["messages"][-1]["kind"] == "error"
-    assert "vyčerpaný limit" in view["messages"][-1]["text"]
+    assert "moc požadavků najednou" in view["messages"][-1]["text"]
     assert view["proposal"] is None
     assert view["pending_operation"] is None
 

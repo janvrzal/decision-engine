@@ -3,7 +3,7 @@
 from decimal import Decimal
 from random import Random
 
-from hypothesis import given, settings
+from hypothesis import assume, given, settings
 from hypothesis import strategies as st
 
 from decision_engine.core.model.calculation import SolutionStatus
@@ -169,6 +169,9 @@ def small_projects(draw: st.DrawFn) -> Project:
 @settings(max_examples=200, deadline=None)
 @given(small_projects())
 def test_dolni_mez_a_optimum_odpovidaji_uplnemu_prohledani(project: Project) -> None:
+    # Jen zakázky, kde se každý díl vejde aspoň do jedné tyče (jinak optimum není).
+    usable = max(s.length_mm for s in project.problem.stock) - project.parameters.trim_mm
+    assume(all(p.length_mm <= usable for p in project.problem.parts))
     result = solve_ffd(project)
     optimum = _brute_force_optimum(project)
     value = objective_value(project, result.bars)

@@ -224,13 +224,32 @@ test.describe('široká obrazovka 1440 px', () => {
 		await expect(price).toHaveValue('1\u00a0234,50');
 	});
 
+	test('UC-05: nejasné zadání se doptá, nepodporované vysvětlí a nabídne ruční zadání', async ({
+		page
+	}) => {
+		await page.goto('/project');
+
+		await sendMessage(page, 'Chci vyrobit skříň.');
+		const question = page.getByText('Z jakých dílů bude skříň?');
+		await expect(question.first()).toBeVisible();
+		// Nic se nepočítá ani nenavrhuje, jen doptání s nabídkou ruční cesty.
+		await expect(page.getByRole('heading', { name: 'Kontrola údajů' })).toHaveCount(0);
+		await expect(page.getByRole('button', { name: 'Zadat ručně' }).first()).toBeVisible();
+
+		await sendMessage(page, 'Naskládej bedny do dodávky.');
+		await expect(page.getByText('Tohle zatím neumím.').first()).toBeVisible();
+		expect(await seriousA11yIssues(page)).toEqual([]);
+	});
+
 	test('výpadek AI ukáže chybu s nabídkou zkusit znovu', async ({ page }) => {
 		await page.goto('/project');
 
 		await sendMessage(page, 'simuluj výpadek AI');
 
-		const alert = page.getByRole('alert');
+		// Chyba je v dialogu i u hlavního pole kroku Zadání, kam uživatel psal.
+		const alert = page.getByRole('main').getByRole('alert');
 		await expect(alert).toContainText('AI teď neodpovídá');
+		await expect(page.getByRole('log').getByRole('alert')).toBeVisible();
 		await expect(alert.getByRole('button', { name: 'Zkusit znovu' })).toBeVisible();
 	});
 });
