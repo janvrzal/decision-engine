@@ -121,6 +121,16 @@ def _project_saved(state: AppState, revision: int) -> Transition:
     return state.model_copy(update={"saved_inputs": saved}), ()
 
 
+def _imported_text(broken: int) -> str:
+    if broken == 0:
+        return "Zakázka načtena. Zkontrolujte údaje a spusťte výpočet."
+    values = "hodnota měla" if broken == 1 else ("hodnoty měly" if broken <= 4 else "hodnot mělo")
+    return (
+        f"Zakázka načtena, ale {broken} {values} v souboru nečekaný tvar. "
+        "Jsou v tabulce prázdné a označené, doplňte je a spusťte výpočet."
+    )
+
+
 def _project_imported(state: AppState, content: str) -> Transition:
     """Načtený soubor začne novou zakázku jako návrh ke kontrole; plán se nepočítá (UC-06)."""
     if state.pending is not None:
@@ -133,7 +143,7 @@ def _project_imported(state: AppState, content: str) -> Transition:
                 id=state.next_message_id,
                 role="assistant",
                 kind="text",
-                text="Zakázka načtena. Zkontrolujte údaje a spusťte výpočet.",
+                text=_imported_text(len(proposal.file_errors)),
             )
             fresh = state.model_copy(
                 update={

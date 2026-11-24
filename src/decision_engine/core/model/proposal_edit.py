@@ -2,7 +2,8 @@
 
 Uživatel pošle celý nový obsah návrhu. Hodnota, kterou změnil, je jeho vlastní, a proto
 přestane být nepotvrzená. Nezměněné nepotvrzené hodnoty zůstanou označené; řádky se
-sledují podle `id`, takže smazání nebo přesun řádku označení nepomíchá.
+sledují podle `id`, takže smazání nebo přesun řádku označení nepomíchá. Neplatná hodnota
+ze souboru zůstane označená, dokud ji uživatel nevyplní.
 """
 
 from decision_engine.core.errors import FieldPath
@@ -39,7 +40,14 @@ def edit_proposal(
         if (moved := _follow(path, proposal, edited)) is not None
         and _value(proposal, path) == _value(edited, moved)
     }
-    return edited.model_copy(update={"unconfirmed": frozenset(still)})
+    still_broken = {
+        moved
+        for path in proposal.file_errors
+        if (moved := _follow(path, proposal, edited)) is not None and _value(edited, moved) is None
+    }
+    return edited.model_copy(
+        update={"unconfirmed": frozenset(still), "file_errors": frozenset(still_broken)}
+    )
 
 
 def _follow(path: FieldPath, old: ChangeProposal, new: ChangeProposal) -> FieldPath | None:
@@ -65,6 +73,8 @@ def _value(proposal: ChangeProposal, path: FieldPath) -> object:
             return getattr(proposal.stock[index], field, None)
         case ("parameters", str(field)):
             return getattr(proposal.parameters, field, None)
+        case ("problem", "material"):
+            return proposal.material
         case (str(field),):
             return getattr(proposal, field, None)
         case _:

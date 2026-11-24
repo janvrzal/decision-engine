@@ -55,6 +55,8 @@ class ChangeProposal(_Frozen):
     """Hodnoty z výchozího nastavení nebo odhadnuté modelem (R6); UI je označí."""
     origin: Literal["ai", "manual", "file"] = "ai"
     """Odkud návrh je: extrakce z textu, ruční zadání nebo úprava (UC-13), soubor (UC-06)."""
+    file_errors: frozenset[FieldPath] = frozenset()
+    """Pole, jejichž hodnota v načteném souboru měla nečekaný tvar (E2); načetla se prázdná."""
 
 
 def proposal_from_project(project: Project) -> ChangeProposal:
@@ -79,7 +81,12 @@ def proposal_from_project(project: Project) -> ChangeProposal:
 def inputs_fingerprint(proposal: ChangeProposal) -> ChangeProposal:
     """Jen hodnoty vstupů návrhu, bez původu a označení; pro porovnání „změnilo se něco?“."""
     return proposal.model_copy(
-        update={"base_revision": None, "origin": "manual", "unconfirmed": frozenset()}
+        update={
+            "base_revision": None,
+            "origin": "manual",
+            "unconfirmed": frozenset(),
+            "file_errors": frozenset(),
+        }
     )
 
 

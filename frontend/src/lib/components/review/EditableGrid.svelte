@@ -104,7 +104,8 @@
 			</tr>
 		</thead>
 		<tbody>
-			{#each rows as row, r (row.id)}
+			<!-- Klíčem je pořadí: id řádku může pocházet z načteného souboru a nemusí být jedinečné. -->
+			{#each rows, r (r)}
 				<tr class="border-b border-border align-top">
 					{#each columns as column, c (column.key)}
 						{@const state = cell(r, column.key)}

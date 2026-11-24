@@ -64,7 +64,7 @@ class _Cells:
 
 def build_proposal(proposal: ChangeProposal, session_id: str) -> ProposalView:
     """Návrh s buňkami a živou validací (stejná pravidla jako při potvrzení)."""
-    errors = _validate(proposal, session_id)
+    errors = tuple(_from_file(e, proposal) for e in _validate(proposal, session_id))
     cells = _Cells(proposal.unconfirmed, {error.path: error.message for error in errors})
     params = proposal.parameters
     all_priced = bool(proposal.stock) and all(s.price is not None for s in proposal.stock)
@@ -115,6 +115,16 @@ def build_proposal(proposal: ChangeProposal, session_id: str) -> ProposalView:
         can_confirm=not errors,
         confirm_disabled_reason=confirm_disabled_reason(len(errors)),
     )
+
+
+FILE_ERROR_TEXT = "V souboru byla neplatná hodnota, doplňte ji."
+
+
+def _from_file(error: FieldError, proposal: ChangeProposal) -> FieldError:
+    """Chyba pole, jehož hodnota v souboru měla nečekaný tvar, řekne proč je prázdné."""
+    if error.path in proposal.file_errors:
+        return error.model_copy(update={"message": FILE_ERROR_TEXT})
+    return error
 
 
 def _error_view(error: FieldError) -> FieldErrorView:
