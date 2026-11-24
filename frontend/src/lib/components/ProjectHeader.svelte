@@ -52,8 +52,9 @@
 	]);
 </script>
 
+<!-- Pod 640 px má hlavička tři řádky: název, akce a kroky (#58). -->
 <div
-	class="flex shrink-0 items-center gap-x-6 gap-y-2 border-b border-border bg-surface px-4 py-3 print:hidden"
+	class="flex shrink-0 flex-wrap items-center gap-x-6 gap-y-2 border-b border-border bg-surface px-4 py-3 print:hidden"
 >
 	<div class="xl:hidden">
 		<Button variant="secondary" onclick={onopenchat} aria-haspopup="dialog">
@@ -61,16 +62,19 @@
 			Dialog
 		</Button>
 	</div>
-	<div class="flex min-w-0 items-center gap-2">
+	<div class="order-first flex w-full min-w-0 items-center gap-2 sm:order-none sm:w-auto">
 		<h1 class="min-w-0 truncate text-title text-ink">{name}</h1>
 		{#if unsaved}
-			<Badge variant="warning" icon={CircleDot}>neuloženo</Badge>
+			<!-- Pod 640 px jen ikona, slovo zůstane čtečkám, aby se vešel název zakázky. -->
+			<Badge variant="warning" icon={CircleDot}>
+				<span class="max-sm:sr-only">neuloženo</span>
+			</Badge>
 		{/if}
 	</div>
-	<div class="flex-1">
+	<div class="order-last w-full sm:order-none sm:w-auto sm:flex-1">
 		<StepIndicator {steps} current={currentStep} onselect={onselectstep} />
 	</div>
-	<div class="flex items-center gap-2">
+	<div class="ml-auto flex items-center gap-2 sm:ml-0">
 		{#if saveNote && !saveDisabledReason}
 			<!-- UC-06 A2: uloží se jen potvrzená verze, rozpracovaný návrh ne. -->
 			<Tooltip content={saveNote}>

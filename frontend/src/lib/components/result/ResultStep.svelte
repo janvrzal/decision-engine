@@ -124,7 +124,7 @@
 		{/if}
 
 		<div
-			class="grid gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 {result.stale
+			class="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5 {result.stale
 				? 'opacity-60'
 				: ''}"
 		>

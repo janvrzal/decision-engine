@@ -90,9 +90,10 @@
 </script>
 
 <div class="flex flex-col gap-2" data-cell={name}>
-	<table bind:this={table} class="w-full border-collapse">
-		<caption class="pb-2 text-left text-heading text-ink">{caption}</caption>
-		<thead>
+	<!-- Pod 640 px je řádek karta: buňky pod sebou s viditelným popiskem (#58). -->
+	<table bind:this={table} class="w-full border-collapse max-sm:block">
+		<caption class="pb-2 text-left text-heading text-ink max-sm:block">{caption}</caption>
+		<thead class="max-sm:sr-only">
 			<tr class="bg-surface-sunken">
 				{#each columns as column (column.key)}
 					<th
@@ -107,13 +108,22 @@
 				<th scope="col" class="w-10"><span class="sr-only">Akce</span></th>
 			</tr>
 		</thead>
-		<tbody>
+		<tbody class="max-sm:flex max-sm:flex-col max-sm:gap-2">
 			<!-- Klíčem je pořadí: id řádku může pocházet z načteného souboru a nemusí být jedinečné. -->
 			{#each rows, r (r)}
-				<tr class="border-b border-border align-top {added(r) ? 'bg-proposal-bg' : ''}">
+				<tr
+					class="border-b border-border align-top max-sm:grid max-sm:grid-cols-2 max-sm:gap-1 max-sm:rounded-md max-sm:border max-sm:p-2 {added(
+						r
+					)
+						? 'bg-proposal-bg'
+						: ''}"
+				>
 					{#each columns as column, c (column.key)}
 						{@const state = cell(r, column.key)}
-						<td class="px-1 py-1">
+						<td class="px-1 py-1 max-sm:block {c === 0 ? 'max-sm:col-span-2' : ''}">
+							<span class="text-small text-ink-muted sm:hidden" aria-hidden="true">
+								{column.label}
+							</span>
 							<CellInput
 								value={read(r, column.key)}
 								onvalue={(value: string) => write(r, column.key, value)}
@@ -135,7 +145,7 @@
 							/>
 						</td>
 					{/each}
-					<td class="px-1 py-1 text-right whitespace-nowrap">
+					<td class="px-1 py-1 text-right whitespace-nowrap max-sm:col-span-2 max-sm:block">
 						{#if added(r)}
 							<Badge variant="proposal">nový</Badge>
 						{/if}

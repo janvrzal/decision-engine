@@ -279,3 +279,25 @@ test.describe('střední šířka 768 px', () => {
 		expect(await seriousA11yIssues(page)).toEqual([]);
 	});
 });
+
+for (const width of [390, 320]) {
+	test.describe(`úzká obrazovka ${width} px`, () => {
+		test.use({ viewport: { width, height: 800 } });
+
+		test('kontrola údajů a plán bez vodorovného posuvu a přístupné', async ({ page }) => {
+			const scrollWidth = () => page.evaluate(() => document.documentElement.scrollWidth);
+			await page.goto('/project');
+			await page.getByRole('button', { name: 'Dialog', exact: true }).click();
+			await sendMessage(page, ZADANI);
+			await expect(page.getByRole('heading', { name: 'Kontrola údajů' })).toBeVisible();
+			expect(await scrollWidth()).toBeLessThanOrEqual(width);
+			expect(await seriousA11yIssues(page)).toEqual([]);
+
+			await page.getByRole('button', { name: 'Potvrdit a vypočítat' }).click();
+			await expect(page.getByRole('img', { name: /Nářezový plán: .* tyč/ })).toBeVisible();
+			await expect(page.getByRole('heading', { name: 'Regál do dílny', level: 1 })).toBeVisible();
+			expect(await scrollWidth()).toBeLessThanOrEqual(width);
+			expect(await seriousA11yIssues(page)).toEqual([]);
+		});
+	});
+}

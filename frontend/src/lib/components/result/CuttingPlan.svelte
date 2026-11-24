@@ -20,7 +20,14 @@
 	});
 </script>
 
-<div class="overflow-x-auto print:overflow-visible" role="presentation">
+<!-- Posuvná oblast jde posunout i z klávesnice (WCAG 2.1.1, #59). -->
+<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+<div
+	class="overflow-x-auto print:overflow-visible"
+	role="region"
+	aria-label="Nářezový plán, posuvný"
+	tabindex="0"
+>
 	<div
 		bind:this={container}
 		class="min-w-140 transition-opacity duration-(--duration-base) ease-standard {dimmed

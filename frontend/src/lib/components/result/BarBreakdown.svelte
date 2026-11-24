@@ -18,10 +18,17 @@
 	const TAIL = { remnant: 'zbytek', waste: 'odpad', none: '' } as const;
 </script>
 
-<div class="overflow-x-auto print:overflow-visible">
-	<table class="w-full border-collapse text-body">
+<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+<div
+	class="overflow-x-auto print:overflow-visible"
+	role="region"
+	aria-label="Rozpis po tyčích, posuvný"
+	tabindex="0"
+>
+	<!-- Pod 640 px je každá tyč karta s popisky místo sloupců (#58). -->
+	<table class="w-full border-collapse text-body max-sm:block">
 		<caption class="sr-only">Rozpis po tyčích</caption>
-		<thead>
+		<thead class="max-sm:sr-only">
 			<tr class="bg-surface-sunken text-label font-medium text-ink-muted uppercase">
 				<th scope="col" class="px-2 py-2 text-left">Tyč</th>
 				<th scope="col" class="px-2 py-2 text-right">Počet</th>
@@ -30,17 +37,24 @@
 				<th scope="col" class="px-2 py-2 text-left">Konec tyče</th>
 			</tr>
 		</thead>
-		<tbody>
+		<tbody class="max-sm:flex max-sm:flex-col max-sm:gap-2">
 			{#each bars as bar (bar.numbers[0])}
-				<tr class="border-b border-border align-top">
-					<th scope="row" class="px-2 py-2 text-left font-semibold whitespace-nowrap text-ink">
+				<tr class="border-b border-border align-top max-sm:block max-sm:rounded-md max-sm:border">
+					<th
+						scope="row"
+						class="px-2 py-2 text-left font-semibold whitespace-nowrap text-ink max-sm:block"
+					>
 						{numbers(bar)}
 						<span class="block text-small font-normal text-ink-muted">
 							{formatLength(bar.length_mm)}
 						</span>
 					</th>
-					<td class="px-2 py-2 text-right numeric">{bar.numbers.length}×</td>
-					<td class="px-2 py-2">
+					<td class="px-2 py-2 text-right numeric max-sm:block max-sm:text-left">
+						<span class="text-small text-ink-muted sm:hidden">Počet:</span>
+						{bar.numbers.length}×
+					</td>
+					<td class="px-2 py-2 max-sm:block">
+						<span class="text-small text-ink-muted sm:hidden">Díly v pořadí řezání:</span>
 						<ul class="flex flex-wrap gap-1">
 							{#each bar.pieces as piece, index (`${piece.part_id}-${index}`)}
 								<li>
@@ -58,10 +72,12 @@
 							{/each}
 						</ul>
 					</td>
-					<td class="px-2 py-2 numeric">
+					<td class="px-2 py-2 numeric max-sm:block">
+						<span class="text-small text-ink-muted sm:hidden">Polohy řezů:</span>
 						{bar.cuts_mm.length ? bar.cuts_mm.map((cut) => formatLength(cut)).join(', ') : '—'}
 					</td>
-					<td class="px-2 py-2 whitespace-nowrap">
+					<td class="px-2 py-2 whitespace-nowrap max-sm:block">
+						<span class="text-small text-ink-muted sm:hidden">Konec tyče:</span>
 						{#if bar.tail === 'none'}
 							—
 						{:else}

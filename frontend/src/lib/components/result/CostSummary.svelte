@@ -26,29 +26,40 @@
 		</span>
 	</div>
 	{#if cost.lines.length > 0}
-		<table class="w-full text-body">
-			<caption class="sr-only">Rozpis ceny podle skladových délek</caption>
-			<thead class="text-small text-ink-muted">
-				<tr>
-					<th scope="col" class="py-1 text-left font-medium">Skladová délka</th>
-					<th scope="col" class="py-1 text-right font-medium">Kusů</th>
-					<th scope="col" class="py-1 text-right font-medium">Cena za kus</th>
-					<th scope="col" class="py-1 text-right font-medium">Celkem</th>
-				</tr>
-			</thead>
-			<tbody>
-				{#each cost.lines as line (line.stock_id)}
-					<tr class="border-t border-border">
-						<th scope="row" class="py-1 text-left font-normal numeric">
-							{formatLength(line.length_mm)}
+		<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+		<div class="overflow-x-auto" role="region" aria-label="Rozpis ceny, posuvný" tabindex="0">
+			<table class="w-full text-body">
+				<caption class="sr-only">Rozpis ceny podle skladových délek</caption>
+				<thead class="text-small text-ink-muted">
+					<tr>
+						<th scope="col" class="py-1 text-left font-medium">Skladová délka</th>
+						<th scope="col" class="py-1 pl-3 text-right font-medium whitespace-nowrap">Kusů</th>
+						<th scope="col" class="py-1 pl-3 text-right font-medium whitespace-nowrap">
+							Cena za kus
 						</th>
-						<td class="py-1 text-right numeric">{formatInteger(line.count)}</td>
-						<td class="py-1 text-right numeric">{formatMoney(line.unit_price)}</td>
-						<td class="py-1 text-right numeric">{formatMoney(line.total)}</td>
+						<th scope="col" class="py-1 pl-3 text-right font-medium whitespace-nowrap">Celkem</th>
 					</tr>
-				{/each}
-			</tbody>
-		</table>
+				</thead>
+				<tbody>
+					{#each cost.lines as line (line.stock_id)}
+						<tr class="border-t border-border">
+							<th scope="row" class="py-1 text-left font-normal whitespace-nowrap numeric">
+								{formatLength(line.length_mm)}
+							</th>
+							<td class="py-1 pl-3 text-right whitespace-nowrap numeric">
+								{formatInteger(line.count)}
+							</td>
+							<td class="py-1 pl-3 text-right whitespace-nowrap numeric">
+								{formatMoney(line.unit_price)}
+							</td>
+							<td class="py-1 pl-3 text-right whitespace-nowrap numeric">
+								{formatMoney(line.total)}
+							</td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
+		</div>
 	{/if}
 	{#if cost.note}
 		<p class="text-small text-ink-muted">{cost.note}</p>
