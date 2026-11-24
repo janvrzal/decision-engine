@@ -35,6 +35,8 @@
 
 	const wide = new MediaQuery('min-width: 1280px');
 	let chatCollapsed = $state(false);
+	/** Uživatel asistenta sám rozbalil nebo sbalil; pak už o tom rozhoduje on. */
+	let chatTouched = $state(false);
 	let chatSheetOpen = $state(false);
 	let shownStep = $state<StepView['id'] | null>(null);
 
@@ -53,6 +55,12 @@
 	});
 
 	let solving = $derived(session.pending?.kind === 'solving');
+	// Na prázdné obrazovce je jedno vstupní pole (krok Zadání); asistent se ukáže
+	// s první zprávou, nebo když ho uživatel rozbalí (#61).
+	let emptyStart = $derived(
+		view.project.step === 'input' && view.messages.length === 0 && session.pending === null
+	);
+	let chatHidden = $derived(chatTouched ? chatCollapsed : emptyStart || chatCollapsed);
 
 	// Po změně kroku fokus na jeho nadpis a krátké oznámení pro čtečku (#59).
 	let announcement = $state('');
@@ -75,10 +83,11 @@
 
 	async function collapseChat(collapsed: boolean) {
 		chatCollapsed = collapsed;
+		chatTouched = true;
 		await tick();
 		document
 			.querySelector<HTMLElement>(
-				collapsed ? '[aria-label="Rozbalit dialog"]' : '[aria-label="Sbalit dialog"]'
+				collapsed ? '[aria-label="Rozbalit asistenta"]' : '[aria-label="Sbalit asistenta"]'
 			)
 			?.focus();
 	}
@@ -114,7 +123,11 @@
 	let importOpen = $state(false);
 	let checkError = $state<string | null>(null);
 	let saveError = $state<string | null>(null);
-	let saveReason = $derived(view.project.can_save ? undefined : 'Uložit jde potvrzená zakázka.');
+	let saveReason = $derived(
+		view.project.can_save
+			? undefined
+			: 'Uložit půjde až potvrzenou zakázku. Nejdřív potvrďte údaje.'
+	);
 	let newReason = $derived(view.project.can_start_new ? undefined : 'Počkejte na dokončení.');
 
 	/** Uloží zakázku a dá backendu vědět, kterou revizi si uživatel stáhl. */
@@ -227,9 +240,9 @@
 		{#snippet header()}
 			{#if withHeader}
 				<div class="flex items-center justify-between border-b border-border px-4 py-2">
-					<h2 class="text-heading text-ink">Dialog</h2>
+					<h2 class="text-heading text-ink">Asistent</h2>
 					<IconButton
-						label="Sbalit dialog"
+						label="Sbalit asistenta"
 						aria-expanded="true"
 						onclick={() => void collapseChat(true)}
 					>
@@ -260,7 +273,7 @@
 
 	<div class="flex min-h-0 flex-1">
 		{#if wide.current}
-			{#if chatCollapsed}
+			{#if chatHidden}
 				<ChatRail onexpand={() => void collapseChat(false)} />
 			{:else}
 				<aside class="flex w-90 shrink-0 flex-col border-r border-border bg-surface print:hidden">
@@ -355,7 +368,6 @@
 					proposalPending={view.proposal !== null}
 					onsend={send}
 					onreview={() => (shownStep = 'review')}
-					onsave={() => void save()}
 				/>
 			{/if}
 		</div>
@@ -363,7 +375,7 @@
 </div>
 
 {#if !wide.current}
-	<Sheet bind:open={chatSheetOpen} title="Dialog">
+	<Sheet bind:open={chatSheetOpen} title="Asistent">
 		{@render chat(false)}
 	</Sheet>
 {/if}

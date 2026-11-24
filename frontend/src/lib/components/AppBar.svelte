@@ -16,7 +16,10 @@
 		</span>
 		DecisionEngine
 	</a>
-	<nav aria-label="Hlavní navigace">
+	<p class="hidden text-small text-ink-muted lg:block">
+		Ze zadání k nářezovému plánu a ceně zakázky.
+	</p>
+	<nav aria-label="Hlavní navigace" class="ml-auto lg:ml-0">
 		<ul class="flex items-center gap-1">
 			<li>
 				<a

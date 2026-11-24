@@ -26,26 +26,32 @@ test('obnovení na podstránce vrátí aplikaci (SPA)', async ({ page }) => {
 test.describe('široká obrazovka 1440 px', () => {
 	test.use({ viewport: { width: 1440, height: 900 } });
 
-	test('dialog je vedle pracovní plochy a aktivní je krok Zadání', async ({ page }) => {
+	test('na prázdné obrazovce je jedno vstupní pole a asistent je sbalený', async ({ page }) => {
 		await page.goto('/project');
 
-		await expect(page.getByRole('region', { name: 'Dialog' })).toBeVisible();
+		// Jediné pole pro zadání; asistent je sbalený a jde rozbalit (#61).
+		await expect(page.getByRole('textbox', { name: 'Zadání zakázky' })).toBeVisible();
+		await expect(page.getByRole('textbox', { name: 'Zpráva' })).toBeHidden();
+		await page.getByRole('button', { name: 'Rozbalit asistenta' }).click();
+		await expect(page.getByRole('region', { name: 'Asistent' })).toBeVisible();
 		await expect(page.getByRole('heading', { name: 'Co potřebujete nařezat?' })).toBeVisible();
 		await expect(page.locator('[aria-current="step"]')).toContainText('Zadání');
-		await expect(page.getByRole('button', { name: 'Dialog', exact: true })).toBeHidden();
+		await expect(page.getByRole('button', { name: 'Asistent', exact: true })).toBeHidden();
 	});
 
 	test('dialog jde sbalit a znovu rozbalit', async ({ page }) => {
 		await page.goto('/project');
 
-		await page.getByRole('button', { name: 'Sbalit dialog' }).click();
-		await expect(page.getByRole('region', { name: 'Dialog' })).toBeHidden();
-		await page.getByRole('button', { name: 'Rozbalit dialog' }).click();
-		await expect(page.getByRole('region', { name: 'Dialog' })).toBeVisible();
+		await page.getByRole('button', { name: 'Rozbalit asistenta' }).click();
+		await page.getByRole('button', { name: 'Sbalit asistenta' }).click();
+		await expect(page.getByRole('region', { name: 'Asistent' })).toBeHidden();
+		await page.getByRole('button', { name: 'Rozbalit asistenta' }).click();
+		await expect(page.getByRole('region', { name: 'Asistent' })).toBeVisible();
 	});
 
 	test('ukázka z čipu se vloží do pole pro zprávu', async ({ page }) => {
 		await page.goto('/project');
+		await page.getByRole('button', { name: 'Rozbalit asistenta' }).click();
 
 		await page.getByRole('button', { name: 'Sloupky a příčky' }).click();
 
@@ -58,8 +64,8 @@ test.describe('široká obrazovka 1440 px', () => {
 		await page.goto('/project');
 
 		await expect(
-			page.getByRole('button', { name: 'Uložit', exact: true })
-		).toHaveAccessibleDescription('Uložit jde potvrzená zakázka.');
+			page.getByRole('button', { name: 'Uložit zakázku', exact: true }).first()
+		).toHaveAccessibleDescription('Uložit půjde až potvrzenou zakázku. Nejdřív potvrďte údaje.');
 	});
 
 	test('přístupnost: axe bez závažných nálezů', async ({ page }) => {
@@ -75,12 +81,12 @@ test.describe('střední šířka 768 px', () => {
 
 	test('dialog se otevře jako vysouvací panel a Esc ho zavře', async ({ page }) => {
 		await page.goto('/project');
-		await expect(page.getByRole('region', { name: 'Dialog' })).toBeHidden();
+		await expect(page.getByRole('region', { name: 'Asistent' })).toBeHidden();
 
-		const open = page.getByRole('button', { name: 'Dialog', exact: true });
+		const open = page.getByRole('button', { name: 'Asistent', exact: true });
 		await open.click();
 
-		const sheet = page.getByRole('dialog', { name: 'Dialog' });
+		const sheet = page.getByRole('dialog', { name: 'Asistent' });
 		await expect(sheet).toBeVisible();
 		await expect(sheet.getByRole('textbox', { name: 'Zpráva' })).toBeVisible();
 

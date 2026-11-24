@@ -37,7 +37,9 @@ describe('DiscardProjectDialog', () => {
 
 		const save = page.getByRole('button', { name: 'Uložit a pokračovat' });
 		await expect.element(save).toHaveAttribute('aria-disabled', 'true');
-		await expect.element(save).toHaveAccessibleDescription('Uložit jde potvrzená zakázka.');
+		await expect
+			.element(save)
+			.toHaveAccessibleDescription('Uložit půjde až potvrzenou zakázku. Nejdřív potvrďte údaje.');
 
 		await page.getByRole('button', { name: 'Zahodit zakázku' }).click();
 		expect(ondiscard).toHaveBeenCalledOnce();

@@ -60,7 +60,7 @@
 	<div class="xl:hidden">
 		<Button variant="secondary" onclick={onopenchat} aria-haspopup="dialog">
 			<MessageSquare size={16} strokeWidth={1.5} aria-hidden="true" />
-			Dialog
+			Asistent
 		</Button>
 	</div>
 	<div class="order-first flex w-full min-w-0 items-center gap-2 sm:order-none sm:w-auto">
@@ -82,20 +82,20 @@
 				{#snippet trigger({ props })}
 					<Button {...props} variant="secondary" onclick={onsave}>
 						<Save size={16} strokeWidth={1.5} aria-hidden="true" />
-						Uložit
+						Uložit zakázku
 					</Button>
 				{/snippet}
 			</Tooltip>
 		{:else}
 			<Button variant="secondary" disabledReason={saveDisabledReason} onclick={onsave}>
 				<Save size={16} strokeWidth={1.5} aria-hidden="true" />
-				Uložit
+				Uložit zakázku
 			</Button>
 		{/if}
 		<div class="hidden items-center gap-2 xl:flex">
 			<Button variant="ghost" onclick={onload}>
 				<FolderOpen size={16} strokeWidth={1.5} aria-hidden="true" />
-				Načíst
+				Načíst zakázku
 			</Button>
 			<Button variant="ghost" disabledReason={newDisabledReason} onclick={onnew}>
 				<FilePlus size={16} strokeWidth={1.5} aria-hidden="true" />

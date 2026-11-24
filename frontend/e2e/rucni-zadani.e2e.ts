@@ -121,9 +121,8 @@ test.describe('široká obrazovka 1440 px', () => {
 
 	test('UC-07: z chyby AI vede ruční cesta do tabulky', async ({ page }) => {
 		await page.goto('/project');
-		const field = page.getByRole('textbox', { name: 'Zpráva' });
-		await field.fill('simuluj výpadek AI');
-		await field.press('Enter');
+		await page.getByRole('textbox', { name: 'Zadání zakázky' }).fill('simuluj výpadek AI');
+		await page.getByRole('button', { name: 'Zpracovat zadání' }).click();
 
 		// Chyba je v dialogu i u hlavního pole kroku Zadání, kam uživatel psal.
 		const alert = page.getByRole('main').getByRole('alert');

@@ -111,7 +111,7 @@ Uživatel vidí zvolený nástroj běžným názvem, například „Řezání ty
 - Viditelný stav plánu se štítkem „Optimální“, „Nejlepší nalezený“, „Částečný“ nebo „Bez řešení“ (žádný proveditelný plán). U nejlepšího nalezeného plánu se uvádí i vzdálenost od dolní meze, pokud je známá.
 - U každého řezu v plánu 1D je jeho poloha měřená od začátku tyče (vizuální jazyk plánu: `docs/design-system/plan-rezani.md`).
 - Kalkulace s uvedenými cenovými předpoklady a chybějícími položkami.
-- Akce „Upravit“, „Přepočítat“, „Uložit zakázku“ a „Stáhnout PDF“.
+- Akce „Upravit“, „Přepočítat“, „Uložit zakázku“ (v hlavičce) a „Vytisknout plán“; „Stáhnout PDF“ přibude s kalkulací (M5) a do té doby se nenabízí.
 
 Změna vstupů plánu nebo čekající návrh změny označí původní plán jako neaktuální (kap. 7, Stav zakázky). Změna vstupů kalkulace přepočítá jen kalkulaci. Export plánu je dostupný až pro plán odpovídající potvrzené verzi vstupů.
 

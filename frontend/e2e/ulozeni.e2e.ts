@@ -56,7 +56,7 @@ test.describe('široká obrazovka 1440 px', () => {
 
 		// Nová relace: prázdná zakázka, načtení ze souboru z kroku Zadání.
 		await page.reload();
-		await page.getByRole('button', { name: 'Načíst zakázku' }).click();
+		await page.getByRole('button', { name: 'Načíst zakázku' }).first().click();
 		await loadDialog(page).getByLabel('Soubor zakázky', { exact: true }).last().setInputFiles(file);
 
 		await expect(loadDialog(page)).toBeHidden();
@@ -78,7 +78,7 @@ test.describe('široká obrazovka 1440 px', () => {
 	test('neplatný soubor ukáže chybu a zakázka zůstane', async ({ page }) => {
 		await plannedProject(page);
 
-		await page.getByRole('button', { name: 'Načíst', exact: true }).click();
+		await page.getByRole('button', { name: 'Načíst zakázku', exact: true }).click();
 		await loadDialog(page)
 			.getByLabel('Soubor zakázky', { exact: true })
 			.last()
@@ -111,7 +111,7 @@ test.describe('široká obrazovka 1440 px', () => {
 			parameters: { kerf_mm: 3, trim_mm: 0, min_remnant_mm: 300, objective: 'least_material' }
 		};
 		await page.goto('/project');
-		await page.getByRole('button', { name: 'Načíst zakázku' }).click();
+		await page.getByRole('button', { name: 'Načíst zakázku' }).first().click();
 		await loadDialog(page)
 			.getByLabel('Soubor zakázky', { exact: true })
 			.last()
@@ -150,7 +150,7 @@ test.describe('široká obrazovka 1440 px', () => {
 			parameters: { kerf_mm: 3, trim_mm: 0, min_remnant_mm: 300, objective: 'least_material' }
 		};
 		await page.goto('/project');
-		await page.getByRole('button', { name: 'Načíst zakázku' }).click();
+		await page.getByRole('button', { name: 'Načíst zakázku' }).first().click();
 		await loadDialog(page)
 			.getByLabel('Soubor zakázky', { exact: true })
 			.last()
@@ -169,9 +169,11 @@ test.describe('široká obrazovka 1440 px', () => {
 
 	test('bez potvrzené zakázky nejde uložit a důvod je u tlačítka', async ({ page }) => {
 		await page.goto('/project');
-		const save = page.getByRole('button', { name: 'Uložit', exact: true });
+		const save = page.getByRole('button', { name: 'Uložit zakázku', exact: true }).first();
 		await expect(save).toHaveAttribute('aria-disabled', 'true');
-		await expect(save).toHaveAccessibleDescription('Uložit jde potvrzená zakázka.');
+		await expect(save).toHaveAccessibleDescription(
+			'Uložit půjde až potvrzenou zakázku. Nejdřív potvrďte údaje.'
+		);
 	});
 });
 

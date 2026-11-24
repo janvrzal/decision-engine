@@ -135,7 +135,7 @@ Pruh přes celou šířku nad plánem na `stale-bg` s ikonou přepočtu: „Neak
 
 ### `ResultSummaryBar`
 
-Lišta připnutá dole v kroku Plán a cena: `SolutionStatusBadge`, souhrn („5 tyčí · výtěžnost 91,7 % · celkem 7 166,23 Kč“) a akce Vytisknout plán (`secondary`, jen u aktuálního výsledku) a Uložit zakázku (`primary`). Stáhnout PDF přibude s kalkulací (M5); do té doby se nenabízí. Tisk (`@media print`) dá papír k pile na A4: název a materiál, plán, cena materiálu a celý rozpis po tyčích bez ovládacích prvků. Varianty: počítá se, neúplná kalkulace, neaktuální (cena přeškrtnutá, akce „Zkontrolovat změny“), částečný („1 kus neumístěn“, akce „Upravit díly“), plán není spočítaný (akce „Vypočítat“).
+Lišta připnutá dole v kroku Plán a cena: `SolutionStatusBadge`, souhrn („5 tyčí · výtěžnost 91,7 % · celkem 7 166,23 Kč“) a akce Vytisknout plán (`primary`, jen u aktuálního výsledku). Uložit zakázku je jen v hlavičce zakázky, aby stejná akce nebyla na obrazovce dvakrát. Stáhnout PDF přibude s kalkulací (M5); do té doby se nenabízí. Tisk (`@media print`) dá papír k pile na A4: název a materiál, plán, cena materiálu a celý rozpis po tyčích bez ovládacích prvků. Varianty: počítá se, neúplná kalkulace, neaktuální (cena přeškrtnutá, akce „Zkontrolovat změny“), částečný („1 kus neumístěn“, akce „Upravit díly“), plán není spočítaný (akce „Vypočítat“).
 
 ### `ChatMessage`
 
@@ -161,7 +161,7 @@ Posouvání historie řídí `behaviors/message-scroller` (drží pozici při č
 
 ### Úvodní obrazovka
 
-- `HeroPrompt`: velké `TextArea` s ukázkou zadání v placeholderu, „Další ukázka“ (`ghost`) a „Pokračovat“ (`primary`).
+- `HeroPrompt`: velké `TextArea` s ukázkou zadání v placeholderu, „Další ukázka“ (`ghost`) a „Zpracovat zadání“ (`primary`). Na prázdné obrazovce je to jediné vstupní pole: panel Asistent je sbalený do lišty a ukáže se s první zprávou nebo po rozbalení. Chyba AI a doptání se ukážou i pod tímto polem.
 - `ToolCard`: karta nástroje (název, jedna věta) jako tlačítko; rozšíření jen když jsou implementovaná.
 - `ResumeCard`: rozpracovaná zakázka s krokem a akcí „Pokračovat v zakázce“.
 - `ExampleList`: seznam příkladů v modálním okně, šipky a Enter.

@@ -14,10 +14,16 @@ async function seriousA11yIssues(page: Page) {
 	return results.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical');
 }
 
+/** Zpráva do asistenta; na prázdné obrazovce je jediným vstupem hlavní pole kroku Zadání. */
 async function sendMessage(page: Page, text: string) {
-	const field = page.getByRole('textbox', { name: 'Zpráva' });
-	await field.fill(text);
-	await field.press('Enter');
+	const chat = page.getByRole('textbox', { name: 'Zpráva' });
+	if (await chat.isVisible()) {
+		await chat.fill(text);
+		await chat.press('Enter');
+		return;
+	}
+	await page.getByRole('textbox', { name: 'Zadání zakázky' }).fill(text);
+	await page.getByRole('button', { name: 'Zpracovat zadání' }).click();
 }
 
 async function toReview(page: Page) {
@@ -283,7 +289,7 @@ test.describe('střední šířka 768 px', () => {
 
 	test('kontrola údajů a plán jsou použitelné a přístupné', async ({ page }) => {
 		await page.goto('/project');
-		await page.getByRole('button', { name: 'Dialog', exact: true }).click();
+		await page.getByRole('button', { name: 'Asistent', exact: true }).click();
 		await sendMessage(page, ZADANI);
 		await expect(page.getByRole('heading', { name: 'Kontrola údajů' })).toBeVisible();
 		expect(await seriousA11yIssues(page)).toEqual([]);
@@ -311,7 +317,7 @@ for (const width of [390, 320]) {
 		test('kontrola údajů a plán bez vodorovného posuvu a přístupné', async ({ page }) => {
 			const scrollWidth = () => page.evaluate(() => document.documentElement.scrollWidth);
 			await page.goto('/project');
-			await page.getByRole('button', { name: 'Dialog', exact: true }).click();
+			await page.getByRole('button', { name: 'Asistent', exact: true }).click();
 			await sendMessage(page, ZADANI);
 			await expect(page.getByRole('heading', { name: 'Kontrola údajů' })).toBeVisible();
 			expect(await scrollWidth()).toBeLessThanOrEqual(width);

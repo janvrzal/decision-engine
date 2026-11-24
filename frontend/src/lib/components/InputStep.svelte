@@ -105,7 +105,7 @@
 				Další ukázka
 			</Button>
 			<Button variant="primary" disabledReason={continueReason} onclick={submit}>
-				Pokračovat
+				Zpracovat zadání
 				<ArrowRight size={16} strokeWidth={1.5} aria-hidden="true" />
 			</Button>
 		</div>
@@ -113,7 +113,7 @@
 
 	<div class="flex flex-col gap-3">
 		<div class="flex flex-wrap items-baseline justify-between gap-2">
-			<h2 class="text-heading text-ink">Nebo začněte nástrojem</h2>
+			<h2 class="text-heading text-ink">Nebo vyberte výpočet</h2>
 			<div class="flex flex-wrap gap-2">
 				<Button variant="ghost" onclick={onload}>
 					<FolderOpen size={16} strokeWidth={1.5} aria-hidden="true" />

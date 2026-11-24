@@ -45,7 +45,7 @@ export async function saveProject(client: Client, sessionId: string): Promise<Sa
 				ok: false,
 				message:
 					response.status === 409
-						? 'Uložit jde potvrzená zakázka.'
+						? 'Uložit půjde až potvrzenou zakázku. Nejdřív potvrďte údaje.'
 						: 'Zakázku se nepodařilo uložit. Zkuste to znovu.'
 			};
 		}

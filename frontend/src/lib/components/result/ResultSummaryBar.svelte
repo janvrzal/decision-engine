@@ -1,6 +1,5 @@
 <script lang="ts">
 	import Printer from '@lucide/svelte/icons/printer';
-	import Save from '@lucide/svelte/icons/save';
 	import type { ResultView, UserEvent } from '#lib/api/types.js';
 	import { barsWord, formatPercent } from '#lib/format.js';
 	import SolutionStatusBadge from '../SolutionStatusBadge.svelte';
@@ -11,14 +10,12 @@
 		result,
 		proposalPending,
 		onsend,
-		onreview,
-		onsave
+		onreview
 	}: {
 		result: ResultView;
 		proposalPending: boolean;
 		onsend: (event: UserEvent) => void;
 		onreview: () => void;
-		onsave: () => void;
 	} = $props();
 
 	let summary = $derived(
@@ -45,15 +42,11 @@
 	{/if}
 	<!-- PDF přibude s kalkulací (M5); do té doby se nenabízí (AGENTS.md pravidlo 9). -->
 	<Button
-		variant="secondary"
+		variant="primary"
 		onclick={() => window.print()}
 		disabledReason={result.stale ? 'Plán je neaktuální, nejdřív ho přepočítejte.' : undefined}
 	>
 		<Printer size={16} strokeWidth={1.5} aria-hidden="true" />
 		Vytisknout plán
-	</Button>
-	<Button variant="primary" onclick={onsave}>
-		<Save size={16} strokeWidth={1.5} aria-hidden="true" />
-		Uložit zakázku
 	</Button>
 </section>

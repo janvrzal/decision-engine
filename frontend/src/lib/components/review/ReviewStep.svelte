@@ -156,10 +156,20 @@
 		};
 	}
 
-	const PARAMETERS: { key: ParameterKey; label: string; unit: string }[] = [
-		{ key: 'kerf_mm', label: 'Prořez', unit: 'mm' },
-		{ key: 'trim_mm', label: 'Zarovnávací ořez', unit: 'mm' },
-		{ key: 'min_remnant_mm', label: 'Minimální využitelný zbytek', unit: 'mm' }
+	const PARAMETERS: { key: ParameterKey; label: string; unit: string; hint: string }[] = [
+		{ key: 'kerf_mm', label: 'Prořez', unit: 'mm', hint: 'Šířka řezu pily, např. 2,5 mm.' },
+		{
+			key: 'trim_mm',
+			label: 'Zarovnávací ořez',
+			unit: 'mm',
+			hint: 'Kolik se uřízne z čela tyče, než začne první díl.'
+		},
+		{
+			key: 'min_remnant_mm',
+			label: 'Minimální využitelný zbytek',
+			unit: 'mm',
+			hint: 'Kratší zbytek je odpad, delší si necháte.'
+		}
 	];
 
 	let confirmReason = $derived(
@@ -282,6 +292,7 @@
 			{#each PARAMETERS as parameter (parameter.key)}
 				<label class="flex flex-col gap-1">
 					<span class="text-small font-medium text-ink">{parameter.label}</span>
+					<span class="text-small text-ink-muted">{parameter.hint}</span>
 					<CellInput
 						bind:value={draft[parameter.key]}
 						label={parameter.label}

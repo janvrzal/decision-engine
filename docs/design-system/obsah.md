@@ -15,13 +15,15 @@ Texty v UI jsou součást designu. Píšou se z pohledu uživatele v dílně, ne
 
 | Situace | Vzor | Příklad |
 |---|---|---|
-| Chyba | co se stalo + co udělat | „AI teď neodpovídá. Zkuste to znovu nebo vyplňte údaje ručně.“ |
+| Chyba | co se stalo + co udělat | „AI teď neodpovídá. Zkuste to za chvíli znovu, nebo vyplňte údaje ručně.“ „Ze zadání jsem nevyčetl díly k řezání. Uveďte díly s délkou a počtem a délku tyčí, nebo údaje vyplňte ručně.“ |
 | Chyba pole | co doplnit nebo opravit, rozkazovacím způsobem | „Doplňte název dílu.“ „Délka musí být kladná.“ |
 | Prázdný stav | co tu bude + jak to získat, jedna akce | „Plán zatím není spočítaný. Zkontrolujte díly a skladové délky.“ + „Vypočítat“ |
 | Průběh | co se právě děje, nedokonavým slovesem s třemi tečkami | „Připravuji údaje ze zadání…“ „Hledám lepší plán…“ |
-| Neaktivní akce | proč a co ji zpřístupní | „Výsledek je neaktuální, nejdřív přepočítejte.“ |
+| Neaktivní akce | proč a co ji zpřístupní | „Výsledek je neaktuální, nejdřív přepočítejte.“ „Uložit půjde až potvrzenou zakázku. Nejdřív potvrďte údaje.“ |
+| Názvy akcí | sloveso + předmět, stejná akce má všude stejný název | „Uložit zakázku“, „Načíst zakázku“, „Zpracovat zadání“, „Vytisknout plán“; panel s AI je „Asistent“ |
+| Nápověda k pojmu | jedna věta pod popiskem pole, slovy dílny | „Kolik se uřízne z čela tyče, než začne první díl.“ |
 | Potvrzení nevratné akce | otázka v nadpisu, následek v těle, akce pojmenovaná slovesem | „Zahodit rozpracovanou zakázku?“ … „Zahodit zakázku“ |
-| Nepotvrzená hodnota | původ hodnoty konkrétně | „Výchozí hodnota, ověřte.“ „Odhad AI z textu ‚šestimetrové‘.“ |
+| Nepotvrzená hodnota | původ hodnoty konkrétně | „Výchozí hodnota, ověřte.“ „Odhad AI, ověřte.“ „Hodnota v souboru byla neplatná, ověřte.“ |
 | Chybějící údaj | slovy, nikdy nula | „chybí cena“, „—“ s vysvětlením |
 
 ## Čísla a jednotky
